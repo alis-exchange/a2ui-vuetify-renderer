@@ -1,7 +1,6 @@
 {
-  "name": "renderer",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@alis-build/a2ui-vuetify-renderer",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,6 +8,19 @@
     "preview": "vite preview",
     "test": "vitest run"
   },
+  "keywords": [
+    "a2ui",
+    "vuetify"
+  ],
+  "homepage": "https://github.com/alis-exchange/a2ui-vuetify-renderer",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alis-exchange/a2ui-vuetify-renderer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alis-exchange/a2ui-vuetify-renderer/issues"
+  },
+  "license": "Apache-2.0",
   "dependencies": {
     "@a2ui/web_core": "^0.8.0",
     "@mdi/font": "^7.4.47",
