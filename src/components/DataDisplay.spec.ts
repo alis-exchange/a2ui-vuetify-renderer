@@ -8,7 +8,7 @@ import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
 import { createVuetify } from 'vuetify';
 
 beforeAll(() => {
-  global.ResizeObserver = class ResizeObserver {
+  globalThis.ResizeObserver = class ResizeObserver {
     observe() {}
     unobserve() {}
     disconnect() {}
@@ -17,7 +17,7 @@ beforeAll(() => {
 
 const vuetify = createVuetify();
 
-function createMockContext(data: any = {}) {
+function createMockContext() {
   return {
     surfaceId: 'test-surface',
     onAction: vi.fn(),

@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useA2UI } from '../composables/useA2UI';
-import type { ComponentModel } from '@a2ui/web_core/v0_9/state/component-model';
+import type { SurfaceComponentsModel } from '@a2ui/web_core/v0_9';
+type ComponentModel = NonNullable<ReturnType<SurfaceComponentsModel['get']>>;
 import ComponentNode from '../core/ComponentNode.vue';
 
 const props = defineProps<{
   node: ComponentModel;
 }>();
 
-const { resolveValue, resolveDynamicChildren } = useA2UI();
+const { resolveDynamicChildren } = useA2UI();
 
 const resolvedChildren = computed(() => {
   return resolveDynamicChildren(props.node.properties.children);

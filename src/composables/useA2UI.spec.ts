@@ -69,10 +69,10 @@ describe('useA2UI composable', () => {
     expect(injectedData.resolveValue({ path: '/test/bool' })).toBe(true);
     expect(injectedData.resolveValue({ path: '/test/num' })).toBe(42);
     
-    injectedData.sendAction('my-action', { some: 'data' });
+    injectedData.sendAction('my-action', { some: { path: '/test/string' } });
     expect(mockContext.onAction).toHaveBeenCalledWith({
       name: 'my-action',
-      context: { some: 'data' }
+      context: { some: 'resolved-string' }
     });
   });
 });

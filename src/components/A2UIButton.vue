@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useA2UI } from '../composables/useA2UI';
-import type { ComponentModel } from '@a2ui/web_core/v0_9/state/component-model';
+import type { SurfaceComponentsModel } from '@a2ui/web_core/v0_9';
+type ComponentModel = NonNullable<ReturnType<SurfaceComponentsModel['get']>>;
 import ComponentNode from '../core/ComponentNode.vue';
 
 const props = defineProps<{
@@ -49,7 +50,7 @@ const handleClick = () => {
   if (!action) return;
 
   if (action.event) {
-    sendAction(action.event.name, resolveValue(action.event.context));
+    sendAction(action.event.name, action.event.context);
   } else if (action.functionCall) {
     // TODO: implement local function execution if required by catalog
     console.warn('functionCall action not yet supported in Button');

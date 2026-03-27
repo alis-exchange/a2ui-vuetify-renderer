@@ -11,7 +11,7 @@ export default defineConfig({
     vuetify({ autoImport: true }),
     dts({
       insertTypesEntry: true,
-      exclude: ["src/main.ts", "src/App.vue"], // Exclude dev files from types
+      tsconfigPath: "./tsconfig.app.json",
     }),
   ],
   build: {
@@ -19,7 +19,7 @@ export default defineConfig({
       // The entry point to your library
       entry: resolve(__dirname, "src/index.ts"),
       name: "A2UiVueRenderer",
-      fileName: (format) => `a2ui-vue-renderer.${format}.js`,
+      fileName: "a2ui-vuetify-renderer",
     },
     rollupOptions: {
       // Externalize deps that shouldn't be bundled into the library

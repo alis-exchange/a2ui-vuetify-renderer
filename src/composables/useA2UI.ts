@@ -30,6 +30,15 @@ export function useA2UI() {
     return dataContext.value.resolveDynamicValue(node);
   };
 
+  const resolveActionContext = (ctx: any) => {
+    if (!ctx || typeof ctx !== 'object') return ctx;
+    const resolved: Record<string, any> = {};
+    for (const key in ctx) {
+      resolved[key] = resolveValue(ctx[key]);
+    }
+    return resolved;
+  };
+
   const resolveDynamicChildren = (childrenProp: any) => {
     if (Array.isArray(childrenProp)) {
       return childrenProp.map(child => {
@@ -54,10 +63,10 @@ export function useA2UI() {
     return [];
   };
 
-  const sendAction = (name: string, actionContext?: any) => {
+  const sendAction = (name: string, actionContext?: Record<string, any>) => {
     context.onAction({
       name,
-      context: actionContext
+      context: resolveActionContext(actionContext)
     });
   };
 

@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useA2UI } from '../composables/useA2UI';
-import type { ComponentModel } from '@a2ui/web_core/v0_9/state/component-model';
+import type { SurfaceComponentsModel } from '@a2ui/web_core/v0_9';
+type ComponentModel = NonNullable<ReturnType<SurfaceComponentsModel['get']>>;
 
 const props = defineProps<{
   node: ComponentModel;
 }>();
 
-const { resolveValue, setData } = useA2UI();
+const { resolveValue, setData, sendAction } = useA2UI();
 
 const label = computed(() => resolveValue(props.node.properties.label));
 const min = computed(() => resolveValue(props.node.properties.min) ?? 0);
@@ -24,6 +25,15 @@ const modelValue = computed({
     }
   }
 });
+
+const handleEnd = () => {
+  const action = resolveValue(props.node.properties.action);
+  if (!action) return;
+
+  if (action.event) {
+    sendAction(action.event.name, action.event.context);
+  }
+};
 </script>
 
 <template>
@@ -32,5 +42,6 @@ const modelValue = computed({
     :label="label"
     :min="min"
     :max="max"
+    @end="handleEnd"
   ></v-slider>
 </template>
