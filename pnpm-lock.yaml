@@ -73,7 +73,7 @@ importers:
         specifier: ~5.9.3
         version: 5.9.3
       vite:
-        specifier: ^8.0.3
+        specifier: ^8.0.0-beta.13
         version: 8.0.3(@types/node@24.12.0)(sass@1.98.0)(yaml@2.8.3)
       vite-plugin-dts:
         specifier: ^4.5.4
