@@ -84,6 +84,9 @@ jobs:
             - name: Run tests
               run: pnpm test
 
+            - name: Build
+              run: pnpm build
+
             - name: Extract version number
               id: extract_version
               shell: bash

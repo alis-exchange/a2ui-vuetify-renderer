@@ -16,7 +16,10 @@
     "./style.css": "./dist/a2ui-vuetify-renderer.css"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "dev": "vite",
