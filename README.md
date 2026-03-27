@@ -338,10 +338,6 @@ Tests use Vitest with `@vue/test-utils` and `jsdom`. Vuetify is inlined during t
 - **Components** — `CoreComponents.spec.ts`, `FormInputs.spec.ts`, `SelectionInputs.spec.ts`, `PickersAndSliders.spec.ts`, `DataDisplay.spec.ts`, `Feedback.spec.ts`, `LayoutAndMisc.spec.ts`, `Form.spec.ts`, `DynamicLists.spec.ts`
 - **Utilities** — `validation.spec.ts`
 
-### CI/CD
-
-A GitHub Actions workflow (`.github/workflows/npm_publish.yml`) triggers on `v*` tags. It generates a changelog with `conventional-changelog`, runs the test suite, and publishes to npm under the `@alis-build` scope.
-
 ## License
 
 [Apache 2.0](LICENSE)
