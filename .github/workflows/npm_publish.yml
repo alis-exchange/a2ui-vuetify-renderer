@@ -84,6 +84,9 @@ jobs:
             - name: Run tests
               run: pnpm test
 
+            - name: Generate catalog
+              run: pnpm generate:catalog
+
             - name: Build
               run: pnpm build
 

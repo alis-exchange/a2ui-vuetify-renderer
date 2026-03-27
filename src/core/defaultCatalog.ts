@@ -1,4 +1,5 @@
 import { defaultRegistry } from './ComponentRegistry';
+import { CATALOG_ID } from './constants';
 import A2UIText from '../components/A2UIText.vue';
 import A2UIImage from '../components/A2UIImage.vue';
 import A2UIIcon from '../components/A2UIIcon.vue';
@@ -33,9 +34,14 @@ import A2UIEmptyState from '../components/A2UIEmptyState.vue';
 import A2UIExpansionPanel from '../components/A2UIExpansionPanel.vue';
 import A2UIChip from '../components/A2UIChip.vue';
 import A2UIAvatar from '../components/A2UIAvatar.vue';
+import A2UITabs from '../components/A2UITabs.vue';
+import A2UIModal from '../components/A2UIModal.vue';
+import A2UIVideo from '../components/A2UIVideo.vue';
+import A2UIAudioPlayer from '../components/A2UIAudioPlayer.vue';
+import A2UIChoicePicker from '../components/A2UIChoicePicker.vue';
 
 export function registerDefaultComponents() {
-  defaultRegistry.registerAll({
+  defaultRegistry.registerAll(CATALOG_ID, {
     Text: A2UIText,
     Image: A2UIImage,
     Icon: A2UIIcon,
@@ -70,5 +76,10 @@ export function registerDefaultComponents() {
     ExpansionPanel: A2UIExpansionPanel,
     Chip: A2UIChip,
     Avatar: A2UIAvatar,
+    Tabs: A2UITabs,
+    Modal: A2UIModal,
+    Video: A2UIVideo,
+    AudioPlayer: A2UIAudioPlayer,
+    ChoicePicker: A2UIChoicePicker,
   });
 }

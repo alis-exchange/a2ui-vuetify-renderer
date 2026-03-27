@@ -1,0 +1,28 @@
+{
+  "name": "playground",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.5.30",
+    "@alis-build/a2ui-vuetify-renderer": "file:../..",
+    "vuetify": "^4.0.2",
+    "@mdi/font": "^7.4.47",
+    "@a2ui/web_core": "^0.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.0",
+    "@vitejs/plugin-vue": "^6.0.5",
+    "@vue/tsconfig": "^0.9.0",
+    "typescript": "~5.9.3",
+    "vite": "^8.0.1",
+    "vue-tsc": "^3.2.5",
+    "vite-plugin-vuetify": "^2.1.3",
+    "sass": "^1.98.0"
+  }
+}

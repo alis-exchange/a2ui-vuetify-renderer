@@ -232,37 +232,78 @@ The theme is applied via `<v-theme-provider>` and automatically cleaned up when 
 
 ## Custom components
 
-### Registering
+### Registering & Scoping (catalogId)
+
+To avoid collisions between disparate models, components must be registered against a specific `catalogId`. The renderer uses this ID (provided via `createSurface`) to securely sandbox standard and custom components.
 
 ```typescript
-import { defaultRegistry } from '@alis-build/a2ui-vuetify-renderer'
+import { CATALOG_ID, defaultRegistry } from '@alis-build/a2ui-vuetify-renderer'
 import MyMap from './components/MyMap.vue'
 
-defaultRegistry.register('GoogleMap', MyMap)
+// Registering a synchronous custom component under the default catalog ID
+defaultRegistry.register(CATALOG_ID, 'GoogleMap', MyMap)
+```
+
+### Lazy Loading
+
+To optimize your initial bundle, you can register components asynchronously. Vue will load the chunk only when the A2UI server requests the component.
+
+```typescript
+import { defineAsyncComponent } from 'vue'
+
+const AsyncMap = defineAsyncComponent(() => import('./components/MyMap.vue'))
+
+defaultRegistry.register(CATALOG_ID, 'GoogleMap', AsyncMap)
+```
+
+## Transport Integration
+
+While the A2UI Vue Renderer focuses solely on the UI layer, host applications must integrate it into an overarching transport channel (e.g., SSE, WebSockets, or a native bridge) and announce their capabilities.
+
+### Client Capabilities
+
+You must explicitly announce which `catalogId`s your renderer supports to the AI agent during the connection handshake. Failure to do so may result in the server sending unhandled component types.
+
+```typescript
+import { CATALOG_ID } from '@alis-build/a2ui-vuetify-renderer'
+
+// Construct your metadata payload to be sent over your transport layer
+const metadata = {
+  a2uiClientCapabilities: {
+    supportedCatalogIds: [CATALOG_ID, 'my-custom-catalog-v1']
+  }
+}
+// Send metadata to the server...
 ```
 
 ### Authoring
 
-Custom components receive a `node` prop (the `ComponentModel` from `@a2ui/web_core`) and use `useA2UI()` to interact with the A2UI context:
+Custom components receive a `node` prop (the component node from A2UI). To easily resolve all data bindings (like `path` lookups or `call` functions) automatically, you can use the `useDynamicProps` composable:
 
 ```vue
 <script setup lang="ts">
-  import { computed } from 'vue'
-  import { useA2UI } from '@alis-build/a2ui-vuetify-renderer'
-  import type { SurfaceComponentsModel } from '@a2ui/web_core/v0_9'
-  type ComponentModel = NonNullable<ReturnType<SurfaceComponentsModel['get']>>
+  import { useDynamicProps, useA2UI } from '@alis-build/a2ui-vuetify-renderer'
 
-  const props = defineProps<{ node: ComponentModel }>()
-  const { resolveValue, sendAction, setData } = useA2UI()
-
-  const lat = computed(() => resolveValue(props.node.properties.lat))
-  const lng = computed(() => resolveValue(props.node.properties.lng))
+  const props = defineProps<{ node: any }>()
+  
+  // Automatically resolves all properties on the node
+  const dynamicProps = useDynamicProps(() => props.node)
+  
+  const { sendAction, setData } = useA2UI()
 
   function handleClick(coords: { lat: number; lng: number }) {
     setData('/map/lastClick', coords)
     sendAction('map_clicked', coords)
   }
 </script>
+
+<template>
+  <div class="custom-map">
+    Latitude: {{ dynamicProps.lat }}
+    Longitude: {{ dynamicProps.lng }}
+    <v-btn @click="handleClick({ lat: 0, lng: 0 })">Click Map</v-btn>
+  </div>
+</template>
 ```
 
 ## Exports

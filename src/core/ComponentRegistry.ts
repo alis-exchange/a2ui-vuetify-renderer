@@ -3,25 +3,38 @@ import type { Component, InjectionKey } from 'vue';
 export const A2UI_REGISTRY_KEY: InjectionKey<ComponentRegistry> = Symbol('A2UI_REGISTRY_KEY');
 
 export class ComponentRegistry {
-  private components: Map<string, Component> = new Map();
+  private catalogs: Map<string, Map<string, Component>> = new Map();
 
-  register(type: string, component: Component) {
-    this.components.set(type, component);
+  register(catalogId: string, type: string, component: Component) {
+    if (!this.catalogs.has(catalogId)) {
+      this.catalogs.set(catalogId, new Map());
+    }
+    this.catalogs.get(catalogId)!.set(type, component);
   }
 
-  registerAll(components: Record<string, Component>) {
+  registerAll(catalogId: string, components: Record<string, Component>) {
+    if (!this.catalogs.has(catalogId)) {
+      this.catalogs.set(catalogId, new Map());
+    }
+    const catalog = this.catalogs.get(catalogId)!;
     for (const [type, component] of Object.entries(components)) {
-      this.components.set(type, component);
+      catalog.set(type, component);
     }
   }
 
-  get(type: string): Component | undefined {
-    return this.components.get(type);
+  get(catalogId: string, type: string): Component | undefined {
+    return this.catalogs.get(catalogId)?.get(type);
   }
 
-  has(type: string): boolean {
-    return this.components.has(type);
+  has(catalogId: string, type: string): boolean {
+    return this.catalogs.get(catalogId)?.has(type) ?? false;
+  }
+
+  keys(catalogId: string): string[] {
+    const catalog = this.catalogs.get(catalogId);
+    return catalog ? Array.from(catalog.keys()) : [];
   }
 }
 
 export const defaultRegistry = new ComponentRegistry();
+

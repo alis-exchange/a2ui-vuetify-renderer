@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import ComponentNode from './ComponentNode.vue';
+import { CATALOG_ID } from './constants';
 import { defineComponent } from 'vue';
 import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
 import { ComponentRegistry, A2UI_REGISTRY_KEY } from './ComponentRegistry';
@@ -13,7 +14,7 @@ const MockButton = defineComponent({
 describe('ComponentNode.vue', () => {
   it('renders a registered component and passes the node', () => {
     const registry = new ComponentRegistry();
-    registry.register('Button', MockButton);
+    registry.register(CATALOG_ID, 'Button', MockButton);
 
     const mockNode = { id: 'btn-1', type: 'Button', properties: {} };
 
@@ -46,7 +47,7 @@ describe('ComponentNode.vue', () => {
 
   it('applies flex-grow class based on node weight property', () => {
     const registry = new ComponentRegistry();
-    registry.register('Button', MockButton);
+    registry.register(CATALOG_ID, 'Button', MockButton);
 
     const mockNode = { id: 'btn-weight', type: 'Button', properties: { weight: 2 } };
 

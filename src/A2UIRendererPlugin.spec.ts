@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { A2UiVueRenderer } from './A2UIRendererPlugin';
 import { defaultRegistry } from './core/ComponentRegistry';
 import { defineComponent } from 'vue';
+import { CATALOG_ID } from './core/constants';
 
 describe('A2UIRendererPlugin', () => {
   it('installs the required components globally and registers options', () => {
@@ -21,6 +22,6 @@ describe('A2UIRendererPlugin', () => {
     expect(mockApp.component).toHaveBeenCalledWith('A2uiComponentNode', expect.anything());
     
     // verify registry
-    expect(defaultRegistry.get('CustomButton')).toBe(MockCustomButton);
+    expect(defaultRegistry.get(CATALOG_ID, 'CustomButton')).toBe(MockCustomButton);
   });
 });

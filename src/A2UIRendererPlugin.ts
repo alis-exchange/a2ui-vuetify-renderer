@@ -4,6 +4,8 @@ import ComponentNode from './core/ComponentNode.vue';
 import { defaultRegistry } from './core/ComponentRegistry';
 import { registerDefaultComponents } from './core/defaultCatalog';
 
+import { CATALOG_ID } from './core/constants';
+
 export interface A2UiVueRendererOptions {
   components?: Record<string, any>;
 }
@@ -16,7 +18,7 @@ export const A2UiVueRenderer: Plugin = {
     registerDefaultComponents();
 
     if (options?.components) {
-      defaultRegistry.registerAll(options.components);
+      defaultRegistry.registerAll(CATALOG_ID, options.components);
     }
   }
 };

@@ -2,6 +2,7 @@
 import { inject, computed, provide } from 'vue';
 import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
 import { ComponentRegistry, defaultRegistry, A2UI_REGISTRY_KEY } from './ComponentRegistry';
+import { CATALOG_ID } from './constants';
 
 const props = defineProps<{
   id: string;
@@ -19,10 +20,17 @@ if (context && props.path !== undefined) {
   });
 }
 
-const node = computed(() => {
+const surface = computed(() => {
   if (!context) return undefined;
-  const surface = context.processor.model?.getSurface(context.surfaceId);
-  return surface?.componentsModel?.get(props.id);
+  return context.processor.model?.getSurface(context.surfaceId);
+});
+
+const node = computed(() => {
+  return surface.value?.componentsModel?.get(props.id);
+});
+
+const catalogId = computed(() => {
+  return surface.value?.catalogId || CATALOG_ID;
 });
 
 const componentType = computed(() => {
@@ -42,7 +50,7 @@ const layoutClasses = computed(() => {
 
 const resolvedComponent = computed(() => {
   if (!componentType.value) return undefined;
-  return registry.get(componentType.value);
+  return registry.get(catalogId.value, componentType.value);
 });
 </script>
 
