@@ -1,5 +1,5 @@
-import { computed, isRef } from 'vue';
-import type { Ref } from 'vue';
+import { computed, toValue } from 'vue';
+import type { MaybeRefOrGetter, Ref } from 'vue';
 import { useA2UI } from './useA2UI';
 
 /**
@@ -9,13 +9,13 @@ import { useA2UI } from './useA2UI';
  * @param node The A2UI component node definition.
  * @returns A computed ref containing the resolved properties.
  */
-export function useDynamicProps<T extends Record<string, any>>(node: T | Ref<T>): Ref<Record<keyof T, any>> {
+export function useDynamicProps<T extends Record<string, any>>(node: MaybeRefOrGetter<T>): Ref<Record<string, any>> {
   const { resolveValue } = useA2UI();
 
   return computed(() => {
-    const rawNode = isRef(node) ? node.value : node;
+    const rawNode = toValue(node);
     
-    if (!rawNode) return {} as Record<keyof T, any>;
+    if (!rawNode) return {};
 
     const resolved: Record<string, any> = {};
     for (const key in rawNode) {
@@ -26,7 +26,6 @@ export function useDynamicProps<T extends Record<string, any>>(node: T | Ref<T>)
       }
     }
 
-    return resolved as Record<keyof T, any>;
+    return resolved;
   });
 }
-
