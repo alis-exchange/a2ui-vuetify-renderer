@@ -45,13 +45,19 @@ jobs:
               run: |
                   conventional-changelog -p angular -i CHANGELOG.md -s -r 0
 
-            # Step 6: Commit and push the changelog to the determined branch
-            - name: Commit and push changelog
+            # Step 6: Update package.json version from the tag
+            - name: Update package.json version
+              run: |
+                  VERSION="${GITHUB_REF#refs/tags/v}"
+                  npm pkg set "version=${VERSION}"
+
+            # Step 7: Commit and push the changelog and version bump to the determined branch
+            - name: Commit and push changelog and version
               run: |
                   git config --global user.name "github-actions[bot]"
                   git config --global user.email "github-actions[bot]@users.noreply.github.com"
-                  git add CHANGELOG.md
-                  git commit -m "chore: update changelog for ${GITHUB_REF#refs/tags/}"
+                  git add CHANGELOG.md package.json
+                  git commit -m "chore: release ${GITHUB_REF#refs/tags/}"
 
                   # Push to the determined branch
                   git push origin HEAD:${{ steps.extract_branch.outputs.branch }}
