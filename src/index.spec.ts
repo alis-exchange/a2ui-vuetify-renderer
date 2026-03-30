@@ -11,5 +11,10 @@ describe('index.ts', () => {
         expect(exports.getCatalogSchema).toBeDefined();
         expect(typeof exports.getCatalogSchema).toBe('function');
     });
+
+    it('should export registerDefaultComponents', () => {
+        expect(exports.registerDefaultComponents).toBeDefined();
+        expect(typeof exports.registerDefaultComponents).toBe('function');
+    });
 });
 

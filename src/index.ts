@@ -12,6 +12,8 @@ export { default as A2UIProvider } from './composables/A2UIProvider.vue';
 export { default as ComponentNode } from './core/ComponentNode.vue';
 export { ComponentRegistry, defaultRegistry, A2UI_REGISTRY_KEY } from './core/ComponentRegistry';
 
+export { registerDefaultComponents } from './core/defaultCatalog';
+
 export { getCatalogSchema } from './core/getCatalogSchema';
 
 // Export catalog ID for consumers to reference the schema
