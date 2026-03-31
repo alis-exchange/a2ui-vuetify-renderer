@@ -3,8 +3,6 @@ import { computed } from 'vue';
 import { useA2UI } from '../composables/useA2UI';
 import type { SurfaceComponentsModel } from '@a2ui/web_core/v0_9';
 type ComponentModel = NonNullable<ReturnType<SurfaceComponentsModel['get']>>;
-import { createVuetifyRules } from '../utils/validation';
-
 const props = defineProps<{
   node: ComponentModel;
 }>();
@@ -31,11 +29,6 @@ const modelValue = computed({
       setData(valuePath.value, val);
     }
   }
-});
-
-const rules = computed(() => {
-  const checks = resolveValue(props.node.properties.checks);
-  return createVuetifyRules(checks);
 });
 
 const handleChange = (val: any) => {
