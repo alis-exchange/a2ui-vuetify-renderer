@@ -1,80 +1,82 @@
-import { inject, type InjectionKey, computed } from 'vue';
-import { DataContext } from '@a2ui/web_core/v0_9';
+import { DataContext } from '@a2ui/web_core/v0_9'
+import { computed, inject, type InjectionKey } from 'vue'
 
 export interface A2UIContext {
-  surfaceId: string;
-  onAction: (action: any) => void;
-  processor: any; // A2uiMessageProcessor
-  dataContextPath?: string; // e.g. path in the data model
+  surfaceId: string
+  onAction: (action: any) => void
+  processor: any // A2uiMessageProcessor
+  dataContextPath?: string // e.g. path in the data model
 }
 
-export const A2UI_CONTEXT_KEY: InjectionKey<A2UIContext> = Symbol('A2UI_CONTEXT_KEY');
+export const A2UI_CONTEXT_KEY: InjectionKey<A2UIContext> = Symbol('A2UI_CONTEXT_KEY')
 
 export function useA2UI() {
-  const context = inject(A2UI_CONTEXT_KEY);
-  
+  const context = inject(A2UI_CONTEXT_KEY)
+
   if (!context) {
-    throw new Error('useA2UI must be used within an A2UIProvider');
+    throw new Error('useA2UI must be used within an A2UIProvider')
   }
 
-  const surface = context.processor?.model?.getSurface(context.surfaceId);
-  const dataModel = surface?.dataModel;
+  const surface = context.processor?.model?.getSurface(context.surfaceId)
+  const dataModel = surface?.dataModel
 
   const dataContext = computed(() => {
-    if (!dataModel) return undefined;
-    return new DataContext(dataModel, context.dataContextPath || '/');
-  });
+    if (!dataModel) return undefined
+    return new DataContext(dataModel, context.dataContextPath || '/')
+  })
 
   const resolveValue = (node: any) => {
-    if (!dataContext.value || node === undefined) return node;
-    return dataContext.value.resolveDynamicValue(node);
-  };
+    if (!dataContext.value || node === undefined) return node
+    return dataContext.value.resolveDynamicValue(node)
+  }
 
   const resolveActionContext = (ctx: any) => {
-    if (!ctx || typeof ctx !== 'object') return ctx;
-    const resolved: Record<string, any> = {};
+    if (!ctx || typeof ctx !== 'object') return ctx
+    const resolved: Record<string, any> = {}
     for (const key in ctx) {
-      resolved[key] = resolveValue(ctx[key]);
+      resolved[key] = resolveValue(ctx[key])
     }
-    return resolved;
-  };
+    return resolved
+  }
 
   const resolveDynamicChildren = (childrenProp: any) => {
     if (Array.isArray(childrenProp)) {
-      return childrenProp.map(child => {
-        if (typeof child === 'string') return { id: child };
-        if (child && typeof child === 'object' && child.id) return { id: child.id };
-        return child;
-      });
+      return childrenProp.map((child) => {
+        if (typeof child === 'string') return { id: child }
+        if (child && typeof child === 'object' && child.id) return { id: child.id }
+        return child
+      })
     }
 
     if (childrenProp && typeof childrenProp === 'object' && childrenProp.path && childrenProp.componentId) {
-      const resolvedArray = resolveValue({ path: childrenProp.path });
+      const resolvedArray = resolveValue({ path: childrenProp.path })
       if (Array.isArray(resolvedArray)) {
         return resolvedArray.map((_, index) => {
           return {
             id: childrenProp.componentId,
-            path: `${childrenProp.path}/${index}`
-          };
-        });
+            path: `${childrenProp.path}/${index}`,
+          }
+        })
       }
     }
 
-    return [];
-  };
+    return []
+  }
 
   const sendAction = (name: string, actionContext?: Record<string, any>) => {
-    context.onAction({
-      name,
-      context: resolveActionContext(actionContext)
-    });
-  };
+    const payload: Record<string, any> = { name }
+    if (actionContext) {
+      const resolved = resolveActionContext(actionContext)
+      payload.context = resolved
+    }
+    context.onAction(payload)
+  }
 
   const setData = (path: string, value: any) => {
     if (dataModel) {
-      dataModel.set(path, value);
+      dataModel.set(path, value)
     }
-  };
+  }
 
   return {
     surfaceId: context.surfaceId,
@@ -83,6 +85,6 @@ export function useA2UI() {
     resolveValue,
     resolveDynamicChildren,
     sendAction,
-    setData
-  };
+    setData,
+  }
 }
