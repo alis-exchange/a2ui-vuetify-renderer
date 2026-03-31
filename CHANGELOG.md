@@ -1,4 +1,11 @@
-## [0.1.6](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.7...v0.1.6) (2026-03-31)
+## [0.1.7](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.8...v0.1.7) (2026-03-31)
+
+## [0.1.8](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.7...v0.1.8) (2026-03-31)
+
+
+### Features
+
+* add Vuetify components, functions, and theme schema to the catalog; ([75c2b78](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/75c2b78117689d793d0e9d2b94077ec7422ea9ba))
 
 ## [0.1.6](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.5...v0.1.6) (2026-03-31)
 
