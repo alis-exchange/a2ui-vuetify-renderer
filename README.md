@@ -29,7 +29,7 @@ The library ships ESM (`dist/a2ui-vuetify-renderer.js`), UMD (`dist/a2ui-vuetify
 | ---------------- | --------- |
 | `vue`            | `^3.5.30` |
 | `vuetify`        | `^4.0.2`  |
-| `@a2ui/web_core` | `^0.8.0`  |
+| `@a2ui/web_core` | `^0.9.0`  |
 
 ### Catalog ID
 
@@ -90,7 +90,7 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
 <script setup lang="ts">
   import { ref, onMounted } from 'vue'
   import { MessageProcessor, Catalog } from '@a2ui/web_core/v0_9'
-  import type { Action } from '@a2ui/web_core/v0_9/schema'
+  import type { A2uiClientAction } from '@a2ui/web_core/v0_9'
   import {
     A2UIProvider,
     ComponentNode,
@@ -100,7 +100,7 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
 
   registerDefaultComponents()
 
-  const handleAction = (action: Action) => {
+  const handleAction = (action: A2uiClientAction) => {
     console.log('Action from A2UI:', action)
   }
 
@@ -163,7 +163,7 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
 | **`A2UIProvider`**         | Wraps a surface. Provides processor, surface ID, and action callback via `provide/inject`. Listens to processor `update` events to trigger re-renders. Bridges A2UI theme colors (`primaryColor`, `errorColor`, etc.) into a dynamic Vuetify theme via `v-theme-provider`.                        |
 | **`ComponentNode`**        | Recursive renderer. Resolves a component ID from the surface's `ComponentsModel`, looks up the Vue component in the registry, and renders it with `<component :is="...">`. Supports a `path` prop for scoped data context in dynamic lists. Falls back to an error placeholder for unknown types. |
 | **`ComponentRegistry`**    | A `Map<string, Component>` that maps A2UI type strings (e.g. `"Button"`) to Vue components. Exposes `register()`, `registerAll()`, `get()`, and `has()`. The singleton `defaultRegistry` is pre-populated by `registerDefaultComponents()`.                                                       |
-| **`useA2UI()`**            | Composable that injects the provider context. Returns `resolveValue`, `resolveDynamicChildren`, `sendAction`, `setData`, `surfaceId`, `dataContext`, and `dataContextPath`. Builds a `DataContext` from `@a2ui/web_core/v0_9` for path-based and function-call value resolution.                  |
+| **`useA2UI()`**            | Composable that injects the provider context. Returns `resolveValue`, `resolveDynamicChildren`, `sendAction`, `dispatchNodeAction`, `setData`, `surfaceId`, `dataContext`, and `dataContextPath`. Builds a `DataContext` from `@a2ui/web_core/v0_9` for path-based and function-call value resolution. Uses `SurfaceModel.dispatchAction()` for schema-validated action payloads. |
 | **`useDynamicProps()`**    | Composable for custom catalog components: given a node (ref, getter, or plain object), returns a computed ref of properties with each value passed through `resolveValue` for bindings.                                                                                                        |
 | **`getCatalogSchema()`**   | Returns a deep-cloned JSON Schema for the Vuetify catalog, merging in stub entries for any extra components registered on a `ComponentRegistry` under the same `catalogId` (useful for agents or tooling).                                                                                        |
 
@@ -176,7 +176,7 @@ Form components use internal helpers in `src/utils/validation.ts` to map A2UI `c
 3. **Tree resolution** — `ComponentNode` reads the flat adjacency list from `SurfaceComponentsModel`, resolves `children`/`child`/`trigger`/`content` references, and recursively renders the tree.
 4. **Value binding** — Components call `resolveValue()` which delegates to `DataContext.resolveDynamicValue()` — handling literals, `{ path }` lookups, and `{ call }` function expressions.
 5. **Two-way binding** — Input components use writable `computed` properties that call `setData()` on the surface's `DataModel` when the user types.
-6. **Actions out** — On user interaction (e.g. button click), components call `sendAction(name, context)` which resolves context values from the data model and invokes the `onAction` callback.
+6. **Actions out** — On user interaction (e.g. button click), components call `sendAction(name, sourceComponentId, context)` which resolves context values from the data model and dispatches a validated `A2uiClientAction` via the surface model (or falls back to the `onAction` callback).
 
 ### Dynamic list rendering
 
@@ -314,7 +314,7 @@ Custom components receive a `node` prop (the component node from A2UI). To resol
 
   function handleClick(coords: { lat: number; lng: number }) {
     setData('/map/lastClick', coords)
-    sendAction('map_clicked', coords)
+    sendAction('map_clicked', props.node.id, coords)
   }
 </script>
 
@@ -351,7 +351,7 @@ import {
 import { A2UiVueRenderer } from '@alis-build/a2ui-vuetify-renderer'
 
 // Types
-import type { A2UIContext, A2UiVueRendererOptions } from '@alis-build/a2ui-vuetify-renderer'
+import type { A2UIContext, A2UIActionPayload, A2UiVueRendererOptions } from '@alis-build/a2ui-vuetify-renderer'
 
 // Injection keys (for advanced provide/inject usage)
 import { A2UI_CONTEXT_KEY, A2UI_REGISTRY_KEY } from '@alis-build/a2ui-vuetify-renderer'

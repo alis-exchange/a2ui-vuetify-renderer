@@ -1,15 +1,7 @@
-import { DataContext } from '@a2ui/web_core/v0_9'
+import { DataContext, type A2uiClientAction } from '@a2ui/web_core/v0_9'
 import { computed, inject, type InjectionKey } from 'vue'
 
-// TODO: Replace with `import { A2uiClientAction } from '@a2ui/web_core/v0_9'`
-// once the client-to-server schema is published in the npm package.
-export interface A2UIActionPayload {
-  name: string
-  sourceComponentId: string
-  surfaceId: string
-  timestamp: string
-  context: Record<string, any>
-}
+export type A2UIActionPayload = A2uiClientAction
 
 export interface A2UIContext {
   surfaceId: string
@@ -31,8 +23,8 @@ export function useA2UI() {
   const dataModel = surface?.dataModel
 
   const dataContext = computed(() => {
-    if (!dataModel) return undefined
-    return new DataContext(dataModel, context.dataContextPath || '/')
+    if (!surface?.dataModel || !surface?.catalog) return undefined
+    return new DataContext(surface, context.dataContextPath || '/')
   })
 
   const resolveValue = (node: any) => {
@@ -78,14 +70,21 @@ export function useA2UI() {
     sourceComponentId: string,
     actionContext?: Record<string, any>,
   ) => {
-    const payload: A2UIActionPayload = {
-      name,
-      sourceComponentId,
-      surfaceId: context.surfaceId,
-      timestamp: new Date().toISOString(),
-      context: actionContext ? resolveActionContext(actionContext) : {},
+    const resolvedContext = actionContext ? resolveActionContext(actionContext) : {}
+    const actionPayload = { event: { name, context: resolvedContext } }
+
+    if (surface && typeof surface.dispatchAction === 'function') {
+      surface.dispatchAction(actionPayload, sourceComponentId)
+    } else {
+      const payload: A2UIActionPayload = {
+        name,
+        sourceComponentId,
+        surfaceId: context.surfaceId,
+        timestamp: new Date().toISOString(),
+        context: resolvedContext,
+      }
+      context.onAction(payload)
     }
-    context.onAction(payload)
   }
 
   const dispatchNodeAction = (

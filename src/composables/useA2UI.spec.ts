@@ -33,7 +33,9 @@ describe('useA2UI composable', () => {
       processor: {
         model: {
           getSurface: vi.fn().mockReturnValue({
-            dataModel: dataModel
+            id: 'test-surface',
+            dataModel: dataModel,
+            catalog: { invoker: () => undefined }
           })
         }
       },

@@ -5,23 +5,20 @@ import A2UIColumn from './A2UIColumn.vue';
 import A2UIList from './A2UIList.vue';
 import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
 import { createVuetify } from 'vuetify';
+import { DataModel } from '@a2ui/web_core/v0_9';
 
 const vuetify = createVuetify();
 
 function createMockContext(data: any = {}) {
-  // We need a simple dataModel mock to pass to useA2UI
   return {
     surfaceId: 'test-surface',
     onAction: vi.fn(),
     processor: {
       model: {
         getSurface: () => ({
-          dataModel: {
-            get: (path: string) => {
-              if (path === '/items') return data.items;
-              return undefined;
-            }
-          }
+          id: 'test-surface',
+          dataModel: new DataModel(data),
+          catalog: { invoker: () => undefined }
         })
       }
     },
