@@ -1,4 +1,11 @@
-## [0.1.4](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.5...v0.1.4) (2026-03-31)
+## [0.1.5](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.6...v0.1.5) (2026-03-31)
+
+## [0.1.6](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.5...v0.1.6) (2026-03-31)
+
+
+### Bug Fixes
+
+* streamline color handling in A2UICalendar and remove unused validation rules in A2UIDatePicker ([079e356](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/079e3560454971d32c9504c758655797ecf0b0f1))
 
 ## [0.1.5](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.4...v0.1.5) (2026-03-31)
 
