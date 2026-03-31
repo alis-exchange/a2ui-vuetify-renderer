@@ -18,3 +18,8 @@ export { getCatalogSchema } from './core/getCatalogSchema';
 
 // Export catalog ID for consumers to reference the schema
 export { CATALOG_ID } from './core/constants';
+
+// Export Vuetify catalog ComponentApi[], FunctionImplementation[], and theme schema
+export { VUETIFY_COMPONENTS } from './catalog/vuetify-components';
+export { VUETIFY_FUNCTIONS } from './catalog/vuetify-functions';
+export { VUETIFY_THEME_SCHEMA } from './catalog/vuetify-theme';

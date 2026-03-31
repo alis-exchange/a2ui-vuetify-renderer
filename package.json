@@ -43,7 +43,8 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@mdi/font": "^7.4.47",
-    "sass": "^1.98.0"
+    "sass": "^1.98.0",
+    "zod": "^3.25.0"
   },
   "peerDependencies": {
     "@a2ui/web_core": "^0.9.0",

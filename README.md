@@ -95,6 +95,9 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
     A2UIProvider,
     ComponentNode,
     CATALOG_ID,
+    VUETIFY_COMPONENTS,
+    VUETIFY_FUNCTIONS,
+    VUETIFY_THEME_SCHEMA,
     registerDefaultComponents,
   } from '@alis-build/a2ui-vuetify-renderer'
 
@@ -104,7 +107,7 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
     console.log('Action from A2UI:', action)
   }
 
-  const catalog = new Catalog(CATALOG_ID, [])
+  const catalog = new Catalog(CATALOG_ID, VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA)
   const processor = new MessageProcessor([catalog], handleAction)
   const surfaceId = 'demo-surface'
   const ready = ref(false)
@@ -344,6 +347,9 @@ import {
   defaultRegistry,
   registerDefaultComponents,
   CATALOG_ID,
+  VUETIFY_COMPONENTS,
+  VUETIFY_FUNCTIONS,
+  VUETIFY_THEME_SCHEMA,
   getCatalogSchema,
 } from '@alis-build/a2ui-vuetify-renderer'
 
@@ -387,6 +393,11 @@ renderer/
 │   ├── index.ts                    # Public API barrel
 │   ├── A2UIRendererPlugin.ts       # Vue plugin (install)
 │   ├── style.css                   # Base styles
+│   ├── catalog/
+│   │   ├── index.ts                # Barrel for catalog exports
+│   │   ├── vuetify-components.ts   # Zod-based ComponentApi[] for all Vuetify components
+│   │   ├── vuetify-functions.ts    # FunctionImplementation[] (delegates to basic catalog)
+│   │   └── vuetify-theme.ts        # Zod theme schema for Catalog constructor
 │   ├── composables/
 │   │   ├── A2UIProvider.vue        # Context provider + theme bridge
 │   │   ├── useA2UI.ts              # Core composable

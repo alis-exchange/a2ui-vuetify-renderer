@@ -56,7 +56,7 @@
 <script setup lang="ts">
 import { ref, onMounted, defineAsyncComponent } from "vue";
 import { MessageProcessor, Catalog } from "@a2ui/web_core/v0_9";
-import { CATALOG_ID, defaultRegistry } from "@alis-build/a2ui-vuetify-renderer";
+import { CATALOG_ID, VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA, defaultRegistry } from "@alis-build/a2ui-vuetify-renderer";
 
 const surfaceId = "main-surface";
 
@@ -78,7 +78,7 @@ const AsyncGraphComponent = defineAsyncComponent(() =>
 // Register it to the catalog context
 defaultRegistry.register(CATALOG_ID, "CustomGraph", AsyncGraphComponent);
 
-const mockCatalog = new Catalog(CATALOG_ID, []);
+const mockCatalog = new Catalog(CATALOG_ID, VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA);
 
 const actionLogs = ref<any[]>([]);
 
@@ -94,6 +94,7 @@ onMounted(() => {
   // Simulate receiving initial layout payload from the agent
   processor.value.processMessages([
     {
+      version: "v0.9",
       createSurface: {
         surfaceId,
         catalogId: CATALOG_ID,
@@ -105,6 +106,7 @@ onMounted(() => {
       },
     },
     {
+      version: "v0.9",
       updateDataModel: {
         surfaceId,
         path: "/",
@@ -116,6 +118,7 @@ onMounted(() => {
       },
     },
     {
+      version: "v0.9",
       updateComponents: {
         surfaceId,
         components: [
