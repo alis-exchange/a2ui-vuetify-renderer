@@ -163,7 +163,8 @@ const catalog = {
             component: { const: "TextField" },
             label: { "$ref": "#/$defs/DynamicString" },
             value: { "$ref": "#/$defs/DynamicString" },
-            variant: { type: "string", enum: ["filled", "outlined", "underlined"], default: "outlined" }
+            variant: { type: "string", enum: ["filled", "outlined", "underlined"], default: "outlined" },
+            action: { "$ref": "#/$defs/Action" }
           },
           required: ["component", "label"]
         }
@@ -181,7 +182,8 @@ const catalog = {
             component: { const: "TextArea" },
             label: { "$ref": "#/$defs/DynamicString" },
             value: { "$ref": "#/$defs/DynamicString" },
-            variant: { type: "string", enum: ["filled", "outlined", "underlined"], default: "outlined" }
+            variant: { type: "string", enum: ["filled", "outlined", "underlined"], default: "outlined" },
+            action: { "$ref": "#/$defs/Action" }
           },
           required: ["component", "label"]
         }
@@ -199,7 +201,8 @@ const catalog = {
             component: { const: "NumberInput" },
             label: { "$ref": "#/$defs/DynamicString" },
             value: { "$ref": "#/$defs/DynamicNumber" },
-            variant: { type: "string", enum: ["filled", "outlined", "underlined"], default: "outlined" }
+            variant: { type: "string", enum: ["filled", "outlined", "underlined"], default: "outlined" },
+            action: { "$ref": "#/$defs/Action" }
           },
           required: ["component", "label"]
         }
@@ -216,7 +219,8 @@ const catalog = {
           properties: {
             component: { const: "Checkbox" },
             label: { "$ref": "#/$defs/DynamicString" },
-            value: { "$ref": "#/$defs/DynamicBoolean" }
+            value: { "$ref": "#/$defs/DynamicBoolean" },
+            action: { "$ref": "#/$defs/Action" }
           },
           required: ["component", "label", "value"]
         }
@@ -244,7 +248,8 @@ const catalog = {
                 required: ["label", "value"]
               }
             },
-            value: { "$ref": "#/$defs/DynamicString" }
+            value: { "$ref": "#/$defs/DynamicString" },
+            action: { "$ref": "#/$defs/Action" }
           },
           required: ["component", "options", "value"]
         }
@@ -263,7 +268,8 @@ const catalog = {
             label: { "$ref": "#/$defs/DynamicString" },
             options: { type: "array" },
             value: { type: ["string", "array"] },
-            variant: { type: "string", enum: ["multipleSelection", "mutuallyExclusive"], default: "mutuallyExclusive" }
+            variant: { type: "string", enum: ["multipleSelection", "mutuallyExclusive"], default: "mutuallyExclusive" },
+            action: { "$ref": "#/$defs/Action" }
           },
           required: ["component", "options", "value"]
         }
@@ -281,7 +287,8 @@ const catalog = {
             label: { "$ref": "#/$defs/DynamicString" },
             options: { type: "array" },
             value: { type: ["string", "array"] },
-            variant: { type: "string", enum: ["multipleSelection", "mutuallyExclusive"], default: "mutuallyExclusive" }
+            variant: { type: "string", enum: ["multipleSelection", "mutuallyExclusive"], default: "mutuallyExclusive" },
+            action: { "$ref": "#/$defs/Action" }
           },
           required: ["component", "options", "value"]
         }
@@ -299,7 +306,8 @@ const catalog = {
             label: { "$ref": "#/$defs/DynamicString" },
             options: { type: "array" },
             value: { type: ["string", "array"] },
-            variant: { type: "string", enum: ["multipleSelection", "mutuallyExclusive"], default: "mutuallyExclusive" }
+            variant: { type: "string", enum: ["multipleSelection", "mutuallyExclusive"], default: "mutuallyExclusive" },
+            action: { "$ref": "#/$defs/Action" }
           },
           required: ["component", "options", "value"]
         }
@@ -342,7 +350,8 @@ const catalog = {
                 { type: "array", items: { type: "number" }, minItems: 2, maxItems: 2 },
                 { type: "object", properties: { path: { type: "string" } }, required: ["path"] }
               ]
-            }
+            },
+            action: { "$ref": "#/$defs/Action" }
           },
           required: ["component", "value", "max"]
         }
@@ -353,12 +362,27 @@ const catalog = {
       allOf: [
         { "$ref": "#/$defs/ComponentCommon" },
         { "$ref": "#/$defs/CatalogComponentCommon" },
+        { "$ref": "#/$defs/Checkable" },
         {
           type: "object",
           properties: {
             component: { const: "DatePicker" },
             label: { "$ref": "#/$defs/DynamicString" },
-            value: { "$ref": "#/$defs/DynamicString" }
+            value: { "$ref": "#/$defs/DynamicString" },
+            min: { "$ref": "#/$defs/DynamicString" },
+            max: { "$ref": "#/$defs/DynamicString" },
+            color: { type: "string" },
+            multiple: {
+              oneOf: [
+                { type: "boolean" },
+                { type: "string", enum: ["range"] }
+              ]
+            },
+            readonly: { "$ref": "#/$defs/DynamicBoolean" },
+            disabled: { "$ref": "#/$defs/DynamicBoolean" },
+            landscape: { "$ref": "#/$defs/DynamicBoolean" },
+            showAdjacentMonths: { "$ref": "#/$defs/DynamicBoolean" },
+            action: { "$ref": "#/$defs/Action" }
           },
           required: ["component", "value"]
         }
@@ -374,7 +398,8 @@ const catalog = {
           properties: {
             component: { const: "TimePicker" },
             label: { "$ref": "#/$defs/DynamicString" },
-            value: { "$ref": "#/$defs/DynamicString" }
+            value: { "$ref": "#/$defs/DynamicString" },
+            action: { "$ref": "#/$defs/Action" }
           },
           required: ["component", "value"]
         }
@@ -390,7 +415,8 @@ const catalog = {
           properties: {
             component: { const: "FileInput" },
             label: { "$ref": "#/$defs/DynamicString" },
-            value: { "$ref": "#/$defs/DynamicValue" }
+            value: { "$ref": "#/$defs/DynamicValue" },
+            action: { "$ref": "#/$defs/Action" }
           },
           required: ["component", "label"]
         }
@@ -477,7 +503,26 @@ const catalog = {
           type: "object",
           properties: {
             component: { const: "Calendar" },
-            events: { type: "array" }
+            events: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                  start: { type: "string", description: "Start date/time in YYYY-MM-DD or YYYY-MM-DD HH:mm format." },
+                  end: { type: "string", description: "End date/time in YYYY-MM-DD or YYYY-MM-DD HH:mm format." },
+                  color: { type: "string" },
+                  timed: { type: "boolean" }
+                },
+                required: ["name", "start"]
+              }
+            },
+            type: { type: "string", enum: ["month", "week", "day", "4day", "custom-weekly", "custom-daily", "category"], default: "month" },
+            value: { "$ref": "#/$defs/DynamicString" },
+            weekdays: { type: "array", items: { type: "number" } },
+            color: { type: "string" },
+            eventColor: { type: "string" },
+            action: { "$ref": "#/$defs/Action" }
           },
           required: ["component", "events"]
         }
@@ -545,7 +590,8 @@ const catalog = {
           properties: {
             component: { const: "Rating" },
             max: { type: "number", default: 5 },
-            value: { "$ref": "#/$defs/DynamicNumber" }
+            value: { "$ref": "#/$defs/DynamicNumber" },
+            action: { "$ref": "#/$defs/Action" }
           },
           required: ["component", "value"]
         }
@@ -579,7 +625,8 @@ const catalog = {
           properties: {
             component: { const: "ExpansionPanel" },
             title: { "$ref": "#/$defs/DynamicString" },
-            child: { "$ref": "#/$defs/ComponentId" }
+            child: { "$ref": "#/$defs/ComponentId" },
+            action: { "$ref": "#/$defs/Action" }
           },
           required: ["component", "title", "child"]
         }
@@ -637,7 +684,8 @@ const catalog = {
                 },
                 required: ["title", "child"]
               }
-            }
+            },
+            action: { "$ref": "#/$defs/Action" }
           },
           required: ["component", "tabs"]
         }
@@ -654,7 +702,8 @@ const catalog = {
             component: { const: "Modal" },
             trigger: { "$ref": "#/$defs/ComponentId" },
             content: { "$ref": "#/$defs/ComponentId" },
-            open: { "$ref": "#/$defs/DynamicBoolean" }
+            open: { "$ref": "#/$defs/DynamicBoolean" },
+            action: { "$ref": "#/$defs/Action" }
           },
           required: ["component", "trigger", "content"]
         }

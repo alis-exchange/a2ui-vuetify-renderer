@@ -1,9 +1,19 @@
 import { DataContext } from '@a2ui/web_core/v0_9'
 import { computed, inject, type InjectionKey } from 'vue'
 
+// TODO: Replace with `import { A2uiClientAction } from '@a2ui/web_core/v0_9'`
+// once the client-to-server schema is published in the npm package.
+export interface A2UIActionPayload {
+  name: string
+  sourceComponentId: string
+  surfaceId: string
+  timestamp: string
+  context: Record<string, any>
+}
+
 export interface A2UIContext {
   surfaceId: string
-  onAction: (action: any) => void
+  onAction: (action: A2UIActionPayload) => void
   processor: any // A2uiMessageProcessor
   dataContextPath?: string // e.g. path in the data model
 }
@@ -63,13 +73,37 @@ export function useA2UI() {
     return []
   }
 
-  const sendAction = (name: string, actionContext?: Record<string, any>) => {
-    const payload: Record<string, any> = { name }
-    if (actionContext) {
-      const resolved = resolveActionContext(actionContext)
-      payload.context = resolved
+  const sendAction = (
+    name: string,
+    sourceComponentId: string,
+    actionContext?: Record<string, any>,
+  ) => {
+    const payload: A2UIActionPayload = {
+      name,
+      sourceComponentId,
+      surfaceId: context.surfaceId,
+      timestamp: new Date().toISOString(),
+      context: actionContext ? resolveActionContext(actionContext) : {},
     }
     context.onAction(payload)
+  }
+
+  const dispatchNodeAction = (
+    node: { id: string; properties: Record<string, any> },
+    extraContext?: Record<string, any>,
+  ) => {
+    const action = resolveValue(node.properties.action)
+    if (!action) return
+
+    if (action.event) {
+      const mergedContext = {
+        ...(action.event.context || {}),
+        ...(extraContext || {}),
+      }
+      sendAction(action.event.name, node.id, mergedContext)
+    } else if (action.functionCall) {
+      console.warn(`functionCall not yet supported for ${node.id}`)
+    }
   }
 
   const setData = (path: string, value: any) => {
@@ -85,6 +119,7 @@ export function useA2UI() {
     resolveValue,
     resolveDynamicChildren,
     sendAction,
+    dispatchNodeAction,
     setData,
   }
 }

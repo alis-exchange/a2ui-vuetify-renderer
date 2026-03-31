@@ -365,6 +365,9 @@
                 "underlined"
               ],
               "default": "outlined"
+            },
+            "action": {
+              "$ref": "#/$defs/Action"
             }
           },
           "required": [
@@ -406,6 +409,9 @@
                 "underlined"
               ],
               "default": "outlined"
+            },
+            "action": {
+              "$ref": "#/$defs/Action"
             }
           },
           "required": [
@@ -447,6 +453,9 @@
                 "underlined"
               ],
               "default": "outlined"
+            },
+            "action": {
+              "$ref": "#/$defs/Action"
             }
           },
           "required": [
@@ -479,6 +488,9 @@
             },
             "value": {
               "$ref": "#/$defs/DynamicBoolean"
+            },
+            "action": {
+              "$ref": "#/$defs/Action"
             }
           },
           "required": [
@@ -530,6 +542,9 @@
             },
             "value": {
               "$ref": "#/$defs/DynamicString"
+            },
+            "action": {
+              "$ref": "#/$defs/Action"
             }
           },
           "required": [
@@ -577,6 +592,9 @@
                 "mutuallyExclusive"
               ],
               "default": "mutuallyExclusive"
+            },
+            "action": {
+              "$ref": "#/$defs/Action"
             }
           },
           "required": [
@@ -621,6 +639,9 @@
                 "mutuallyExclusive"
               ],
               "default": "mutuallyExclusive"
+            },
+            "action": {
+              "$ref": "#/$defs/Action"
             }
           },
           "required": [
@@ -665,6 +686,9 @@
                 "mutuallyExclusive"
               ],
               "default": "mutuallyExclusive"
+            },
+            "action": {
+              "$ref": "#/$defs/Action"
             }
           },
           "required": [
@@ -765,6 +789,9 @@
                   ]
                 }
               ]
+            },
+            "action": {
+              "$ref": "#/$defs/Action"
             }
           },
           "required": [
@@ -785,6 +812,9 @@
           "$ref": "#/$defs/CatalogComponentCommon"
         },
         {
+          "$ref": "#/$defs/Checkable"
+        },
+        {
           "type": "object",
           "properties": {
             "component": {
@@ -795,6 +825,43 @@
             },
             "value": {
               "$ref": "#/$defs/DynamicString"
+            },
+            "min": {
+              "$ref": "#/$defs/DynamicString"
+            },
+            "max": {
+              "$ref": "#/$defs/DynamicString"
+            },
+            "color": {
+              "type": "string"
+            },
+            "multiple": {
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "range"
+                  ]
+                }
+              ]
+            },
+            "readonly": {
+              "$ref": "#/$defs/DynamicBoolean"
+            },
+            "disabled": {
+              "$ref": "#/$defs/DynamicBoolean"
+            },
+            "landscape": {
+              "$ref": "#/$defs/DynamicBoolean"
+            },
+            "showAdjacentMonths": {
+              "$ref": "#/$defs/DynamicBoolean"
+            },
+            "action": {
+              "$ref": "#/$defs/Action"
             }
           },
           "required": [
@@ -824,6 +891,9 @@
             },
             "value": {
               "$ref": "#/$defs/DynamicString"
+            },
+            "action": {
+              "$ref": "#/$defs/Action"
             }
           },
           "required": [
@@ -853,6 +923,9 @@
             },
             "value": {
               "$ref": "#/$defs/DynamicValue"
+            },
+            "action": {
+              "$ref": "#/$defs/Action"
             }
           },
           "required": [
@@ -1015,7 +1088,64 @@
               "const": "Calendar"
             },
             "events": {
-              "type": "array"
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "start": {
+                    "type": "string",
+                    "description": "Start date/time in YYYY-MM-DD or YYYY-MM-DD HH:mm format."
+                  },
+                  "end": {
+                    "type": "string",
+                    "description": "End date/time in YYYY-MM-DD or YYYY-MM-DD HH:mm format."
+                  },
+                  "color": {
+                    "type": "string"
+                  },
+                  "timed": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "name",
+                  "start"
+                ]
+              }
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "month",
+                "week",
+                "day",
+                "4day",
+                "custom-weekly",
+                "custom-daily",
+                "category"
+              ],
+              "default": "month"
+            },
+            "value": {
+              "$ref": "#/$defs/DynamicString"
+            },
+            "weekdays": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "color": {
+              "type": "string"
+            },
+            "eventColor": {
+              "type": "string"
+            },
+            "action": {
+              "$ref": "#/$defs/Action"
             }
           },
           "required": [
@@ -1152,6 +1282,9 @@
             },
             "value": {
               "$ref": "#/$defs/DynamicNumber"
+            },
+            "action": {
+              "$ref": "#/$defs/Action"
             }
           },
           "required": [
@@ -1215,6 +1348,9 @@
             },
             "child": {
               "$ref": "#/$defs/ComponentId"
+            },
+            "action": {
+              "$ref": "#/$defs/Action"
             }
           },
           "required": [
@@ -1316,6 +1452,9 @@
                   "child"
                 ]
               }
+            },
+            "action": {
+              "$ref": "#/$defs/Action"
             }
           },
           "required": [
@@ -1348,6 +1487,9 @@
             },
             "open": {
               "$ref": "#/$defs/DynamicBoolean"
+            },
+            "action": {
+              "$ref": "#/$defs/Action"
             }
           },
           "required": [

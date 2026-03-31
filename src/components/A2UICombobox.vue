@@ -8,7 +8,7 @@ const props = defineProps<{
   node: ComponentModel;
 }>();
 
-const { resolveValue, setData } = useA2UI();
+const { resolveValue, setData, dispatchNodeAction } = useA2UI();
 
 const label = computed(() => resolveValue(props.node.properties.label));
 const options = computed(() => resolveValue(props.node.properties.options) || []);
@@ -22,6 +22,7 @@ const modelValue = computed({
     if (valuePath.value) {
       setData(valuePath.value, val);
     }
+    dispatchNodeAction(props.node, { value: val });
   }
 });
 

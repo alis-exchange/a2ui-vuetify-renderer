@@ -1,13 +1,23 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useDynamicProps } from '../composables/useDynamicProps';
+import { useA2UI } from '../composables/useA2UI';
 
 const props = defineProps<{
   node: any;
 }>();
 
 const dynamicProps = useDynamicProps(() => props.node);
+const { dispatchNodeAction } = useA2UI();
 const tab = ref(0);
+
+watch(tab, (newTab) => {
+  const tabItem = (dynamicProps.value.tabs || [])[newTab];
+  dispatchNodeAction(props.node, {
+    tabIndex: newTab,
+    tabTitle: tabItem?.title,
+  });
+});
 </script>
 
 <template>

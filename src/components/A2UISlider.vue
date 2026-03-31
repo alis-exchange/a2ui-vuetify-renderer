@@ -8,7 +8,7 @@ const props = defineProps<{
   node: ComponentModel;
 }>();
 
-const { resolveValue, setData, sendAction } = useA2UI();
+const { resolveValue, setData, dispatchNodeAction } = useA2UI();
 
 const label = computed(() => resolveValue(props.node.properties.label));
 const min = computed(() => resolveValue(props.node.properties.min) ?? 0);
@@ -27,12 +27,7 @@ const modelValue = computed({
 });
 
 const handleEnd = () => {
-  const action = resolveValue(props.node.properties.action);
-  if (!action) return;
-
-  if (action.event) {
-    sendAction(action.event.name, action.event.context);
-  }
+  dispatchNodeAction(props.node, { value: modelValue.value });
 };
 </script>
 

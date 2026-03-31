@@ -8,7 +8,7 @@ const props = defineProps<{
   node: ComponentModel;
 }>();
 
-const { resolveValue, setData } = useA2UI();
+const { resolveValue, setData, dispatchNodeAction } = useA2UI();
 
 const label = computed(() => resolveValue(props.node.properties.label));
 const valuePath = computed(() => props.node.properties.value?.path);
@@ -21,6 +21,10 @@ const modelValue = computed({
     if (valuePath.value) {
       setData(valuePath.value, val);
     }
+    const fileNames = Array.isArray(val)
+      ? val.map((f: File) => f?.name ?? String(f))
+      : val?.name ? [val.name] : [];
+    dispatchNodeAction(props.node, { files: fileNames });
   }
 });
 </script>

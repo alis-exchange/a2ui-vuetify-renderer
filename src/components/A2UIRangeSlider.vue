@@ -8,7 +8,7 @@ const props = defineProps<{
   node: ComponentModel;
 }>();
 
-const { resolveValue, setData } = useA2UI();
+const { resolveValue, setData, dispatchNodeAction } = useA2UI();
 
 const label = computed(() => resolveValue(props.node.properties.label));
 const min = computed(() => resolveValue(props.node.properties.min) ?? 0);
@@ -25,6 +25,10 @@ const modelValue = computed({
     }
   }
 });
+
+const handleEnd = () => {
+  dispatchNodeAction(props.node, { value: modelValue.value });
+};
 </script>
 
 <template>
@@ -33,5 +37,6 @@ const modelValue = computed({
     :label="label"
     :min="min"
     :max="max"
+    @end="handleEnd"
   ></v-range-slider>
 </template>

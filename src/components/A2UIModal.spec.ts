@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 import { mount } from '@vue/test-utils';
 import A2UIModal from './A2UIModal.vue';
+import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
 import { createVuetify } from 'vuetify';
 
 const vuetify = createVuetify();
@@ -13,7 +14,7 @@ beforeAll(() => {
   };
 });
 
-vi.mock('../composables/useDynamicProps', async (importOriginal) => {
+vi.mock('../composables/useDynamicProps', async () => {
   const vue = await import('vue');
   return {
     useDynamicProps: (nodeArg: any) => {
@@ -28,6 +29,19 @@ vi.mock('../composables/useDynamicProps', async (importOriginal) => {
   };
 });
 
+function createMockContext() {
+  return {
+    surfaceId: 'test-surface',
+    onAction: vi.fn(),
+    processor: {
+      model: {
+        getSurface: vi.fn().mockReturnValue({})
+      }
+    },
+    dataContextPath: '/'
+  };
+}
+
 describe('A2UIModal.vue', () => {
   it('renders a vuetify dialog', () => {
     const mockNode = {
@@ -40,6 +54,7 @@ describe('A2UIModal.vue', () => {
     const wrapper = mount(A2UIModal, {
       props: { node: mockNode },
       global: {
+        provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
         plugins: [vuetify],
         stubs: {
           A2uiComponentNode: true

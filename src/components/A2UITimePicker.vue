@@ -8,7 +8,7 @@ const props = defineProps<{
   node: ComponentModel;
 }>();
 
-const { resolveValue, setData } = useA2UI();
+const { resolveValue, setData, dispatchNodeAction } = useA2UI();
 
 const label = computed(() => resolveValue(props.node.properties.label));
 const valuePath = computed(() => props.node.properties.value?.path);
@@ -23,6 +23,10 @@ const modelValue = computed({
     }
   }
 });
+
+const handleBlur = () => {
+  dispatchNodeAction(props.node, { value: modelValue.value });
+};
 </script>
 
 <template>
@@ -30,5 +34,6 @@ const modelValue = computed({
     v-model="modelValue"
     type="time"
     :label="label"
+    @blur="handleBlur"
   ></v-text-field>
 </template>

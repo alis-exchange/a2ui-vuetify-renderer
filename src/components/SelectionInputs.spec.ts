@@ -82,6 +82,34 @@ describe('Selection Inputs', () => {
       const rules = cb.props('rules') as any[];
       expect(rules.length).toBe(1);
     });
+
+    it('dispatches action on toggle when action is defined', async () => {
+      const mockContext = createMockContext({ user: { accepted: false } });
+      const wrapper = mount(A2UICheckbox, {
+        global: {
+          provide: { [A2UI_CONTEXT_KEY as symbol]: mockContext },
+          plugins: [vuetify]
+        },
+        props: {
+          node: {
+            id: 'cb-action', type: 'Checkbox',
+            properties: {
+              value: { path: '/user/accepted' },
+              action: { event: { name: 'toggled' } }
+            }
+          } as any
+        }
+      });
+      const cb = wrapper.findComponent({ name: 'VCheckbox' });
+      await cb.vm.$emit('update:modelValue', true);
+      expect(mockContext.onAction).toHaveBeenCalledWith(expect.objectContaining({
+        name: 'toggled',
+        sourceComponentId: 'cb-action',
+        surfaceId: 'test-surface',
+        timestamp: expect.any(String),
+        context: expect.objectContaining({ value: true })
+      }));
+    });
   });
 
   describe('A2UIRadioButton', () => {
@@ -161,6 +189,35 @@ describe('Selection Inputs', () => {
 
       await sel.vm.$emit('update:modelValue', 'Banana');
       expect(mockContext.processor.model.getSurface().dataModel.get('/user/fruit')).toBe('Banana');
+    });
+
+    it('dispatches action on selection change when action is defined', async () => {
+      const mockContext = createMockContext({ user: { fruit: 'Apple' } });
+      const wrapper = mount(A2UISelect, {
+        global: {
+          provide: { [A2UI_CONTEXT_KEY as symbol]: mockContext },
+          plugins: [vuetify]
+        },
+        props: {
+          node: {
+            id: 'sel-action', type: 'Select',
+            properties: {
+              options: ['Apple', 'Banana'],
+              value: { path: '/user/fruit' },
+              action: { event: { name: 'fruit-selected' } }
+            }
+          } as any
+        }
+      });
+      const sel = wrapper.findComponent({ name: 'VSelect' });
+      await sel.vm.$emit('update:modelValue', 'Banana');
+      expect(mockContext.onAction).toHaveBeenCalledWith(expect.objectContaining({
+        name: 'fruit-selected',
+        sourceComponentId: 'sel-action',
+        surfaceId: 'test-surface',
+        timestamp: expect.any(String),
+        context: expect.objectContaining({ value: 'Banana' })
+      }));
     });
   });
 

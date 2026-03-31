@@ -69,10 +69,23 @@ describe('useA2UI composable', () => {
     expect(injectedData.resolveValue({ path: '/test/bool' })).toBe(true);
     expect(injectedData.resolveValue({ path: '/test/num' })).toBe(42);
     
-    injectedData.sendAction('my-action', { some: { path: '/test/string' } });
+    injectedData.sendAction('my-action', 'test-component', { some: { path: '/test/string' } });
     expect(mockContext.onAction).toHaveBeenCalledWith({
       name: 'my-action',
+      sourceComponentId: 'test-component',
+      surfaceId: 'test-surface',
+      timestamp: expect.any(String),
       context: { some: 'resolved-string' }
+    });
+
+    mockContext.onAction.mockClear();
+    injectedData.sendAction('no-context-action', 'test-component');
+    expect(mockContext.onAction).toHaveBeenCalledWith({
+      name: 'no-context-action',
+      sourceComponentId: 'test-component',
+      surfaceId: 'test-surface',
+      timestamp: expect.any(String),
+      context: {}
     });
   });
 });

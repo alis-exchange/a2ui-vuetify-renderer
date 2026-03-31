@@ -206,7 +206,13 @@ describe('Core Content Components', () => {
       });
       
       await wrapper.trigger('click');
-      expect(mockContext.onAction).toHaveBeenCalledWith({ name: 'submit', context: undefined });
+      expect(mockContext.onAction).toHaveBeenCalledWith(expect.objectContaining({
+        name: 'submit',
+        sourceComponentId: 'btn2',
+        surfaceId: 'test-surface',
+        timestamp: expect.any(String),
+        context: {}
+      }));
     });
   });
 });

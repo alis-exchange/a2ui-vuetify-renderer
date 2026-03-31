@@ -9,7 +9,7 @@ const props = defineProps<{
   node: ComponentModel;
 }>();
 
-const { resolveValue, sendAction } = useA2UI();
+const { resolveValue, dispatchNodeAction } = useA2UI();
 
 const childId = computed(() => {
   const c = resolveValue(props.node.properties.child);
@@ -20,7 +20,6 @@ const childId = computed(() => {
 
 const buttonProps = computed(() => {
   const variant = resolveValue(props.node.properties.variant);
-  // Default Vuetify props
   let color = undefined;
   let variantProp: 'elevated' | 'flat' | 'tonal' | 'outlined' | 'text' | 'plain' = 'elevated';
 
@@ -38,7 +37,6 @@ const buttonProps = computed(() => {
       break;
   }
 
-  // TODO: Add support for 'checks' (disabled state based on validation)
   return {
     color,
     variant: variantProp,
@@ -46,15 +44,7 @@ const buttonProps = computed(() => {
 });
 
 const handleClick = () => {
-  const action = resolveValue(props.node.properties.action);
-  if (!action) return;
-
-  if (action.event) {
-    sendAction(action.event.name, action.event.context);
-  } else if (action.functionCall) {
-    // TODO: implement local function execution if required by catalog
-    console.warn('functionCall action not yet supported in Button');
-  }
+  dispatchNodeAction(props.node);
 };
 </script>
 

@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue';
+import { ref, watch, watchEffect } from 'vue';
 import { useDynamicProps } from '../composables/useDynamicProps';
+import { useA2UI } from '../composables/useA2UI';
 
 const props = defineProps<{
   node: any;
 }>();
 
 const dynamicProps = useDynamicProps(() => props.node);
+const { dispatchNodeAction } = useA2UI();
 
 const isOpen = ref(false);
 
@@ -14,6 +16,10 @@ watchEffect(() => {
   if (dynamicProps.value.open !== undefined) {
     isOpen.value = !!dynamicProps.value.open;
   }
+});
+
+watch(isOpen, (open) => {
+  dispatchNodeAction(props.node, { open });
 });
 </script>
 

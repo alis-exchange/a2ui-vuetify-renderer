@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 import { mount } from '@vue/test-utils';
 import A2UITabs from './A2UITabs.vue';
+import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
 import { createVuetify } from 'vuetify';
-import { ref } from 'vue';
 
 const vuetify = createVuetify();
 
@@ -14,7 +14,7 @@ beforeAll(() => {
   };
 });
 
-vi.mock('../composables/useDynamicProps', async (importOriginal) => {
+vi.mock('../composables/useDynamicProps', async () => {
   const vue = await import('vue');
   return {
     useDynamicProps: (nodeArg: any) => {
@@ -26,6 +26,19 @@ vi.mock('../composables/useDynamicProps', async (importOriginal) => {
     }
   };
 });
+
+function createMockContext() {
+  return {
+    surfaceId: 'test-surface',
+    onAction: vi.fn(),
+    processor: {
+      model: {
+        getSurface: vi.fn().mockReturnValue({})
+      }
+    },
+    dataContextPath: '/'
+  };
+}
 
 describe('A2UITabs.vue', () => {
   it('renders vuetify tabs and panels', () => {
@@ -41,6 +54,7 @@ describe('A2UITabs.vue', () => {
     const wrapper = mount(A2UITabs, {
       props: { node: mockNode },
       global: {
+        provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
         plugins: [vuetify],
         stubs: {
           A2uiComponentNode: true
@@ -50,6 +64,6 @@ describe('A2UITabs.vue', () => {
 
     expect(wrapper.findComponent({ name: 'v-tabs' }).exists()).toBe(true);
     expect(wrapper.findAllComponents({ name: 'v-tab' }).length).toBe(2);
-    expect(wrapper.findComponent({ name: 'v-tabs-window' }).exists()).toBe(true); // v-tab-panels wrapper
+    expect(wrapper.findComponent({ name: 'v-tabs-window' }).exists()).toBe(true);
   });
 });

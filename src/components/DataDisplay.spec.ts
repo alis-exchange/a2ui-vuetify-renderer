@@ -100,7 +100,7 @@ describe('Data Display', () => {
   });
 
   describe('A2UICalendar', () => {
-    it('renders calendar fallback if no VCalendar', () => {
+    it('renders calendar', () => {
       const wrapper = mount(A2UICalendar, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
@@ -108,11 +108,18 @@ describe('Data Display', () => {
         },
         props: {
           node: {
-            id: 'cal1', type: 'Calendar', properties: { events: [{ title: 'Meeting', date: '2026-03-18' }] }, onUpdated: { subscribe: vi.fn() }
+            id: 'cal1', type: 'Calendar',
+            properties: {
+              events: [{ name: 'Meeting', start: '2026-03-18' }],
+              value: '2026-03-18'
+            },
+            onUpdated: { subscribe: vi.fn() }
           } as any
         }
       });
       expect(wrapper.exists()).toBe(true);
+      const cal = wrapper.findComponent({ name: 'VCalendar' });
+      expect(cal.exists()).toBe(true);
     });
   });
 });

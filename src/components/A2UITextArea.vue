@@ -9,7 +9,7 @@ const props = defineProps<{
   node: ComponentModel;
 }>();
 
-const { resolveValue, setData } = useA2UI();
+const { resolveValue, setData, dispatchNodeAction } = useA2UI();
 
 const label = computed(() => resolveValue(props.node.properties.label));
 const valuePath = computed(() => props.node.properties.value?.path);
@@ -39,6 +39,10 @@ const rules = computed(() => {
   const checks = resolveValue(props.node.properties.checks);
   return createVuetifyRules(checks);
 });
+
+const handleBlur = () => {
+  dispatchNodeAction(props.node, { value: modelValue.value });
+};
 </script>
 
 <template>
@@ -47,5 +51,6 @@ const rules = computed(() => {
     :label="label"
     :variant="vuetifyVariant"
     :rules="rules"
+    @blur="handleBlur"
   ></v-textarea>
 </template>

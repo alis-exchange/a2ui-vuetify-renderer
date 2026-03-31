@@ -3,15 +3,24 @@ import { computed } from 'vue';
 import { useA2UI } from '../composables/useA2UI';
 import type { SurfaceComponentsModel } from '@a2ui/web_core/v0_9';
 type ComponentModel = NonNullable<ReturnType<SurfaceComponentsModel['get']>>;
+import { createVuetifyRules } from '../utils/validation';
 
 const props = defineProps<{
   node: ComponentModel;
 }>();
 
-const { resolveValue, setData } = useA2UI();
+const { resolveValue, setData, dispatchNodeAction } = useA2UI();
 
 const label = computed(() => resolveValue(props.node.properties.label));
 const valuePath = computed(() => props.node.properties.value?.path);
+const min = computed(() => resolveValue(props.node.properties.min));
+const max = computed(() => resolveValue(props.node.properties.max));
+const color = computed(() => resolveValue(props.node.properties.color));
+const multiple = computed(() => resolveValue(props.node.properties.multiple) ?? false);
+const readonly = computed(() => resolveValue(props.node.properties.readonly) ?? false);
+const disabled = computed(() => resolveValue(props.node.properties.disabled) ?? false);
+const landscape = computed(() => resolveValue(props.node.properties.landscape) ?? false);
+const showAdjacentMonths = computed(() => resolveValue(props.node.properties.showAdjacentMonths) ?? false);
 
 const modelValue = computed({
   get() {
@@ -23,11 +32,30 @@ const modelValue = computed({
     }
   }
 });
+
+const rules = computed(() => {
+  const checks = resolveValue(props.node.properties.checks);
+  return createVuetifyRules(checks);
+});
+
+const handleChange = (val: any) => {
+  modelValue.value = val;
+  dispatchNodeAction(props.node, { value: val });
+};
 </script>
 
 <template>
   <v-date-picker
-    v-model="modelValue"
+    :model-value="modelValue"
     :title="label"
+    :min="min"
+    :max="max"
+    :color="color"
+    :multiple="multiple"
+    :readonly="readonly"
+    :disabled="disabled"
+    :landscape="landscape"
+    :show-adjacent-months="showAdjacentMonths"
+    @update:model-value="handleChange"
   ></v-date-picker>
 </template>

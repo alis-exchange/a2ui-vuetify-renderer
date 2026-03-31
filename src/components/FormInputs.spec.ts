@@ -82,6 +82,52 @@ describe('Form Inputs', () => {
       expect(rules.length).toBe(1);
       expect(rules[0]('')).toBe('Needed');
     });
+
+    it('dispatches action on blur when action is defined', async () => {
+      const mockContext = createMockContext({ user: { name: 'John' } });
+      const wrapper = mount(A2UITextField, {
+        global: {
+          provide: { [A2UI_CONTEXT_KEY as symbol]: mockContext },
+          plugins: [vuetify]
+        },
+        props: {
+          node: {
+            id: 'tf-action', type: 'TextField',
+            properties: {
+              value: { path: '/user/name' },
+              action: { event: { name: 'field-changed' } }
+            }
+          } as any
+        }
+      });
+      const input = wrapper.find('input');
+      await input.trigger('blur');
+      expect(mockContext.onAction).toHaveBeenCalledWith(expect.objectContaining({
+        name: 'field-changed',
+        sourceComponentId: 'tf-action',
+        surfaceId: 'test-surface',
+        timestamp: expect.any(String),
+        context: expect.objectContaining({ value: 'John' })
+      }));
+    });
+
+    it('does not dispatch action on blur when no action is defined', async () => {
+      const mockContext = createMockContext();
+      const wrapper = mount(A2UITextField, {
+        global: {
+          provide: { [A2UI_CONTEXT_KEY as symbol]: mockContext },
+          plugins: [vuetify]
+        },
+        props: {
+          node: {
+            id: 'tf-no-action', type: 'TextField', properties: { label: 'No Action' }
+          } as any
+        }
+      });
+      const input = wrapper.find('input');
+      await input.trigger('blur');
+      expect(mockContext.onAction).not.toHaveBeenCalled();
+    });
   });
 
   describe('A2UITextArea', () => {
