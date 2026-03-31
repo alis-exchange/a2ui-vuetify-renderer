@@ -1,4 +1,16 @@
-# [0.1.0](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.4...v0.1.0) (2026-03-30)
+## [0.1.4](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.5...v0.1.4) (2026-03-31)
+
+## [0.1.5](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.4...v0.1.5) (2026-03-31)
+
+
+### Bug Fixes
+
+* clean up useA2UI by standardizing formatting and improving readability ([e0bb78f](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/e0bb78fa39d18c049a7555e0c889717b6c771871))
+
+
+### Features
+
+* add action property to components and enhance event handling across the catalog ([153e9cb](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/153e9cbaa0fb7c5ffa763ef1d7c56d8270a46bf5))
 
 ## [0.1.4](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.3...v0.1.4) (2026-03-30)
 
