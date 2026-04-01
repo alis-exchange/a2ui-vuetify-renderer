@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
-import { useDynamicProps } from './useDynamicProps';
+import { describe, expect, it, vi } from 'vitest';
 import { computed } from 'vue';
+import { useDynamicProps } from './useDynamicProps';
 
 vi.mock('./useA2UI', () => {
   return {
@@ -13,8 +13,8 @@ vi.mock('./useA2UI', () => {
           return 'Resolved Function Value';
         }
         return value;
-      }
-    })
+      },
+    }),
   };
 });
 
@@ -25,7 +25,7 @@ describe('useDynamicProps', () => {
       id: '123',
       text: { path: '/some/path' },
       label: { call: 'someFunction' },
-      staticProp: 'Static Value'
+      staticProp: 'Static Value',
     };
 
     const resolvedProps = useDynamicProps(nodeProps);
@@ -41,12 +41,12 @@ describe('useDynamicProps', () => {
     const resolvedProps = useDynamicProps(null as any);
     expect(resolvedProps.value).toEqual({});
   });
-  
+
   it('should ignore internal A2UI properties like type and id from resolution if needed, though they are usually strings', () => {
     const nodeProps = {
       type: 'Text',
       id: 'txt-1',
-      value: { path: '/some/path' }
+      value: { path: '/some/path' },
     };
     const resolvedProps = useDynamicProps(nodeProps);
     expect(resolvedProps.value.type).toBe('Text');

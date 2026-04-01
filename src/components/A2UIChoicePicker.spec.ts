@@ -1,7 +1,7 @@
-import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import A2UIChoicePicker from './A2UIChoicePicker.vue';
+import { describe, expect, it, vi } from 'vitest';
 import { createVuetify } from 'vuetify';
+import A2UIChoicePicker from './A2UIChoicePicker.vue';
 
 const vuetify = createVuetify();
 
@@ -16,9 +16,9 @@ vi.mock('../composables/useDynamicProps', async (importOriginal) => {
         displayStyle: node.displayStyle || 'dropdown',
         options: node.options || [],
         value: node.value,
-        label: node.label
+        label: node.label,
       });
-    }
+    },
   };
 });
 
@@ -30,53 +30,7 @@ describe('A2UIChoicePicker.vue', () => {
       variant: 'mutuallyExclusive',
       displayStyle: 'dropdown',
       options: [{ label: 'Option 1', value: 'opt1' }],
-      value: 'opt1'
-    };
-
-    const wrapper = mount(A2UIChoicePicker, {
-      props: { node: mockNode },
-      global: {
-        plugins: [vuetify],
-        stubs: {
-          A2UISelect: true,
-          A2UICheckbox: true,
-          A2UIRadioButton: true
-        }
-      }
-    });
-
-    expect(wrapper.findComponent({ name: 'A2UISelect' }).exists()).toBe(true);
-  });
-
-  it('renders radio buttons for list + mutuallyExclusive', () => {
-    const mockNode = {
-      id: 'choice-1',
-      type: 'ChoicePicker',
-      variant: 'mutuallyExclusive',
-      displayStyle: 'list'
-    };
-
-    const wrapper = mount(A2UIChoicePicker, {
-      props: { node: mockNode },
-      global: {
-        plugins: [vuetify],
-        stubs: {
-          A2UISelect: true,
-          A2UICheckbox: true,
-          A2UIRadioButton: true
-        }
-      }
-    });
-
-    expect(wrapper.findComponent({ name: 'A2UIRadioButton' }).exists()).toBe(true);
-  });
-
-  it('renders checkboxes for list + multipleSelection', () => {
-    const mockNode = {
-      id: 'choice-1',
-      type: 'ChoicePicker',
-      variant: 'multipleSelection',
-      displayStyle: 'list'
+      value: 'opt1',
     };
 
     const wrapper = mount(A2UIChoicePicker, {
@@ -87,9 +41,55 @@ describe('A2UIChoicePicker.vue', () => {
           A2UISelect: true,
           A2UICheckbox: true,
           A2UIRadioButton: true,
-          A2UIMultipleCheckbox: true // we might need a wrapper if A2UICheckbox doesn't support groups
-        }
-      }
+        },
+      },
+    });
+
+    expect(wrapper.findComponent({ name: 'A2UISelect' }).exists()).toBe(true);
+  });
+
+  it('renders radio buttons for list + mutuallyExclusive', () => {
+    const mockNode = {
+      id: 'choice-1',
+      type: 'ChoicePicker',
+      variant: 'mutuallyExclusive',
+      displayStyle: 'list',
+    };
+
+    const wrapper = mount(A2UIChoicePicker, {
+      props: { node: mockNode },
+      global: {
+        plugins: [vuetify],
+        stubs: {
+          A2UISelect: true,
+          A2UICheckbox: true,
+          A2UIRadioButton: true,
+        },
+      },
+    });
+
+    expect(wrapper.findComponent({ name: 'A2UIRadioButton' }).exists()).toBe(true);
+  });
+
+  it('renders checkboxes for list + multipleSelection', () => {
+    const mockNode = {
+      id: 'choice-1',
+      type: 'ChoicePicker',
+      variant: 'multipleSelection',
+      displayStyle: 'list',
+    };
+
+    const wrapper = mount(A2UIChoicePicker, {
+      props: { node: mockNode },
+      global: {
+        plugins: [vuetify],
+        stubs: {
+          A2UISelect: true,
+          A2UICheckbox: true,
+          A2UIRadioButton: true,
+          A2UIMultipleCheckbox: true, // we might need a wrapper if A2UICheckbox doesn't support groups
+        },
+      },
     });
 
     // We'll map multiple list to A2UISelect with multiple=true for now, or a custom wrapper.

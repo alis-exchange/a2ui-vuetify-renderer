@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeAll } from 'vitest';
 import { mount } from '@vue/test-utils';
-import A2UITabs from './A2UITabs.vue';
-import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { createVuetify } from 'vuetify';
+import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
+import A2UITabs from './A2UITabs.vue';
 
 const vuetify = createVuetify();
 
@@ -21,9 +21,9 @@ vi.mock('../composables/useDynamicProps', async () => {
       const node = typeof nodeArg === 'function' ? nodeArg() : nodeArg;
       return vue.ref({
         id: node.id || 'tabs-1',
-        tabs: node.tabs || []
+        tabs: node.tabs || [],
       });
-    }
+    },
   };
 });
 
@@ -33,10 +33,10 @@ function createMockContext() {
     onAction: vi.fn(),
     processor: {
       model: {
-        getSurface: vi.fn().mockReturnValue({})
-      }
+        getSurface: vi.fn().mockReturnValue({}),
+      },
     },
-    dataContextPath: '/'
+    dataContextPath: '/',
   };
 }
 
@@ -47,8 +47,8 @@ describe('A2UITabs.vue', () => {
       type: 'Tabs',
       tabs: [
         { title: 'Tab 1', child: 'child-1' },
-        { title: 'Tab 2', child: 'child-2' }
-      ]
+        { title: 'Tab 2', child: 'child-2' },
+      ],
     };
 
     const wrapper = mount(A2UITabs, {
@@ -57,9 +57,9 @@ describe('A2UITabs.vue', () => {
         provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
         plugins: [vuetify],
         stubs: {
-          A2uiComponentNode: true
-        }
-      }
+          A2uiComponentNode: true,
+        },
+      },
     });
 
     expect(wrapper.findComponent({ name: 'v-tabs' }).exists()).toBe(true);

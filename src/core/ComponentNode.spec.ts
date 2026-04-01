@@ -1,14 +1,14 @@
-import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
-import ComponentNode from './ComponentNode.vue';
-import { CATALOG_ID } from './constants';
+import { describe, expect, it } from 'vitest';
 import { defineComponent } from 'vue';
 import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
-import { ComponentRegistry, A2UI_REGISTRY_KEY } from './ComponentRegistry';
+import ComponentNode from './ComponentNode.vue';
+import { A2UI_REGISTRY_KEY, ComponentRegistry } from './ComponentRegistry';
+import { CATALOG_ID } from './constants';
 
 const MockButton = defineComponent({
   props: ['node'],
-  template: '<button class="mock-btn">{{ node.id }}</button>'
+  template: '<button class="mock-btn">{{ node.id }}</button>',
 });
 
 describe('ComponentNode.vue', () => {
@@ -24,11 +24,11 @@ describe('ComponentNode.vue', () => {
         model: {
           getSurface: () => ({
             componentsModel: {
-              get: (id: string) => (id === 'btn-1' ? mockNode : undefined)
-            }
-          })
-        }
-      }
+              get: (id: string) => (id === 'btn-1' ? mockNode : undefined),
+            },
+          }),
+        },
+      },
     };
 
     const wrapper = mount(ComponentNode, {
@@ -36,9 +36,9 @@ describe('ComponentNode.vue', () => {
       global: {
         provide: {
           [A2UI_CONTEXT_KEY as symbol]: mockContext,
-          [A2UI_REGISTRY_KEY as symbol]: registry
-        }
-      }
+          [A2UI_REGISTRY_KEY as symbol]: registry,
+        },
+      },
     });
 
     expect(wrapper.find('.mock-btn').exists()).toBe(true);
@@ -57,11 +57,11 @@ describe('ComponentNode.vue', () => {
         model: {
           getSurface: () => ({
             componentsModel: {
-              get: () => mockNode
-            }
-          })
-        }
-      }
+              get: () => mockNode,
+            },
+          }),
+        },
+      },
     };
 
     const wrapper = mount(ComponentNode, {
@@ -69,9 +69,9 @@ describe('ComponentNode.vue', () => {
       global: {
         provide: {
           [A2UI_CONTEXT_KEY as symbol]: mockContext,
-          [A2UI_REGISTRY_KEY as symbol]: registry
-        }
-      }
+          [A2UI_REGISTRY_KEY as symbol]: registry,
+        },
+      },
     });
 
     expect(wrapper.find('.mock-btn').classes()).toContain('flex-grow-2');
@@ -87,11 +87,11 @@ describe('ComponentNode.vue', () => {
         model: {
           getSurface: () => ({
             componentsModel: {
-              get: () => mockNode
-            }
-          })
-        }
-      }
+              get: () => mockNode,
+            },
+          }),
+        },
+      },
     };
 
     const wrapper = mount(ComponentNode, {
@@ -99,9 +99,9 @@ describe('ComponentNode.vue', () => {
       global: {
         provide: {
           [A2UI_CONTEXT_KEY as symbol]: mockContext,
-          [A2UI_REGISTRY_KEY as symbol]: registry
-        }
-      }
+          [A2UI_REGISTRY_KEY as symbol]: registry,
+        },
+      },
     });
 
     expect(wrapper.text()).toContain('Unknown component type: UnknownComponentType');

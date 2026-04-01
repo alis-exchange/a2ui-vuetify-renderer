@@ -20,7 +20,7 @@ export const A2UiVueRenderer: Plugin = {
     if (options?.components) {
       defaultRegistry.registerAll(CATALOG_ID, options.components);
     }
-  }
+  },
 };
 
 export default A2UiVueRenderer;

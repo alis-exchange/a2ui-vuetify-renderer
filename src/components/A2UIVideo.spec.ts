@@ -1,8 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import A2UIVideo from './A2UIVideo.vue';
-import { createVuetify } from 'vuetify';
+import { describe, expect, it, vi } from 'vitest';
 import { ref } from 'vue';
+import { createVuetify } from 'vuetify';
+import A2UIVideo from './A2UIVideo.vue';
 
 const vuetify = createVuetify();
 
@@ -15,9 +15,9 @@ vi.mock('../composables/useDynamicProps', async (importOriginal) => {
         id: node.id || 'video-1',
         url: node.url,
         controls: node.controls !== false,
-        autoplay: node.autoplay || false
+        autoplay: node.autoplay || false,
       });
-    }
+    },
   };
 });
 
@@ -26,14 +26,14 @@ describe('A2UIVideo.vue', () => {
     const mockNode = {
       id: 'video-1',
       type: 'Video',
-      url: 'https://example.com/video.mp4'
+      url: 'https://example.com/video.mp4',
     };
 
     const wrapper = mount(A2UIVideo, {
       props: { node: mockNode },
       global: {
-        plugins: [vuetify]
-      }
+        plugins: [vuetify],
+      },
     });
 
     const video = wrapper.find('video');

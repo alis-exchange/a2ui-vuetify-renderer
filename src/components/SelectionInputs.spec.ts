@@ -1,13 +1,13 @@
-import { describe, it, expect, vi } from 'vitest';
+import { DataModel } from '@a2ui/web_core/v0_9';
 import { mount } from '@vue/test-utils';
+import { describe, expect, it, vi } from 'vitest';
+import { createVuetify } from 'vuetify';
+import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
+import A2UIAutocomplete from './A2UIAutocomplete.vue';
 import A2UICheckbox from './A2UICheckbox.vue';
+import A2UICombobox from './A2UICombobox.vue';
 import A2UIRadioButton from './A2UIRadioButton.vue';
 import A2UISelect from './A2UISelect.vue';
-import A2UIAutocomplete from './A2UIAutocomplete.vue';
-import A2UICombobox from './A2UICombobox.vue';
-import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
-import { createVuetify } from 'vuetify';
-import { DataModel } from '@a2ui/web_core/v0_9';
 
 const vuetify = createVuetify();
 
@@ -21,11 +21,11 @@ function createMockContext(data: any = {}) {
         getSurface: vi.fn().mockReturnValue({
           id: 'test-surface',
           dataModel: dataModel,
-          catalog: { invoker: () => undefined }
-        })
-      }
+          catalog: { invoker: () => undefined },
+        }),
+      },
     },
-    dataContextPath: '/'
+    dataContextPath: '/',
   };
 }
 
@@ -35,13 +35,16 @@ describe('Selection Inputs', () => {
       const wrapper = mount(A2UICheckbox, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'cb1', type: 'Checkbox', properties: { label: 'Accept Terms' }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'cb1',
+            type: 'Checkbox',
+            properties: { label: 'Accept Terms' },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const cb = wrapper.findComponent({ name: 'VCheckbox' });
       expect(cb.exists()).toBe(true);
@@ -53,13 +56,16 @@ describe('Selection Inputs', () => {
       const wrapper = mount(A2UICheckbox, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: mockContext },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'cb2', type: 'Checkbox', properties: { value: { path: '/user/accepted' } }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'cb2',
+            type: 'Checkbox',
+            properties: { value: { path: '/user/accepted' } },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const cb = wrapper.findComponent({ name: 'VCheckbox' });
       expect(cb.props('modelValue')).toBe(true);
@@ -72,13 +78,16 @@ describe('Selection Inputs', () => {
       const wrapper = mount(A2UICheckbox, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'cb3', type: 'Checkbox', properties: { checks: ['required'] }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'cb3',
+            type: 'Checkbox',
+            properties: { checks: ['required'] },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const cb = wrapper.findComponent({ name: 'VCheckbox' });
       const rules = cb.props('rules') as any[];
@@ -90,27 +99,30 @@ describe('Selection Inputs', () => {
       const wrapper = mount(A2UICheckbox, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: mockContext },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'cb-action', type: 'Checkbox',
+            id: 'cb-action',
+            type: 'Checkbox',
             properties: {
               value: { path: '/user/accepted' },
-              action: { event: { name: 'toggled' } }
-            }
-          } as any
-        }
+              action: { event: { name: 'toggled' } },
+            },
+          } as any,
+        },
       });
       const cb = wrapper.findComponent({ name: 'VCheckbox' });
       await cb.vm.$emit('update:modelValue', true);
-      expect(mockContext.onAction).toHaveBeenCalledWith(expect.objectContaining({
-        name: 'toggled',
-        sourceComponentId: 'cb-action',
-        surfaceId: 'test-surface',
-        timestamp: expect.any(String),
-        context: expect.objectContaining({ value: true })
-      }));
+      expect(mockContext.onAction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'toggled',
+          sourceComponentId: 'cb-action',
+          surfaceId: 'test-surface',
+          timestamp: expect.any(String),
+          context: expect.objectContaining({ value: true }),
+        }),
+      );
     });
   });
 
@@ -119,13 +131,16 @@ describe('Selection Inputs', () => {
       const wrapper = mount(A2UIRadioButton, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'rb1', type: 'RadioButton', properties: { options: ['Red', 'Blue'] }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'rb1',
+            type: 'RadioButton',
+            properties: { options: ['Red', 'Blue'] },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const rg = wrapper.findComponent({ name: 'VRadioGroup' });
       expect(rg.exists()).toBe(true);
@@ -139,13 +154,16 @@ describe('Selection Inputs', () => {
       const wrapper = mount(A2UIRadioButton, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: mockContext },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'rb2', type: 'RadioButton', properties: { options: ['Red', 'Blue'], value: { path: '/user/color' } }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'rb2',
+            type: 'RadioButton',
+            properties: { options: ['Red', 'Blue'], value: { path: '/user/color' } },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const rg = wrapper.findComponent({ name: 'VRadioGroup' });
       expect(rg.props('modelValue')).toBe('Blue');
@@ -160,13 +178,16 @@ describe('Selection Inputs', () => {
       const wrapper = mount(A2UISelect, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'sel1', type: 'Select', properties: { options: ['Apple', 'Banana'] }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'sel1',
+            type: 'Select',
+            properties: { options: ['Apple', 'Banana'] },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const sel = wrapper.findComponent({ name: 'VSelect' });
       expect(sel.exists()).toBe(true);
@@ -178,13 +199,16 @@ describe('Selection Inputs', () => {
       const wrapper = mount(A2UISelect, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: mockContext },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'sel2', type: 'Select', properties: { value: { path: '/user/fruit' } }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'sel2',
+            type: 'Select',
+            properties: { value: { path: '/user/fruit' } },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const sel = wrapper.findComponent({ name: 'VSelect' });
       expect(sel.props('modelValue')).toBe('Apple');
@@ -198,28 +222,31 @@ describe('Selection Inputs', () => {
       const wrapper = mount(A2UISelect, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: mockContext },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'sel-action', type: 'Select',
+            id: 'sel-action',
+            type: 'Select',
             properties: {
               options: ['Apple', 'Banana'],
               value: { path: '/user/fruit' },
-              action: { event: { name: 'fruit-selected' } }
-            }
-          } as any
-        }
+              action: { event: { name: 'fruit-selected' } },
+            },
+          } as any,
+        },
       });
       const sel = wrapper.findComponent({ name: 'VSelect' });
       await sel.vm.$emit('update:modelValue', 'Banana');
-      expect(mockContext.onAction).toHaveBeenCalledWith(expect.objectContaining({
-        name: 'fruit-selected',
-        sourceComponentId: 'sel-action',
-        surfaceId: 'test-surface',
-        timestamp: expect.any(String),
-        context: expect.objectContaining({ value: 'Banana' })
-      }));
+      expect(mockContext.onAction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'fruit-selected',
+          sourceComponentId: 'sel-action',
+          surfaceId: 'test-surface',
+          timestamp: expect.any(String),
+          context: expect.objectContaining({ value: 'Banana' }),
+        }),
+      );
     });
   });
 
@@ -228,13 +255,16 @@ describe('Selection Inputs', () => {
       const wrapper = mount(A2UIAutocomplete, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'ac1', type: 'Autocomplete', properties: { options: ['Car', 'Bike'] }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'ac1',
+            type: 'Autocomplete',
+            properties: { options: ['Car', 'Bike'] },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const ac = wrapper.findComponent({ name: 'VAutocomplete' });
       expect(ac.exists()).toBe(true);
@@ -247,13 +277,16 @@ describe('Selection Inputs', () => {
       const wrapper = mount(A2UICombobox, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'cbx1', type: 'Combobox', properties: { options: ['Dog', 'Cat'] }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'cbx1',
+            type: 'Combobox',
+            properties: { options: ['Dog', 'Cat'] },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const cbx = wrapper.findComponent({ name: 'VCombobox' });
       expect(cbx.exists()).toBe(true);

@@ -243,14 +243,27 @@ const handleBarClick = (index: number, value: number) => {
 
 ### 2. Register the Component
 
-Before rendering a surface, register your new component with the `defaultRegistry` using the same `CATALOG_ID` that your surface uses.
+Before rendering a surface, register your new component with the `defaultRegistry` using the same `CATALOG_ID` that your surface uses. 
+
+You can optionally provide a `ComponentApi` definition for your component. This is highly recommended as it allows `getCatalogSchema()` to expose your custom component's properties to the LLM agent, so the agent knows exactly what data your component expects.
 
 ```typescript
 import { CATALOG_ID, defaultRegistry } from '@alis-build/a2ui-vuetify-renderer';
+import { DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
+import { z } from 'zod';
 import CustomChartWidget from './components/CustomChartWidget.vue';
 
-// Register the component under the type name "CustomChart"
-defaultRegistry.register(CATALOG_ID, 'CustomChart', CustomChartWidget);
+// Define the ComponentApi using Zod for your custom component
+const CustomChartApi: ComponentApi = {
+  name: 'CustomChart',
+  schema: z.object({
+    title: z.string().describe("The title of the chart").optional(),
+    data: z.object({ path: z.string() }).describe("Path to the data model array")
+  }).strict()
+};
+
+// Register the component under the type name "CustomChart" along with its API
+defaultRegistry.register(CATALOG_ID, 'CustomChart', CustomChartWidget, CustomChartApi);
 ```
 
 ### 3. Send it from the Agent

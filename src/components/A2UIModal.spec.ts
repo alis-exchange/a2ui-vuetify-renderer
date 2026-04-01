@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeAll } from 'vitest';
 import { mount } from '@vue/test-utils';
-import A2UIModal from './A2UIModal.vue';
-import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { createVuetify } from 'vuetify';
+import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
+import A2UIModal from './A2UIModal.vue';
 
 const vuetify = createVuetify();
 
@@ -23,9 +23,9 @@ vi.mock('../composables/useDynamicProps', async () => {
         id: node.id || 'modal-1',
         trigger: node.trigger,
         content: node.content,
-        open: node.open || false
+        open: node.open || false,
       });
-    }
+    },
   };
 });
 
@@ -35,10 +35,10 @@ function createMockContext() {
     onAction: vi.fn(),
     processor: {
       model: {
-        getSurface: vi.fn().mockReturnValue({})
-      }
+        getSurface: vi.fn().mockReturnValue({}),
+      },
     },
-    dataContextPath: '/'
+    dataContextPath: '/',
   };
 }
 
@@ -48,7 +48,7 @@ describe('A2UIModal.vue', () => {
       id: 'modal-1',
       type: 'Modal',
       trigger: 'trigger-comp',
-      content: 'content-comp'
+      content: 'content-comp',
     };
 
     const wrapper = mount(A2UIModal, {
@@ -57,9 +57,9 @@ describe('A2UIModal.vue', () => {
         provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
         plugins: [vuetify],
         stubs: {
-          A2uiComponentNode: true
-        }
-      }
+          A2uiComponentNode: true,
+        },
+      },
     });
 
     expect(wrapper.findComponent({ name: 'v-dialog' }).exists()).toBe(true);

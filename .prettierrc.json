@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/prettierrc",
-  "semi": false,
+  "semi": true,
   "trailingComma": "all",
   "singleQuote": true,
   "tabWidth": 2,
@@ -13,5 +13,7 @@
   "arrowParens": "always",
   "bracketSameLine": false,
   "organizeImportsSkipDestructiveCodeActions": true,
-  "plugins": ["prettier-plugin-organize-imports"]
+  "plugins": [
+    "prettier-plugin-organize-imports"
+  ]
 }

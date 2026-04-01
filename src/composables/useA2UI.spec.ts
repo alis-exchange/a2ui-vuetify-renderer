@@ -1,9 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
-import { useA2UI, A2UI_CONTEXT_KEY } from './useA2UI';
-import { provide } from 'vue';
-import { mount } from '@vue/test-utils';
-import { defineComponent } from 'vue';
 import { DataModel } from '@a2ui/web_core/v0_9';
+import { mount } from '@vue/test-utils';
+import { describe, expect, it, vi } from 'vitest';
+import { defineComponent, provide } from 'vue';
+import { A2UI_CONTEXT_KEY, useA2UI } from './useA2UI';
 
 describe('useA2UI composable', () => {
   it('throws an error if injected outside of A2UIProvider', () => {
@@ -23,8 +22,8 @@ describe('useA2UI composable', () => {
       test: {
         string: 'resolved-string',
         bool: true,
-        num: 42
-      }
+        num: 42,
+      },
     });
 
     const mockContext = {
@@ -35,11 +34,11 @@ describe('useA2UI composable', () => {
           getSurface: vi.fn().mockReturnValue({
             id: 'test-surface',
             dataModel: dataModel,
-            catalog: { invoker: () => undefined }
-          })
-        }
+            catalog: { invoker: () => undefined },
+          }),
+        },
       },
-      dataContextPath: '/test'
+      dataContextPath: '/test',
     };
 
     let injectedData: any = null;
@@ -66,18 +65,18 @@ describe('useA2UI composable', () => {
     expect(injectedData).toBeTruthy();
     expect(injectedData.surfaceId).toBe('test-surface');
     expect(injectedData.dataContextPath).toBe('/test');
-    
+
     expect(injectedData.resolveValue({ path: '/test/string' })).toBe('resolved-string');
     expect(injectedData.resolveValue({ path: '/test/bool' })).toBe(true);
     expect(injectedData.resolveValue({ path: '/test/num' })).toBe(42);
-    
+
     injectedData.sendAction('my-action', 'test-component', { some: { path: '/test/string' } });
     expect(mockContext.onAction).toHaveBeenCalledWith({
       name: 'my-action',
       sourceComponentId: 'test-component',
       surfaceId: 'test-surface',
       timestamp: expect.any(String),
-      context: { some: 'resolved-string' }
+      context: { some: 'resolved-string' },
     });
 
     mockContext.onAction.mockClear();
@@ -87,7 +86,7 @@ describe('useA2UI composable', () => {
       sourceComponentId: 'test-component',
       surfaceId: 'test-surface',
       timestamp: expect.any(String),
-      context: {}
+      context: {},
     });
   });
 });

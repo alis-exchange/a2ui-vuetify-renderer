@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeAll } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { createVuetify } from 'vuetify';
+import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
+import A2UICalendar from './A2UICalendar.vue';
 import A2UIList from './A2UIList.vue';
 import A2UITable from './A2UITable.vue';
 import A2UITreeView from './A2UITreeView.vue';
-import A2UICalendar from './A2UICalendar.vue';
-import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
-import { createVuetify } from 'vuetify';
 
 beforeAll(() => {
   globalThis.ResizeObserver = class ResizeObserver {
@@ -23,10 +23,10 @@ function createMockContext() {
     onAction: vi.fn(),
     processor: {
       model: {
-        getSurface: vi.fn().mockReturnValue({})
-      }
+        getSurface: vi.fn().mockReturnValue({}),
+      },
     },
-    dataContextPath: '/'
+    dataContextPath: '/',
   };
 }
 
@@ -40,15 +40,18 @@ describe('Data Display', () => {
           stubs: {
             ComponentNode: {
               template: '<div class="child-node" :data-id="id"></div>',
-              props: ['id']
-            }
-          }
+              props: ['id'],
+            },
+          },
         },
         props: {
           node: {
-            id: 'list1', type: 'List', properties: { children: ['item1', 'item2'] }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'list1',
+            type: 'List',
+            properties: { children: ['item1', 'item2'] },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const list = wrapper.findComponent({ name: 'VList' });
       expect(list.exists()).toBe(true);
@@ -64,13 +67,16 @@ describe('Data Display', () => {
       const wrapper = mount(A2UITable, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'tbl1', type: 'Table', properties: { items: [{ id: 1, name: 'Test' }] }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'tbl1',
+            type: 'Table',
+            properties: { items: [{ id: 1, name: 'Test' }] },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const tbl = wrapper.findComponent({ name: 'VDataTable' });
       if (!tbl.exists()) {
@@ -87,13 +93,16 @@ describe('Data Display', () => {
       const wrapper = mount(A2UITreeView, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'tree1', type: 'TreeView', properties: { items: [{ name: 'Leaf' }] }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'tree1',
+            type: 'TreeView',
+            properties: { items: [{ name: 'Leaf' }] },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       expect(wrapper.exists()).toBe(true);
     });
@@ -104,18 +113,19 @@ describe('Data Display', () => {
       const wrapper = mount(A2UICalendar, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'cal1', type: 'Calendar',
+            id: 'cal1',
+            type: 'Calendar',
             properties: {
               events: [{ name: 'Meeting', start: '2026-03-18' }],
-              value: '2026-03-18'
+              value: '2026-03-18',
             },
-            onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       expect(wrapper.exists()).toBe(true);
       const cal = wrapper.findComponent({ name: 'VCalendar' });

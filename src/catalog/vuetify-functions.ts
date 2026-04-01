@@ -1,5 +1,5 @@
-import { BASIC_FUNCTIONS } from '@a2ui/web_core/v0_9/basic_catalog';
 import type { FunctionImplementation } from '@a2ui/web_core/v0_9';
+import { BASIC_FUNCTIONS } from '@a2ui/web_core/v0_9/basic_catalog';
 
 /**
  * The Vuetify catalog currently delegates to the basic catalog functions

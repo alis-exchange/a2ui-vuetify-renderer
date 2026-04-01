@@ -1,7 +1,7 @@
-import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import A2UIAudioPlayer from './A2UIAudioPlayer.vue';
+import { describe, expect, it, vi } from 'vitest';
 import { createVuetify } from 'vuetify';
+import A2UIAudioPlayer from './A2UIAudioPlayer.vue';
 
 const vuetify = createVuetify();
 
@@ -14,9 +14,9 @@ vi.mock('../composables/useDynamicProps', async (importOriginal) => {
         id: node.id || 'audio-1',
         url: node.url,
         controls: node.controls !== false,
-        autoplay: node.autoplay || false
+        autoplay: node.autoplay || false,
       });
-    }
+    },
   };
 });
 
@@ -25,14 +25,14 @@ describe('A2UIAudioPlayer.vue', () => {
     const mockNode = {
       id: 'audio-1',
       type: 'AudioPlayer',
-      url: 'https://example.com/audio.mp3'
+      url: 'https://example.com/audio.mp3',
     };
 
     const wrapper = mount(A2UIAudioPlayer, {
       props: { node: mockNode },
       global: {
-        plugins: [vuetify]
-      }
+        plugins: [vuetify],
+      },
     });
 
     const audio = wrapper.find('audio');

@@ -1,25 +1,10 @@
-import { z } from 'zod';
 import type { ComponentApi } from '@a2ui/web_core/v0_9';
-import {
-  AccessibilityAttributesSchema,
-  ActionSchema,
-  CheckableSchema,
-  ChildListSchema,
-  ComponentIdSchema,
-  DynamicBooleanSchema,
-  DynamicNumberSchema,
-  DynamicStringSchema,
-  DynamicValueSchema,
-} from '@a2ui/web_core/v0_9';
+import { AccessibilityAttributesSchema, ActionSchema, CheckableSchema, ChildListSchema, ComponentIdSchema, DynamicBooleanSchema, DynamicNumberSchema, DynamicStringSchema, DynamicValueSchema } from '@a2ui/web_core/v0_9';
+import { z } from 'zod';
 
 const CommonProps = {
   accessibility: AccessibilityAttributesSchema.optional(),
-  weight: z
-    .number()
-    .describe(
-      "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'.",
-    )
-    .optional(),
+  weight: z.number().describe("The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'.").optional(),
 };
 
 // ---------------------------------------------------------------------------
@@ -32,10 +17,7 @@ export const TextApi = {
     .object({
       ...CommonProps,
       text: DynamicStringSchema,
-      variant: z
-        .enum(['h1', 'h2', 'h3', 'h4', 'h5', 'caption', 'body'])
-        .default('body')
-        .optional(),
+      variant: z.enum(['h1', 'h2', 'h3', 'h4', 'h5', 'caption', 'body']).default('body').optional(),
     })
     .strict(),
 } satisfies ComponentApi;
@@ -47,21 +29,8 @@ export const ImageApi = {
       ...CommonProps,
       url: DynamicStringSchema,
       description: DynamicStringSchema.optional(),
-      fit: z
-        .enum(['contain', 'cover', 'fill', 'none', 'scaleDown'])
-        .default('fill')
-        .optional(),
-      variant: z
-        .enum([
-          'icon',
-          'avatar',
-          'smallFeature',
-          'mediumFeature',
-          'largeFeature',
-          'header',
-        ])
-        .default('mediumFeature')
-        .optional(),
+      fit: z.enum(['contain', 'cover', 'fill', 'none', 'scaleDown']).default('fill').optional(),
+      variant: z.enum(['icon', 'avatar', 'smallFeature', 'mediumFeature', 'largeFeature', 'header']).default('mediumFeature').optional(),
     })
     .strict(),
 } satisfies ComponentApi;
@@ -81,10 +50,7 @@ export const DividerApi = {
   schema: z
     .object({
       ...CommonProps,
-      axis: z
-        .enum(['horizontal', 'vertical'])
-        .default('horizontal')
-        .optional(),
+      axis: z.enum(['horizontal', 'vertical']).default('horizontal').optional(),
     })
     .strict(),
 } satisfies ComponentApi;
@@ -131,10 +97,7 @@ export const AlertApi = {
       ...CommonProps,
       title: DynamicStringSchema.optional(),
       text: DynamicStringSchema.optional(),
-      variant: z
-        .enum(['success', 'info', 'warning', 'error'])
-        .default('info')
-        .optional(),
+      variant: z.enum(['success', 'info', 'warning', 'error']).default('info').optional(),
       child: ComponentIdSchema.optional(),
     })
     .strict(),
@@ -187,22 +150,8 @@ export const RowApi = {
     .object({
       ...CommonProps,
       children: ChildListSchema,
-      justify: z
-        .enum([
-          'center',
-          'end',
-          'spaceAround',
-          'spaceBetween',
-          'spaceEvenly',
-          'start',
-          'stretch',
-        ])
-        .default('start')
-        .optional(),
-      align: z
-        .enum(['start', 'center', 'end', 'stretch'])
-        .default('stretch')
-        .optional(),
+      justify: z.enum(['center', 'end', 'spaceAround', 'spaceBetween', 'spaceEvenly', 'start', 'stretch']).default('start').optional(),
+      align: z.enum(['start', 'center', 'end', 'stretch']).default('stretch').optional(),
     })
     .strict(),
 } satisfies ComponentApi;
@@ -213,22 +162,8 @@ export const ColumnApi = {
     .object({
       ...CommonProps,
       children: ChildListSchema,
-      justify: z
-        .enum([
-          'start',
-          'center',
-          'end',
-          'spaceBetween',
-          'spaceAround',
-          'spaceEvenly',
-          'stretch',
-        ])
-        .default('start')
-        .optional(),
-      align: z
-        .enum(['center', 'end', 'start', 'stretch'])
-        .default('stretch')
-        .optional(),
+      justify: z.enum(['start', 'center', 'end', 'spaceBetween', 'spaceAround', 'spaceEvenly', 'stretch']).default('start').optional(),
+      align: z.enum(['center', 'end', 'start', 'stretch']).default('stretch').optional(),
     })
     .strict(),
 } satisfies ComponentApi;
@@ -239,14 +174,8 @@ export const ListApi = {
     .object({
       ...CommonProps,
       children: ChildListSchema,
-      direction: z
-        .enum(['vertical', 'horizontal'])
-        .default('vertical')
-        .optional(),
-      align: z
-        .enum(['start', 'center', 'end', 'stretch'])
-        .default('stretch')
-        .optional(),
+      direction: z.enum(['vertical', 'horizontal']).default('vertical').optional(),
+      align: z.enum(['start', 'center', 'end', 'stretch']).default('stretch').optional(),
     })
     .strict(),
 } satisfies ComponentApi;
@@ -326,10 +255,7 @@ export const ButtonApi = {
     .object({
       ...CommonProps,
       child: ComponentIdSchema,
-      variant: z
-        .enum(['default', 'primary', 'borderless'])
-        .default('default')
-        .optional(),
+      variant: z.enum(['default', 'primary', 'borderless']).default('default').optional(),
       action: ActionSchema,
       checks: CheckableSchema.shape.checks,
     })
@@ -343,10 +269,7 @@ export const TextFieldApi = {
       ...CommonProps,
       label: DynamicStringSchema,
       value: DynamicStringSchema.optional(),
-      variant: z
-        .enum(['filled', 'outlined', 'underlined'])
-        .default('outlined')
-        .optional(),
+      variant: z.enum(['filled', 'outlined', 'underlined']).default('outlined').optional(),
       action: ActionSchema.optional(),
       checks: CheckableSchema.shape.checks,
     })
@@ -360,10 +283,7 @@ export const TextAreaApi = {
       ...CommonProps,
       label: DynamicStringSchema,
       value: DynamicStringSchema.optional(),
-      variant: z
-        .enum(['filled', 'outlined', 'underlined'])
-        .default('outlined')
-        .optional(),
+      variant: z.enum(['filled', 'outlined', 'underlined']).default('outlined').optional(),
       action: ActionSchema.optional(),
       checks: CheckableSchema.shape.checks,
     })
@@ -377,10 +297,7 @@ export const NumberInputApi = {
       ...CommonProps,
       label: DynamicStringSchema,
       value: DynamicNumberSchema.optional(),
-      variant: z
-        .enum(['filled', 'outlined', 'underlined'])
-        .default('outlined')
-        .optional(),
+      variant: z.enum(['filled', 'outlined', 'underlined']).default('outlined').optional(),
       action: ActionSchema.optional(),
       checks: CheckableSchema.shape.checks,
     })
@@ -429,10 +346,7 @@ export const SelectApi = {
       label: DynamicStringSchema.optional(),
       options: z.array(z.any()),
       value: z.union([z.string(), z.array(z.any())]),
-      variant: z
-        .enum(['multipleSelection', 'mutuallyExclusive'])
-        .default('mutuallyExclusive')
-        .optional(),
+      variant: z.enum(['multipleSelection', 'mutuallyExclusive']).default('mutuallyExclusive').optional(),
       action: ActionSchema.optional(),
       checks: CheckableSchema.shape.checks,
     })
@@ -447,10 +361,7 @@ export const AutocompleteApi = {
       label: DynamicStringSchema.optional(),
       options: z.array(z.any()),
       value: z.union([z.string(), z.array(z.any())]),
-      variant: z
-        .enum(['multipleSelection', 'mutuallyExclusive'])
-        .default('mutuallyExclusive')
-        .optional(),
+      variant: z.enum(['multipleSelection', 'mutuallyExclusive']).default('mutuallyExclusive').optional(),
       action: ActionSchema.optional(),
     })
     .strict(),
@@ -464,10 +375,7 @@ export const ComboboxApi = {
       label: DynamicStringSchema.optional(),
       options: z.array(z.any()),
       value: z.union([z.string(), z.array(z.any())]),
-      variant: z
-        .enum(['multipleSelection', 'mutuallyExclusive'])
-        .default('mutuallyExclusive')
-        .optional(),
+      variant: z.enum(['multipleSelection', 'mutuallyExclusive']).default('mutuallyExclusive').optional(),
       action: ActionSchema.optional(),
     })
     .strict(),
@@ -508,10 +416,7 @@ export const RangeSliderApi = {
       label: DynamicStringSchema.optional(),
       min: z.number().default(0).optional(),
       max: z.number(),
-      value: z.union([
-        z.array(z.number()).min(2).max(2),
-        z.object({ path: z.string() }),
-      ]),
+      value: z.union([z.array(z.number()).min(2).max(2), z.object({ path: z.string() })]),
       action: ActionSchema.optional(),
     })
     .strict(),
@@ -525,14 +430,8 @@ export const ChoicePickerApi = {
       label: DynamicStringSchema.optional(),
       options: z.array(z.any()),
       value: z.union([z.string(), z.array(z.any())]),
-      variant: z
-        .enum(['multipleSelection', 'mutuallyExclusive'])
-        .default('mutuallyExclusive')
-        .optional(),
-      displayStyle: z
-        .enum(['list', 'dropdown', 'segmented'])
-        .default('dropdown')
-        .optional(),
+      variant: z.enum(['multipleSelection', 'mutuallyExclusive']).default('mutuallyExclusive').optional(),
+      displayStyle: z.enum(['list', 'dropdown', 'segmented']).default('dropdown').optional(),
       checks: CheckableSchema.shape.checks,
     })
     .strict(),
@@ -591,18 +490,7 @@ export const CalendarApi = {
           })
           .strict(),
       ),
-      type: z
-        .enum([
-          'month',
-          'week',
-          'day',
-          '4day',
-          'custom-weekly',
-          'custom-daily',
-          'category',
-        ])
-        .default('month')
-        .optional(),
+      type: z.enum(['month', 'week', 'day', '4day', 'custom-weekly', 'custom-daily', 'category']).default('month').optional(),
       value: DynamicStringSchema.optional(),
       weekdays: z.array(z.number()).optional(),
       color: z.string().optional(),

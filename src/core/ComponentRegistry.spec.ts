@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { ComponentRegistry } from './ComponentRegistry';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { defineComponent } from 'vue';
+import { ComponentRegistry } from './ComponentRegistry';
 
 describe('ComponentRegistry', () => {
   let registry: ComponentRegistry;
@@ -23,9 +23,9 @@ describe('ComponentRegistry', () => {
   it('should register multiple components for a catalogId using registerAll', () => {
     registry.registerAll('my-catalog', {
       Button: mockComponent,
-      Text: mockComponent
+      Text: mockComponent,
     });
-    
+
     expect(registry.get('my-catalog', 'Button')).toBe(mockComponent);
     expect(registry.get('my-catalog', 'Text')).toBe(mockComponent);
   });
@@ -39,14 +39,14 @@ describe('ComponentRegistry', () => {
   it('should get keys for a specific catalogId', () => {
     registry.registerAll('my-catalog', {
       Button: mockComponent,
-      Text: mockComponent
+      Text: mockComponent,
     });
-    
+
     const keys = registry.keys('my-catalog');
     expect(keys).toContain('Button');
     expect(keys).toContain('Text');
     expect(keys.length).toBe(2);
-    
+
     expect(registry.keys('empty-catalog').length).toBe(0);
   });
 });

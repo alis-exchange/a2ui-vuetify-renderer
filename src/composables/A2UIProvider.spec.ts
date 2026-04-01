@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
-import A2UIProvider from './A2UIProvider.vue';
-import { defineComponent, inject, h, nextTick } from 'vue';
-import { A2UI_CONTEXT_KEY } from './useA2UI';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { defineComponent, h, inject, nextTick } from 'vue';
 import { createVuetify } from 'vuetify';
 import { VThemeProvider } from 'vuetify/components';
+import A2UIProvider from './A2UIProvider.vue';
+import { A2UI_CONTEXT_KEY } from './useA2UI';
 
 describe('A2UIProvider.vue', () => {
   let vuetify: any;
@@ -26,13 +26,13 @@ describe('A2UIProvider.vue', () => {
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
       model: {
-        getSurface: vi.fn().mockReturnValue({ theme: {} })
-      }
+        getSurface: vi.fn().mockReturnValue({ theme: {} }),
+      },
     };
 
     const wrapper = mount(A2UIProvider, {
       global: {
-        plugins: [vuetify]
+        plugins: [vuetify],
       },
       props: {
         processor: mockProcessor as any,
@@ -41,7 +41,7 @@ describe('A2UIProvider.vue', () => {
       },
       slots: {
         default: () => h(ChildComponent),
-      }
+      },
     });
 
     expect(wrapper.find('.child').text()).toBe('my-surface');
@@ -53,51 +53,51 @@ describe('A2UIProvider.vue', () => {
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
       model: {
-        getSurface: vi.fn().mockReturnValue({ theme: { primaryColor: '#123456' } })
-      }
+        getSurface: vi.fn().mockReturnValue({ theme: { primaryColor: '#123456' } }),
+      },
     };
 
     const wrapper = mount(A2UIProvider, {
       global: {
-        plugins: [vuetify]
+        plugins: [vuetify],
       },
       props: {
         processor: mockProcessor as any,
         surfaceId: 'test-surface',
       },
     });
-    
+
     // Theme should be registered
     expect(vuetify.theme.themes.value['a2ui-theme-test-surface']).toBeDefined();
 
     wrapper.unmount();
     expect(mockProcessor.removeEventListener).toHaveBeenCalledWith('update', expect.any(Function));
-    
+
     // Theme should be removed
     expect(vuetify.theme.themes.value['a2ui-theme-test-surface']).toBeUndefined();
   });
 
   it('dynamically registers a theme without mutating the global theme', async () => {
     const originalPrimary = vuetify.theme.global.current.value.colors.primary;
-    
+
     const mockProcessor = {
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
       model: {
-        getSurface: vi.fn().mockReturnValue({ 
+        getSurface: vi.fn().mockReturnValue({
           theme: {
             primaryColor: '#ff0000',
             errorColor: '#00ff00',
             backgroundColor: '#0000ff',
-            surfaceColor: '#123456'
-          } 
-        })
-      }
+            surfaceColor: '#123456',
+          },
+        }),
+      },
     };
 
     const wrapper = mount(A2UIProvider, {
       global: {
-        plugins: [vuetify]
+        plugins: [vuetify],
       },
       props: {
         processor: mockProcessor as any,
@@ -129,13 +129,13 @@ describe('A2UIProvider.vue', () => {
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
       model: {
-        getSurface: vi.fn().mockReturnValue({}) // No theme
-      }
+        getSurface: vi.fn().mockReturnValue({}), // No theme
+      },
     };
 
     const wrapper = mount(A2UIProvider, {
       global: {
-        plugins: [vuetify]
+        plugins: [vuetify],
       },
       props: {
         processor: mockProcessor as any,
@@ -147,7 +147,7 @@ describe('A2UIProvider.vue', () => {
 
     // Should not register a theme
     expect(vuetify.theme.themes.value['a2ui-theme-no-theme-surface']).toBeUndefined();
-    
+
     // v-theme-provider should either not exist, or should have no theme prop
     const themeProvider = wrapper.findComponent(VThemeProvider);
     if (themeProvider.exists()) {

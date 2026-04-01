@@ -1,7 +1,6 @@
-import type { ComponentRegistry } from './ComponentRegistry';
-// @ts-ignore: We need to resolve JSON module resolution
+import { zodToJsonSchema } from 'zod-to-json-schema';
 import baseCatalog from '../../catalog/vuetify-catalog.json';
-
+import type { ComponentRegistry } from './ComponentRegistry';
 /**
  * Returns the full JSON Schema representing the component catalog.
  * Dynamically assembles the schema based on components registered in the provided ComponentRegistry
@@ -20,14 +19,36 @@ export function getCatalogSchema(registry: ComponentRegistry, catalogId: string)
   const registeredKeys = registry.keys(catalogId);
   for (const key of registeredKeys) {
     if (!schema.components[key]) {
-      // Provide a minimal JSON Schema valid structure for unknown custom components
-      schema.components[key] = {
-        type: "object",
-        properties: {
-          component: { const: key }
+      // The base definitions that every A2UI component must have
+      const allOf: any[] = [
+        { $ref: '#/$defs/ComponentCommon' },
+        { $ref: '#/$defs/CatalogComponentCommon' },
+        {
+          type: 'object',
+          properties: {
+            component: { const: key },
+          },
+          required: ['component'],
         },
-        required: ["component"],
-        // Ideally we'd use $defs/ComponentCommon but keeping it simple for custom ones
+      ];
+
+      // Check if the user provided a custom api during registration
+      const customApi = registry.getApi(catalogId, key);
+
+      // If the user provided a custom schema, append it to the allOf array
+      if (customApi) {
+        // Convert the Zod schema to JSON Schema
+        const convertedSchema = zodToJsonSchema(customApi.schema, {
+          $refStrategy: 'none', // Prevent it from creating internal $defs
+        });
+
+        allOf.push(convertedSchema);
+      }
+
+      // Assign the assembled schema to the component key
+      schema.components[key] = {
+        type: 'object',
+        allOf: allOf,
       };
     }
   }

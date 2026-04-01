@@ -1,16 +1,16 @@
-import { describe, it, expect, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
-import A2UIText from './A2UIText.vue';
-import A2UIImage from './A2UIImage.vue';
-import A2UIIcon from './A2UIIcon.vue';
-import A2UIDivider from './A2UIDivider.vue';
-import A2UIRow from './A2UIRow.vue';
-import A2UIColumn from './A2UIColumn.vue';
-import A2UICard from './A2UICard.vue';
-import A2UIButton from './A2UIButton.vue';
-import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
-import { createVuetify } from 'vuetify';
 import { DataModel } from '@a2ui/web_core/v0_9';
+import { mount } from '@vue/test-utils';
+import { describe, expect, it, vi } from 'vitest';
+import { createVuetify } from 'vuetify';
+import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
+import A2UIButton from './A2UIButton.vue';
+import A2UICard from './A2UICard.vue';
+import A2UIColumn from './A2UIColumn.vue';
+import A2UIDivider from './A2UIDivider.vue';
+import A2UIIcon from './A2UIIcon.vue';
+import A2UIImage from './A2UIImage.vue';
+import A2UIRow from './A2UIRow.vue';
+import A2UIText from './A2UIText.vue';
 
 const vuetify = createVuetify();
 
@@ -24,11 +24,11 @@ function createMockContext(data: any = {}) {
         getSurface: vi.fn().mockReturnValue({
           id: 'test-surface',
           dataModel: dataModel,
-          catalog: { invoker: () => undefined }
-        })
-      }
+          catalog: { invoker: () => undefined },
+        }),
+      },
     },
-    dataContextPath: '/'
+    dataContextPath: '/',
   };
 }
 
@@ -38,13 +38,16 @@ describe('Core Content Components', () => {
       const wrapper = mount(A2UIText, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'text1', type: 'Text', properties: { text: 'Hello A2UI', variant: 'h2' }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'text1',
+            type: 'Text',
+            properties: { text: 'Hello A2UI', variant: 'h2' },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       expect(wrapper.text()).toBe('Hello A2UI');
       expect(wrapper.classes()).toContain('text-h2');
@@ -56,13 +59,16 @@ describe('Core Content Components', () => {
       const wrapper = mount(A2UIImage, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'img1', type: 'Image', properties: { url: 'https://example.com/img.png', fit: 'cover' }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'img1',
+            type: 'Image',
+            properties: { url: 'https://example.com/img.png', fit: 'cover' },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const img = wrapper.findComponent({ name: 'VImg' });
       expect(img.exists()).toBe(true);
@@ -76,13 +82,16 @@ describe('Core Content Components', () => {
       const wrapper = mount(A2UIIcon, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'icon1', type: 'Icon', properties: { name: 'home' }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'icon1',
+            type: 'Icon',
+            properties: { name: 'home' },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const icon = wrapper.findComponent({ name: 'VIcon' });
       expect(icon.exists()).toBe(true);
@@ -95,13 +104,16 @@ describe('Core Content Components', () => {
       const wrapper = mount(A2UIDivider, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'div1', type: 'Divider', properties: { axis: 'vertical' }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'div1',
+            type: 'Divider',
+            properties: { axis: 'vertical' },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const divider = wrapper.findComponent({ name: 'VDivider' });
       expect(divider.exists()).toBe(true);
@@ -118,15 +130,17 @@ describe('Core Content Components', () => {
           stubs: {
             ComponentNode: {
               template: '<div class="child-node" :data-id="id"></div>',
-              props: ['id']
-            }
-          }
+              props: ['id'],
+            },
+          },
         },
         props: {
           node: {
-            id: 'row1', type: 'Row', properties: { children: ['child1', 'child2'], justify: 'center', align: 'center' }
-          } as any
-        }
+            id: 'row1',
+            type: 'Row',
+            properties: { children: ['child1', 'child2'], justify: 'center', align: 'center' },
+          } as any,
+        },
       });
       expect(wrapper.classes()).toContain('flex-row');
       expect(wrapper.classes()).toContain('justify-center');
@@ -143,13 +157,15 @@ describe('Core Content Components', () => {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
           plugins: [vuetify],
-          stubs: { ComponentNode: true }
+          stubs: { ComponentNode: true },
         },
         props: {
           node: {
-            id: 'col1', type: 'Column', properties: { children: ['child1'] }
-          } as any
-        }
+            id: 'col1',
+            type: 'Column',
+            properties: { children: ['child1'] },
+          } as any,
+        },
       });
       expect(wrapper.classes()).toContain('flex-column');
     });
@@ -161,11 +177,11 @@ describe('Core Content Components', () => {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
           plugins: [vuetify],
-          stubs: { ComponentNode: true }
+          stubs: { ComponentNode: true },
         },
         props: {
-          node: { id: 'card1', type: 'Card', properties: { child: 'child1' } } as any
-        }
+          node: { id: 'card1', type: 'Card', properties: { child: 'child1' } } as any,
+        },
       });
       const card = wrapper.findComponent({ name: 'VCard' });
       expect(card.exists()).toBe(true);
@@ -178,13 +194,15 @@ describe('Core Content Components', () => {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
           plugins: [vuetify],
-          stubs: { ComponentNode: true }
+          stubs: { ComponentNode: true },
         },
         props: {
           node: {
-            id: 'btn1', type: 'Button', properties: { variant: 'primary', child: 'child1' }
-          } as any
-        }
+            id: 'btn1',
+            type: 'Button',
+            properties: { variant: 'primary', child: 'child1' },
+          } as any,
+        },
       });
       const btn = wrapper.findComponent({ name: 'VBtn' });
       expect(btn.exists()).toBe(true);
@@ -198,23 +216,27 @@ describe('Core Content Components', () => {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: mockContext },
           plugins: [vuetify],
-          stubs: { ComponentNode: true }
+          stubs: { ComponentNode: true },
         },
         props: {
           node: {
-            id: 'btn2', type: 'Button', properties: { action: { event: { name: 'submit' } } }
-          } as any
-        }
+            id: 'btn2',
+            type: 'Button',
+            properties: { action: { event: { name: 'submit' } } },
+          } as any,
+        },
       });
-      
+
       await wrapper.trigger('click');
-      expect(mockContext.onAction).toHaveBeenCalledWith(expect.objectContaining({
-        name: 'submit',
-        sourceComponentId: 'btn2',
-        surfaceId: 'test-surface',
-        timestamp: expect.any(String),
-        context: {}
-      }));
+      expect(mockContext.onAction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'submit',
+          sourceComponentId: 'btn2',
+          surfaceId: 'test-surface',
+          timestamp: expect.any(String),
+          context: {},
+        }),
+      );
     });
   });
 });

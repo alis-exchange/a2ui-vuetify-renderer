@@ -1,10 +1,10 @@
-import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import A2UIExpansionPanel from './A2UIExpansionPanel.vue';
-import A2UIChip from './A2UIChip.vue';
-import A2UIAvatar from './A2UIAvatar.vue';
-import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
+import { describe, expect, it, vi } from 'vitest';
 import { createVuetify } from 'vuetify';
+import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
+import A2UIAvatar from './A2UIAvatar.vue';
+import A2UIChip from './A2UIChip.vue';
+import A2UIExpansionPanel from './A2UIExpansionPanel.vue';
 
 const vuetify = createVuetify();
 
@@ -14,10 +14,10 @@ function createMockContext() {
     onAction: vi.fn(),
     processor: {
       model: {
-        getSurface: vi.fn().mockReturnValue({})
-      }
+        getSurface: vi.fn().mockReturnValue({}),
+      },
     },
-    dataContextPath: '/'
+    dataContextPath: '/',
   };
 }
 
@@ -28,13 +28,16 @@ describe('Layout and Misc Components', () => {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
           plugins: [vuetify],
-          stubs: { ComponentNode: { template: '<div class="child">child</div>' } }
+          stubs: { ComponentNode: { template: '<div class="child">child</div>' } },
         },
         props: {
           node: {
-            id: 'ep1', type: 'ExpansionPanel', properties: { title: 'More Info', child: 'content1' }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'ep1',
+            type: 'ExpansionPanel',
+            properties: { title: 'More Info', child: 'content1' },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const panel = wrapper.findComponent({ name: 'VExpansionPanels' });
       expect(panel.exists()).toBe(true);
@@ -48,13 +51,16 @@ describe('Layout and Misc Components', () => {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
           plugins: [vuetify],
-          stubs: { ComponentNode: true }
+          stubs: { ComponentNode: true },
         },
         props: {
           node: {
-            id: 'ep2', type: 'ExpansionPanel', properties: { child: { id: 'objChild' } }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'ep2',
+            type: 'ExpansionPanel',
+            properties: { child: { id: 'objChild' } },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       expect(wrapper.exists()).toBe(true);
     });
@@ -66,13 +72,16 @@ describe('Layout and Misc Components', () => {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
           plugins: [vuetify],
-          stubs: { ComponentNode: { template: '<div class="child">Child</div>' } }
+          stubs: { ComponentNode: { template: '<div class="child">Child</div>' } },
         },
         props: {
           node: {
-            id: 'chip1', type: 'Chip', properties: { text: 'Active' }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'chip1',
+            type: 'Chip',
+            properties: { text: 'Active' },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const chip = wrapper.findComponent({ name: 'VChip' });
       expect(chip.exists()).toBe(true);
@@ -86,13 +95,16 @@ describe('Layout and Misc Components', () => {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
           plugins: [vuetify],
-          stubs: { ComponentNode: true }
+          stubs: { ComponentNode: true },
         },
         props: {
           node: {
-            id: 'ava1', type: 'Avatar', properties: { image: 'url', child: { id: 'iconChild' } }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'ava1',
+            type: 'Avatar',
+            properties: { image: 'url', child: { id: 'iconChild' } },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const ava = wrapper.findComponent({ name: 'VAvatar' });
       expect(ava.exists()).toBe(true);

@@ -1,11 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
-import A2UITextField from './A2UITextField.vue';
-import A2UITextArea from './A2UITextArea.vue';
-import A2UINumberInput from './A2UINumberInput.vue';
-import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
-import { createVuetify } from 'vuetify';
 import { DataModel } from '@a2ui/web_core/v0_9';
+import { mount } from '@vue/test-utils';
+import { describe, expect, it, vi } from 'vitest';
+import { createVuetify } from 'vuetify';
+import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
+import A2UINumberInput from './A2UINumberInput.vue';
+import A2UITextArea from './A2UITextArea.vue';
+import A2UITextField from './A2UITextField.vue';
 
 const vuetify = createVuetify();
 
@@ -19,11 +19,11 @@ function createMockContext(data: any = {}) {
         getSurface: vi.fn().mockReturnValue({
           id: 'test-surface',
           dataModel: dataModel,
-          catalog: { invoker: () => undefined }
-        })
-      }
+          catalog: { invoker: () => undefined },
+        }),
+      },
     },
-    dataContextPath: '/'
+    dataContextPath: '/',
   };
 }
 
@@ -33,13 +33,16 @@ describe('Form Inputs', () => {
       const wrapper = mount(A2UITextField, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'tf1', type: 'TextField', properties: { label: 'Username' }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'tf1',
+            type: 'TextField',
+            properties: { label: 'Username' },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const tf = wrapper.findComponent({ name: 'VTextField' });
       expect(tf.exists()).toBe(true);
@@ -51,13 +54,16 @@ describe('Form Inputs', () => {
       const wrapper = mount(A2UITextField, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: mockContext },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'tf2', type: 'TextField', properties: { value: { path: '/user/name' } }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'tf2',
+            type: 'TextField',
+            properties: { value: { path: '/user/name' } },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const tf = wrapper.findComponent({ name: 'VTextField' });
       expect(tf.props('modelValue')).toBe('John');
@@ -71,13 +77,16 @@ describe('Form Inputs', () => {
       const wrapper = mount(A2UITextField, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'tf3', type: 'TextField', properties: { checks: [{ type: 'required', message: 'Needed' }] }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'tf3',
+            type: 'TextField',
+            properties: { checks: [{ type: 'required', message: 'Needed' }] },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const tf = wrapper.findComponent({ name: 'VTextField' });
       const rules = tf.props('rules') as any[];
@@ -90,27 +99,30 @@ describe('Form Inputs', () => {
       const wrapper = mount(A2UITextField, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: mockContext },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'tf-action', type: 'TextField',
+            id: 'tf-action',
+            type: 'TextField',
             properties: {
               value: { path: '/user/name' },
-              action: { event: { name: 'field-changed' } }
-            }
-          } as any
-        }
+              action: { event: { name: 'field-changed' } },
+            },
+          } as any,
+        },
       });
       const input = wrapper.find('input');
       await input.trigger('blur');
-      expect(mockContext.onAction).toHaveBeenCalledWith(expect.objectContaining({
-        name: 'field-changed',
-        sourceComponentId: 'tf-action',
-        surfaceId: 'test-surface',
-        timestamp: expect.any(String),
-        context: expect.objectContaining({ value: 'John' })
-      }));
+      expect(mockContext.onAction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'field-changed',
+          sourceComponentId: 'tf-action',
+          surfaceId: 'test-surface',
+          timestamp: expect.any(String),
+          context: expect.objectContaining({ value: 'John' }),
+        }),
+      );
     });
 
     it('does not dispatch action on blur when no action is defined', async () => {
@@ -118,13 +130,15 @@ describe('Form Inputs', () => {
       const wrapper = mount(A2UITextField, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: mockContext },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'tf-no-action', type: 'TextField', properties: { label: 'No Action' }
-          } as any
-        }
+            id: 'tf-no-action',
+            type: 'TextField',
+            properties: { label: 'No Action' },
+          } as any,
+        },
       });
       const input = wrapper.find('input');
       await input.trigger('blur');
@@ -137,13 +151,16 @@ describe('Form Inputs', () => {
       const wrapper = mount(A2UITextArea, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'ta1', type: 'TextArea', properties: { label: 'Comments' }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'ta1',
+            type: 'TextArea',
+            properties: { label: 'Comments' },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const ta = wrapper.findComponent({ name: 'VTextarea' });
       expect(ta.exists()).toBe(true);
@@ -155,13 +172,16 @@ describe('Form Inputs', () => {
       const wrapper = mount(A2UITextArea, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: mockContext },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'ta2', type: 'TextArea', properties: { value: { path: '/user/comments' } }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'ta2',
+            type: 'TextArea',
+            properties: { value: { path: '/user/comments' } },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const ta = wrapper.findComponent({ name: 'VTextarea' });
       expect(ta.props('modelValue')).toBe('Hello');
@@ -176,13 +196,16 @@ describe('Form Inputs', () => {
       const wrapper = mount(A2UINumberInput, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'ni1', type: 'NumberInput', properties: { label: 'Age' }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'ni1',
+            type: 'NumberInput',
+            properties: { label: 'Age' },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const tf = wrapper.findComponent({ name: 'VTextField' });
       expect(tf.exists()).toBe(true);
@@ -195,13 +218,16 @@ describe('Form Inputs', () => {
       const wrapper = mount(A2UINumberInput, {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: mockContext },
-          plugins: [vuetify]
+          plugins: [vuetify],
         },
         props: {
           node: {
-            id: 'ni2', type: 'NumberInput', properties: { value: { path: '/user/age' } }, onUpdated: { subscribe: vi.fn() }
-          } as any
-        }
+            id: 'ni2',
+            type: 'NumberInput',
+            properties: { value: { path: '/user/age' } },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
       });
       const tf = wrapper.findComponent({ name: 'VTextField' });
       expect(tf.props('modelValue')).toBe(30);

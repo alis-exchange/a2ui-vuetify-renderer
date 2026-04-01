@@ -1,15 +1,29 @@
 <template>
-  <v-card variant="outlined" class="pa-4 border-info">
+  <v-card
+    variant="outlined"
+    class="pa-4 border-info"
+  >
     <div class="text-h6 mb-2">{{ title }}</div>
-    
-    <div v-if="chartData.length === 0" class="text-caption text-grey">
+
+    <div
+      v-if="chartData.length === 0"
+      class="text-caption text-grey"
+    >
       No data available
     </div>
-    
-    <div v-else class="d-flex align-end" style="height: 100px; gap: 8px;">
-      <v-tooltip v-for="(point, idx) in chartData" :key="idx" location="top">
+
+    <div
+      v-else
+      class="d-flex align-end"
+      style="height: 100px; gap: 8px"
+    >
+      <v-tooltip
+        v-for="(point, idx) in chartData"
+        :key="idx"
+        location="top"
+      >
         <template v-slot:activator="{ props: tooltipProps }">
-          <div 
+          <div
             v-bind="tooltipProps"
             class="bg-info rounded-t cursor-pointer"
             :style="{ height: `${point}%`, flex: 1, minWidth: '20px', transition: 'height 0.3s, opacity 0.2s' }"
@@ -26,41 +40,41 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { useA2UI } from '@alis-build/a2ui-vuetify-renderer';
+  import { useA2UI } from '@alis-build/a2ui-vuetify-renderer';
+  import { computed, ref } from 'vue';
 
-const props = defineProps<{
-  node: any; // The A2UI component node data
-  path?: string; // The data model scope path
-}>();
+  const props = defineProps<{
+    node: any; // The A2UI component node data
+    path?: string; // The data model scope path
+  }>();
 
-const hoveredIndex = ref<number | null>(null);
+  const hoveredIndex = ref<number | null>(null);
 
-// useA2UI handles resolving dynamic bindings
-const { resolveValue, sendAction } = useA2UI();
+  // useA2UI handles resolving dynamic bindings
+  const { resolveValue, sendAction } = useA2UI();
 
-// Resolve properties from A2UI JSON payload
-const title = computed(() => resolveValue(props.node?.properties?.title) || 'Default Chart');
+  // Resolve properties from A2UI JSON payload
+  const title = computed(() => resolveValue(props.node?.properties?.title) || 'Default Chart');
 
-const chartData = computed(() => {
-  const data = resolveValue(props.node?.properties?.data);
-  return Array.isArray(data) ? data : [];
-});
-
-// Action handler to emit events back to the processor
-const handleBarClick = (index: number, value: number) => {
-  sendAction('chartPointClicked', props.node.id, {
-    index,
-    value
+  const chartData = computed(() => {
+    const data = resolveValue(props.node?.properties?.data);
+    return Array.isArray(data) ? data : [];
   });
-};
+
+  // Action handler to emit events back to the processor
+  const handleBarClick = (index: number, value: number) => {
+    sendAction('chartPointClicked', props.node.id, {
+      index,
+      value,
+    });
+  };
 </script>
 
 <style scoped>
-.cursor-pointer {
-  cursor: pointer;
-}
-.opacity-80 {
-  opacity: 0.8;
-}
+  .cursor-pointer {
+    cursor: pointer;
+  }
+  .opacity-80 {
+    opacity: 0.8;
+  }
 </style>
