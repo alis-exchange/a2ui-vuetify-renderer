@@ -127,11 +127,11 @@
 </template>
 
 <script setup lang="ts">
-  import { Catalog, MessageProcessor } from '@a2ui/web_core/v0_9';
   import type { ComponentApi } from '@a2ui/web_core/v0_9';
-  import { z } from 'zod';
+  import { Catalog, MessageProcessor } from '@a2ui/web_core/v0_9';
   import { CATALOG_ID, VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA, defaultRegistry } from '@alis-build/a2ui-vuetify-renderer';
   import { defineAsyncComponent, h, onMounted, ref } from 'vue';
+  import { z } from 'zod';
   import CustomChartWidget from './components/CustomChartWidget.vue';
 
   const surfaceId = 'main-surface';
@@ -163,20 +163,18 @@
   // 3. Register our static custom component with a schema
   const CustomChartApi: ComponentApi = {
     name: 'CustomChart',
-    schema: z.object({
-      title: z.string().describe("The title of the chart").optional(),
-      data: z.array(z.number()).describe("The data points to render")
-    }).strict()
+    schema: z
+      .object({
+        title: z.string().describe('The title of the chart').optional(),
+        data: z.array(z.number()).describe('The data points to render'),
+      })
+      .strict(),
   };
 
   defaultRegistry.register(CATALOG_ID, 'CustomChart', CustomChartWidget, CustomChartApi);
 
   // Inject custom components into the mock catalog schema to bypass A2UI validation errors
-  const customComponentsSchema = [
-    ...VUETIFY_COMPONENTS,
-    CustomGraphApi,
-    CustomChartApi,
-  ];
+  const customComponentsSchema = [...VUETIFY_COMPONENTS, CustomGraphApi, CustomChartApi];
 
   const mockCatalog = new Catalog(CATALOG_ID, customComponentsSchema as any, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA);
   const actionLogs = ref<any[]>([]);
