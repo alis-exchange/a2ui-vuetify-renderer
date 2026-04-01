@@ -1,4 +1,12 @@
-## [0.1.7](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.8...v0.1.7) (2026-03-31)
+## [0.1.8](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.9...v0.1.8) (2026-04-01)
+
+## [0.1.9](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.8...v0.1.9) (2026-04-01)
+
+
+### Features
+
+* add CustomChartWidget component and enhance App.vue with dynamic form surface controls ([42cc151](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/42cc151da5f8f0a694399ca59282fb7c945ca8d3))
+* add option to include component schema when registering custom components ([74da0ad](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/74da0ad29a6e9178432d196f25514966c18dde14))
 
 ## [0.1.8](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.7...v0.1.8) (2026-03-31)
 
