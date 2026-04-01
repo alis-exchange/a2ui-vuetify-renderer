@@ -185,6 +185,87 @@ Form components use internal helpers in `src/utils/validation.ts` to map A2UI `c
 
 When `children` is an object `{ path, componentId }` instead of an array, the renderer iterates the data model array at `path` and renders the template `componentId` for each item, passing a scoped `path` prop (`/items/0`, `/items/1`, ...) so child components resolve relative bindings correctly.
 
+## Custom Components
+
+You can extend the renderer by defining your own Vue components and registering them. This is useful for complex data visualizations, specialized input fields, or integrating third-party libraries.
+
+### 1. Define a Custom Component
+
+Use the `useA2UI` composable to easily map A2UI JSON properties to your component's props and emit actions back to the agent.
+
+```vue
+<!-- src/components/CustomChartWidget.vue -->
+<template>
+  <v-card variant="outlined" class="pa-4 border-info">
+    <div class="text-h6 mb-2">{{ title }}</div>
+    <div class="d-flex align-end" style="height: 100px; gap: 8px;">
+      <div 
+        v-for="(point, idx) in chartData" 
+        :key="idx"
+        class="bg-info rounded-t cursor-pointer"
+        :style="{ height: `${point}%`, width: '40px', transition: 'height 0.3s' }"
+        @click="handleBarClick(idx, point)"
+      ></div>
+    </div>
+  </v-card>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useA2UI } from '@alis-build/a2ui-vuetify-renderer';
+
+const props = defineProps<{
+  node: any; // The A2UI component node data
+  path?: string; // The data model scope path
+}>();
+
+// useA2UI automatically handles resolving dynamic data bindings (e.g. { path: '/myData' })
+const { resolveValue, sendAction } = useA2UI();
+
+// Resolve the 'title' property from the A2UI JSON node
+const title = computed(() => resolveValue(props.node?.properties?.title) || 'Default Chart');
+
+// Resolve the 'data' property from the A2UI JSON node, defaulting to an empty array
+const chartData = computed(() => {
+  const data = resolveValue(props.node?.properties?.data);
+  return Array.isArray(data) ? data : [];
+});
+
+// Emit an action back to the agent when a user interacts
+const handleBarClick = (index: number, value: number) => {
+  sendAction('chartPointClicked', props.node.id, {
+    index,
+    value
+  });
+};
+</script>
+```
+
+### 2. Register the Component
+
+Before rendering a surface, register your new component with the `defaultRegistry` using the same `CATALOG_ID` that your surface uses.
+
+```typescript
+import { CATALOG_ID, defaultRegistry } from '@alis-build/a2ui-vuetify-renderer';
+import CustomChartWidget from './components/CustomChartWidget.vue';
+
+// Register the component under the type name "CustomChart"
+defaultRegistry.register(CATALOG_ID, 'CustomChart', CustomChartWidget);
+```
+
+### 3. Send it from the Agent
+
+Now your agent can send `updateComponents` messages using your new `"CustomChart"` type.
+
+```json
+{
+  "id": "my-custom-chart",
+  "component": "CustomChart",
+  "title": "Monthly Sales",
+  "data": { "path": "/salesData" }
+}
+```
+
 ## Component catalog
 
 40 components are registered in the default catalog. Most are backed by Vuetify 4; media types use native HTML5 elements where that fits the protocol.

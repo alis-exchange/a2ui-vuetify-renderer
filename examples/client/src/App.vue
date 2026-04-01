@@ -7,6 +7,41 @@
       <v-container>
         <v-row>
           <v-col cols="12" md="8">
+            <!-- Data Model and Lifecycle Demo Controls -->
+            <v-card variant="outlined" class="mb-6">
+              <v-card-title>Data Model & Lifecycle Demo</v-card-title>
+              <v-card-text>
+                <div class="d-flex gap-2 flex-wrap" style="gap: 8px;">
+                  <v-btn color="primary" @click="createFormSurface" :disabled="formSurfaceActive">
+                    1. Create Form
+                  </v-btn>
+                  <v-btn color="info" @click="updateFormModel" :disabled="!formSurfaceActive">
+                    2. Update Data Model
+                  </v-btn>
+                  <v-btn color="error" @click="deleteFormSurface" :disabled="!formSurfaceActive">
+                    3. Delete Surface
+                  </v-btn>
+                </div>
+              </v-card-text>
+            </v-card>
+
+            <!-- Dynamic Form Surface -->
+            <v-card v-if="formSurfaceActive" variant="outlined" class="mb-6 border-primary">
+              <v-card-text>
+                <A2uiProvider
+                  surface-id="form-surface"
+                  :processor="processor"
+                  @action="handleAction"
+                >
+                  <A2uiComponentNode id="root" />
+                </A2uiProvider>
+              </v-card-text>
+            </v-card>
+
+            <v-divider class="my-4"></v-divider>
+
+            <!-- Main Original Surface -->
+            <div class="text-h6 mb-2">Original Showcase Surface</div>
             <A2uiProvider
               :surface-id="surfaceId"
               :processor="processor"
@@ -15,6 +50,7 @@
               <A2uiComponentNode id="root" />
             </A2uiProvider>
           </v-col>
+          
           <v-col cols="12" md="4">
             <v-card variant="outlined" class="mb-4">
               <v-card-title class="text-subtitle-1">Simulated Transport Metadata</v-card-title>
@@ -35,14 +71,11 @@
                     :key="idx"
                     class="mb-2 bg-grey-lighten-4 rounded"
                   >
-                    <pre class="text-caption">{{
-                      JSON.stringify(log, null, 2)
-                    }}</pre>
+                    <pre class="text-caption">{{ JSON.stringify(log, null, 2) }}</pre>
                   </v-list-item>
                 </v-list>
                 <div v-else class="text-body-2 text-grey">
-                  No actions received yet. Click buttons or change inputs to see
-                  actions here.
+                  No actions received yet. Click buttons or change inputs to see actions here.
                 </div>
               </v-card-text>
             </v-card>
@@ -54,11 +87,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, defineAsyncComponent } from "vue";
+import { h, ref, onMounted, defineAsyncComponent } from "vue";
 import { MessageProcessor, Catalog } from "@a2ui/web_core/v0_9";
 import { CATALOG_ID, VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA, defaultRegistry } from "@alis-build/a2ui-vuetify-renderer";
+import CustomChartWidget from "./components/CustomChartWidget.vue";
 
 const surfaceId = "main-surface";
+const formSurfaceActive = ref(false);
 
 // 1. Simulate Client Capabilities Reporting
 const clientMetadata = {
@@ -68,18 +103,35 @@ const clientMetadata = {
 };
 
 // 2. Demonstrate Lazy Loading of Custom Components
-// By utilizing Vue's defineAsyncComponent, we can defer loading heavy custom components
 const AsyncGraphComponent = defineAsyncComponent(() => 
   Promise.resolve({
-    template: '<div style="border: 2px dashed green; padding: 10px;">I am a Lazy Loaded Graph Component! <slot/></div>'
+    render() {
+      return h('div', { style: 'border: 2px dashed green; padding: 10px;' }, [
+        'I am a Lazy Loaded Graph Component!'
+      ])
+    }
   })
 );
 
-// Register it to the catalog context
 defaultRegistry.register(CATALOG_ID, "CustomGraph", AsyncGraphComponent);
 
-const mockCatalog = new Catalog(CATALOG_ID, VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA);
+// 3. Register our static custom component
+defaultRegistry.register(CATALOG_ID, "CustomChart", CustomChartWidget);
 
+// Inject custom components into the mock catalog schema to bypass A2UI validation errors
+const customComponentsSchema = [
+  ...VUETIFY_COMPONENTS,
+  {
+    name: "CustomGraph",
+    schema: {} // Accept any props for the demo
+  },
+  {
+    name: "CustomChart",
+    schema: {} // Accept any props for the demo
+  }
+];
+
+const mockCatalog = new Catalog(CATALOG_ID, customComponentsSchema as any, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA);
 const actionLogs = ref<any[]>([]);
 
 const handleAction = (action: any) => {
@@ -89,6 +141,103 @@ const handleAction = (action: any) => {
 
 // Simulated transport message dispatcher
 const processor = ref(new MessageProcessor([mockCatalog], handleAction));
+
+// Lifecycle Demo Methods
+const createFormSurface = () => {
+  processor.value.processMessages([
+    {
+      version: "v0.9",
+      createSurface: {
+        surfaceId: "form-surface",
+        catalogId: CATALOG_ID,
+      },
+    },
+    {
+      version: "v0.9",
+      updateDataModel: {
+        surfaceId: "form-surface",
+        path: "/",
+        value: {
+          userName: "John Doe",
+          userEmail: "",
+          isSubscribed: false,
+        },
+      },
+    },
+    {
+      version: "v0.9",
+      updateComponents: {
+        surfaceId: "form-surface",
+        components: [
+          {
+            id: "root",
+            component: "Form",
+            children: ["form-col"]
+          },
+          {
+            id: "form-col",
+            component: "Column",
+            children: ["title", "name-input", "email-input", "subscribe-checkbox"]
+          },
+          {
+            id: "title",
+            component: "Text",
+            text: "Dynamic Subscription Form",
+            variant: "h5"
+          },
+          {
+            id: "name-input",
+            component: "TextField",
+            label: "Name",
+            value: { path: "/userName" }
+          },
+          {
+            id: "email-input",
+            component: "TextField",
+            label: "Email",
+            value: { path: "/userEmail" }
+          },
+          {
+            id: "subscribe-checkbox",
+            component: "Checkbox",
+            label: "Subscribe",
+            value: { path: "/isSubscribed" }
+          }
+        ]
+      }
+    }
+  ]);
+  formSurfaceActive.value = true;
+};
+
+const updateFormModel = () => {
+  processor.value.processMessages([
+    {
+      version: "v0.9",
+      updateDataModel: {
+        surfaceId: "form-surface",
+        path: "/",
+        value: {
+          userName: "Jane Doe",
+          userEmail: "jane.doe@example.com",
+          isSubscribed: true,
+        },
+      },
+    }
+  ]);
+};
+
+const deleteFormSurface = () => {
+  processor.value.processMessages([
+    {
+      version: "v0.9",
+      deleteSurface: {
+        surfaceId: "form-surface"
+      }
+    }
+  ]);
+  formSurfaceActive.value = false;
+};
 
 onMounted(() => {
   // Simulate receiving initial layout payload from the agent
@@ -125,7 +274,7 @@ onMounted(() => {
           {
             id: "root",
             component: "Column",
-            children: ["title", "main-card", "settings-card", "custom-card"],
+            children: ["title", "main-card", "settings-card", "custom-card", "chart-card"],
           },
           {
             id: "title",
@@ -220,6 +369,17 @@ onMounted(() => {
           {
             id: "custom-graph",
             component: "CustomGraph"
+          },
+          {
+            id: "chart-card",
+            component: "Card",
+            child: "my-custom-chart"
+          },
+          {
+            id: "my-custom-chart",
+            component: "CustomChart",
+            title: "Monthly Sales",
+            data: [20, 50, 80, 40, 90, 60, 100]
           }
         ],
       },
