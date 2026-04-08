@@ -29,33 +29,44 @@ jobs:
                   fi
                   echo "branch=$BRANCH" >> $GITHUB_OUTPUT
 
-            # Step 3: Set up Node.js environment to install conventional-changelog
+            # Step 3: Set up pnpm (needed for generate:catalog: tsx + script deps)
+            - name: Set up pnpm
+              uses: pnpm/action-setup@v5
+              with:
+                  version: 9
+
+            # Step 4: Set up Node.js with pnpm cache
             - name: Set up Node.js
               uses: actions/setup-node@v5
               with:
                   node-version: "22"
+                  cache: "pnpm"
 
-            # Step 4: Install conventional-changelog-cli
+            # Step 5: Install project dependencies (tsx, zod, etc. for catalog generation)
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            # Step 6: Install conventional-changelog-cli
             - name: Install conventional-changelog-cli
               run: |
                   npm install -g conventional-changelog-cli
 
-            # Step 5: Generate changelog
+            # Step 7: Generate changelog
             - name: Generate changelog
               run: |
                   conventional-changelog -p angular -i CHANGELOG.md -s -r 0
 
-            # Step 6: Update package.json version from the tag
+            # Step 8: Update package.json version from the tag
             - name: Update package.json version
               run: |
                   VERSION="${GITHUB_REF#refs/tags/v}"
                   npm pkg set "version=${VERSION}"
 
-            # Step 7: Regenerate catalog JSON (same as pnpm generate:catalog; no install needed)
+            # Step 9: Regenerate catalog JSON (scripts/generate-catalog.ts via tsx)
             - name: Generate catalog
-              run: node scripts/generate-catalog.mjs
+              run: pnpm generate:catalog
 
-            # Step 8: Commit and push changelog, version, and catalog to the determined branch
+            # Step 10: Commit and push changelog, version, and catalog to the determined branch
             - name: Commit and push release artifacts
               run: |
                   git config --global user.name "github-actions[bot]"
