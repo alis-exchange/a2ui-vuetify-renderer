@@ -168,7 +168,8 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
 | **`ComponentRegistry`**    | A `Map<string, Component>` that maps A2UI type strings (e.g. `"Button"`) to Vue components. Exposes `register()`, `registerAll()`, `get()`, and `has()`. The singleton `defaultRegistry` is pre-populated by `registerDefaultComponents()`.                                                       |
 | **`useA2UI()`**            | Composable that injects the provider context. Returns `resolveValue`, `resolveDynamicChildren`, `sendAction`, `dispatchNodeAction`, `setData`, `surfaceId`, `dataContext`, and `dataContextPath`. Builds a `DataContext` from `@a2ui/web_core/v0_9` for path-based and function-call value resolution. Uses `SurfaceModel.dispatchAction()` for schema-validated action payloads. |
 | **`useDynamicProps()`**    | Composable for custom catalog components: given a node (ref, getter, or plain object), returns a computed ref of properties with each value passed through `resolveValue` for bindings.                                                                                                        |
-| **`getCatalogSchema()`**   | Returns a deep-cloned JSON Schema for the Vuetify catalog, merging in stub entries for any extra components registered on a `ComponentRegistry` under the same `catalogId` (useful for agents or tooling).                                                                                        |
+| **`getCatalogSchema()`**   | Returns a deep-cloned JSON Schema for the Vuetify catalog, merging in stub entries for any extra components registered on a `ComponentRegistry` under the same `catalogId` (useful for agents or tooling). Accepts an optional `{ filter }` predicate to narrow the returned components — see **Filtering the catalog schema** below. |
+| **`catalogFilters`**       | Pre-built filter predicates for `getCatalogSchema`: `catalogFilters.customOnly` (non-built-in components only), `catalogFilters.only(...names)` (include-list), `catalogFilters.exclude(...names)` (exclude-list). |
 
 Form components use internal helpers in `src/utils/validation.ts` to map A2UI `checks` to Vuetify validation rules.
 
@@ -278,6 +279,43 @@ Now your agent can send `updateComponents` messages using your new `"CustomChart
   "data": { "path": "/salesData" }
 }
 ```
+
+### Filtering the catalog schema
+
+`getCatalogSchema()` accepts an optional `filter` predicate to control which components appear in the returned schema. This is useful when you only want to expose a subset of components to the LLM agent.
+
+```typescript
+import { getCatalogSchema, catalogFilters, defaultRegistry, CATALOG_ID } from '@alis-build/a2ui-vuetify-renderer';
+
+// Full catalog (default — same as before)
+const full = getCatalogSchema(defaultRegistry, CATALOG_ID);
+
+// Only custom (non-built-in) components
+const custom = getCatalogSchema(defaultRegistry, CATALOG_ID, {
+  filter: catalogFilters.customOnly,
+});
+
+// Only specific components
+const subset = getCatalogSchema(defaultRegistry, CATALOG_ID, {
+  filter: catalogFilters.only('Button', 'TextField', 'Card'),
+});
+
+// Everything except a few
+const lighter = getCatalogSchema(defaultRegistry, CATALOG_ID, {
+  filter: catalogFilters.exclude('Table', 'Calendar'),
+});
+
+// Arbitrary predicate
+const myFilter = getCatalogSchema(defaultRegistry, CATALOG_ID, {
+  filter: (name) => name.startsWith('Custom'),
+});
+```
+
+| Helper | Description |
+| --- | --- |
+| `catalogFilters.customOnly` | Keeps only components **not** in the base Vuetify catalog |
+| `catalogFilters.only(...names)` | Keeps only the listed component names |
+| `catalogFilters.exclude(...names)` | Keeps everything except the listed component names |
 
 ## Component catalog
 
@@ -445,6 +483,7 @@ import {
   VUETIFY_FUNCTIONS,
   VUETIFY_THEME_SCHEMA,
   getCatalogSchema,
+  catalogFilters,
 } from '@alis-build/a2ui-vuetify-renderer'
 
 // Plugin
@@ -501,7 +540,8 @@ renderer/
 │   │   ├── ComponentRegistry.ts    # Type → Component map (per catalogId)
 │   │   ├── constants.ts            # CATALOG_ID
 │   │   ├── defaultCatalog.ts       # Registers 40 default components
-│   │   └── getCatalogSchema.ts     # Schema merge for tooling / agents
+│   │   ├── getCatalogSchema.ts     # Schema merge for tooling / agents
+│   │   └── catalogFilters.ts      # Pre-built filter predicates
 │   ├── components/
 │   │   └── A2UI*.vue               # Vuetify-backed (and media) implementations
 │   └── utils/

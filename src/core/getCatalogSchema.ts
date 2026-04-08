@@ -1,25 +1,50 @@
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import baseCatalog from '../../catalog/vuetify-catalog.json';
+import type { CatalogFilter } from './catalogFilters';
 import type { ComponentRegistry } from './ComponentRegistry';
+
+export interface GetCatalogSchemaOptions {
+  /**
+   * Optional predicate to filter which components appear in the returned schema.
+   * Called once per component name — return `true` to keep, `false` to exclude.
+   *
+   * When omitted every component is included (backwards-compatible default).
+   *
+   * @example
+   * ```ts
+   * import { catalogFilters } from '@a2ui/vue-renderer'
+   *
+   * // Only custom components
+   * getCatalogSchema(registry, id, { filter: catalogFilters.customOnly })
+   *
+   * // Arbitrary predicate
+   * getCatalogSchema(registry, id, { filter: name => name.startsWith('My') })
+   * ```
+   */
+  filter?: CatalogFilter;
+}
+
 /**
- * Returns the full JSON Schema representing the component catalog.
+ * Returns a JSON Schema representing the component catalog.
  * Dynamically assembles the schema based on components registered in the provided ComponentRegistry
  * to include any custom components registered at runtime.
+ *
+ * Pass `options.filter` to narrow the returned components.
  */
-export function getCatalogSchema(registry: ComponentRegistry, catalogId: string): Record<string, any> {
-  // Deep clone to avoid mutating the base imported module
+export function getCatalogSchema(
+  registry: ComponentRegistry,
+  catalogId: string,
+  options?: GetCatalogSchemaOptions,
+): Record<string, any> {
   const schema = JSON.parse(JSON.stringify(baseCatalog));
 
-  // Ensure components object exists
   if (!schema.components) {
     schema.components = {};
   }
 
-  // Iterate over registered components and add basic schema stub for any missing
   const registeredKeys = registry.keys(catalogId);
   for (const key of registeredKeys) {
     if (!schema.components[key]) {
-      // The base definitions that every A2UI component must have
       const allOf: any[] = [
         { $ref: '#/$defs/ComponentCommon' },
         { $ref: '#/$defs/CatalogComponentCommon' },
@@ -32,24 +57,26 @@ export function getCatalogSchema(registry: ComponentRegistry, catalogId: string)
         },
       ];
 
-      // Check if the user provided a custom api during registration
       const customApi = registry.getApi(catalogId, key);
-
-      // If the user provided a custom schema, append it to the allOf array
       if (customApi) {
-        // Convert the Zod schema to JSON Schema
         const convertedSchema = zodToJsonSchema(customApi.schema, {
-          $refStrategy: 'none', // Prevent it from creating internal $defs
+          $refStrategy: 'none',
         });
-
         allOf.push(convertedSchema);
       }
 
-      // Assign the assembled schema to the component key
       schema.components[key] = {
         type: 'object',
         allOf: allOf,
       };
+    }
+  }
+
+  if (options?.filter) {
+    for (const key of Object.keys(schema.components)) {
+      if (!options.filter(key)) {
+        delete schema.components[key];
+      }
     }
   }
 
