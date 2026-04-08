@@ -1,4 +1,24 @@
-## [0.1.8](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.9...v0.1.8) (2026-04-01)
+## [0.1.9](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.11...v0.1.9) (2026-04-08)
+
+## [0.1.11](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.10...v0.1.11) (2026-04-08)
+
+
+### Bug Fixes
+
+* update npm_publish workflow to use pnpm for dependency management and streamline changelog generation steps ([c6d738a](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/c6d738a11ea383c59f556849553a7aaaba16f292))
+
+## [0.1.10](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.9...v0.1.10) (2026-04-08)
+
+
+### Bug Fixes
+
+* restore import order and formatting in App.vue; update test structure in generate-catalog.spec.ts for consistency ([2ba6ae2](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/2ba6ae25ec246fbdfd49b0cf6f6eb1432d1fb517))
+
+
+### Features
+
+* enhance accessibility attributes in component schema; add dynamic string support for text property ([798866d](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/798866d7a82fcfb0e0b83a195dcfe65b89822eb7))
+* introduce catalog filtering options for getCatalogSchema; add pre-built predicates for component selection ([1a1a6e7](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/1a1a6e7899fac21e26975e233676ee07ca1a78fb))
 
 ## [0.1.9](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.8...v0.1.9) (2026-04-01)
 
