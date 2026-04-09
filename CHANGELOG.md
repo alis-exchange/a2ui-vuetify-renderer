@@ -1,4 +1,11 @@
-## [0.1.9](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.11...v0.1.9) (2026-04-08)
+## [0.1.11](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.12...v0.1.11) (2026-04-09)
+
+## [0.1.12](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.11...v0.1.12) (2026-04-09)
+
+
+### Features
+
+* implement CommonProps schema for components; enhance component APIs with accessibility and dynamic properties ([4729dc0](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/4729dc031d5077d43d5aa23ce03e932bf8b56a7d))
 
 ## [0.1.11](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.10...v0.1.11) (2026-04-08)
 
