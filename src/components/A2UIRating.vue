@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import type { ComponentModel } from '../types';
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
+  import type { ComponentModel } from '../types';
 
   const props = defineProps<{
     node: ComponentModel;
@@ -23,24 +23,6 @@
       dispatchNodeAction(props.node, { value: val });
     },
   });
-</script>
-
-<script lang="ts">
-  import { ActionSchema, DynamicNumberSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
-  import { z } from 'zod';
-  import { CommonProps } from '../catalog/common-props';
-
-  export const RatingApi: ComponentApi = {
-    name: 'Rating',
-    schema: z
-      .object({
-        ...CommonProps,
-        max: z.number().default(5).optional(),
-        value: DynamicNumberSchema,
-        action: ActionSchema.optional(),
-      })
-      .strict(),
-  };
 </script>
 
 <template>

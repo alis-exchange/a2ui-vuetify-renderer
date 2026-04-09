@@ -364,18 +364,13 @@
               id: 'submit-btn',
               component: 'Button',
               variant: 'primary',
-              child: 'submit-text',
+              label: 'Save Details',
               action: {
                 event: {
                   name: 'submitForm',
                   context: { user: { path: '/userName' } },
                 },
               },
-            },
-            {
-              id: 'submit-text',
-              component: 'Text',
-              text: 'Save Details',
             },
             {
               id: 'settings-card',

@@ -14,10 +14,10 @@ export { A2UI_REGISTRY_KEY, ComponentRegistry, defaultRegistry } from './core/Co
 
 export { registerDefaultComponents } from './core/defaultCatalog';
 
-export { getCatalogSchema } from './core/getCatalogSchema';
-export type { GetCatalogSchemaOptions } from './core/getCatalogSchema';
 export { catalogFilters } from './core/catalogFilters';
 export type { CatalogFilter } from './core/catalogFilters';
+export { getCatalogSchema } from './core/getCatalogSchema';
+export type { GetCatalogSchemaOptions } from './core/getCatalogSchema';
 
 // Export shared types for custom component development
 export type { ComponentModel } from './types';

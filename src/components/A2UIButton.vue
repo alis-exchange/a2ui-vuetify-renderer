@@ -1,8 +1,7 @@
 <script setup lang="ts">
-  import type { ComponentModel } from '../types';
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
-  import ComponentNode from '../core/ComponentNode.vue';
+  import type { ComponentModel } from '../types';
 
   const props = defineProps<{
     node: ComponentModel;
@@ -10,11 +9,26 @@
 
   const { resolveValue, dispatchNodeAction } = useA2UI();
 
-  const childId = computed(() => {
-    const c = resolveValue(props.node.properties.child);
-    if (typeof c === 'string') return c;
-    if (c && typeof c === 'object' && c.id) return c.id;
-    return undefined;
+  const labelText = computed(() => {
+    const label = resolveValue(props.node.properties.label);
+    if (label !== undefined && label !== null && String(label) !== '') {
+      return String(label);
+    }
+    const text = resolveValue(props.node.properties.text);
+    if (text !== undefined && text !== null && String(text) !== '') {
+      return String(text);
+    }
+    return '';
+  });
+
+  const iconName = computed(() => {
+    const raw = resolveValue(props.node.properties.icon);
+    if (raw === undefined || raw === null || raw === '') return '';
+    const name = String(raw);
+    if (name && !name.startsWith('mdi-')) {
+      return `mdi-${name}`;
+    }
+    return name;
   });
 
   const buttonProps = computed(() => {
@@ -47,33 +61,17 @@
   };
 </script>
 
-<script lang="ts">
-  import { ActionSchema, CheckableSchema, ComponentIdSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
-  import { z } from 'zod';
-  import { CommonProps } from '../catalog/common-props';
-
-  export const ButtonApi: ComponentApi = {
-    name: 'Button',
-    schema: z
-      .object({
-        ...CommonProps,
-        child: ComponentIdSchema,
-        variant: z.enum(['default', 'primary', 'borderless']).default('default').optional(),
-        action: ActionSchema,
-        checks: CheckableSchema.shape.checks,
-      })
-      .strict(),
-  };
-</script>
-
 <template>
   <v-btn
     v-bind="buttonProps"
+    :prepend-icon="iconName && labelText ? iconName : undefined"
     @click="handleClick"
   >
-    <ComponentNode
-      v-if="childId"
-      :id="childId"
+    <span v-if="iconName && labelText">{{ labelText }}</span>
+    <v-icon
+      v-else-if="iconName && !labelText"
+      :icon="iconName"
     />
+    <template v-else-if="labelText">{{ labelText }}</template>
   </v-btn>
 </template>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import type { ComponentModel } from '../types';
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
+  import type { ComponentModel } from '../types';
 
   const props = defineProps<{
     node: ComponentModel;
@@ -10,22 +10,6 @@
   const { resolveValue } = useA2UI();
 
   const items = computed(() => resolveValue(props.node.properties.items) || []);
-</script>
-
-<script lang="ts">
-  import type { ComponentApi } from '@a2ui/web_core/v0_9';
-  import { z } from 'zod';
-  import { CommonProps } from '../catalog/common-props';
-
-  export const TreeViewApi: ComponentApi = {
-    name: 'TreeView',
-    schema: z
-      .object({
-        ...CommonProps,
-        items: z.array(z.any()),
-      })
-      .strict(),
-  };
 </script>
 
 <template>

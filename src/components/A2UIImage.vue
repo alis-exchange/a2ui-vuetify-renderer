@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import type { ComponentModel } from '../types';
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
+  import type { ComponentModel } from '../types';
 
   const props = defineProps<{
     node: ComponentModel;
@@ -36,25 +36,6 @@
     }
     return {};
   });
-</script>
-
-<script lang="ts">
-  import { DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
-  import { z } from 'zod';
-  import { CommonProps } from '../catalog/common-props';
-
-  export const ImageApi: ComponentApi = {
-    name: 'Image',
-    schema: z
-      .object({
-        ...CommonProps,
-        url: DynamicStringSchema,
-        description: DynamicStringSchema.optional(),
-        fit: z.enum(['contain', 'cover', 'fill', 'none', 'scaleDown']).default('fill').optional(),
-        variant: z.enum(['icon', 'avatar', 'smallFeature', 'mediumFeature', 'largeFeature', 'header']).default('mediumFeature').optional(),
-      })
-      .strict(),
-  };
 </script>
 
 <template>

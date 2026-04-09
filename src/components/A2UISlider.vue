@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import type { ComponentModel } from '../types';
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
+  import type { ComponentModel } from '../types';
 
   const props = defineProps<{
     node: ComponentModel;
@@ -27,27 +27,6 @@
 
   const handleEnd = () => {
     dispatchNodeAction(props.node, { value: modelValue.value });
-  };
-</script>
-
-<script lang="ts">
-  import { ActionSchema, CheckableSchema, DynamicNumberSchema, DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
-  import { z } from 'zod';
-  import { CommonProps } from '../catalog/common-props';
-
-  export const SliderApi: ComponentApi = {
-    name: 'Slider',
-    schema: z
-      .object({
-        ...CommonProps,
-        label: DynamicStringSchema.optional(),
-        min: z.number().default(0).optional(),
-        max: z.number(),
-        value: DynamicNumberSchema,
-        action: ActionSchema.optional(),
-        checks: CheckableSchema.shape.checks,
-      })
-      .strict(),
   };
 </script>
 

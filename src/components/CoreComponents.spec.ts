@@ -8,6 +8,7 @@ import A2UICard from './A2UICard.vue';
 import A2UIColumn from './A2UIColumn.vue';
 import A2UIDivider from './A2UIDivider.vue';
 import A2UIIcon from './A2UIIcon.vue';
+import A2UIIconButton from './A2UIIconButton.vue';
 import A2UIImage from './A2UIImage.vue';
 import A2UIRow from './A2UIRow.vue';
 import A2UIText from './A2UIText.vue';
@@ -194,13 +195,12 @@ describe('Core Content Components', () => {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
           plugins: [vuetify],
-          stubs: { ComponentNode: true },
         },
         props: {
           node: {
             id: 'btn1',
             type: 'Button',
-            properties: { variant: 'primary', child: 'child1' },
+            properties: { variant: 'primary', label: 'Go' },
           } as any,
         },
       });
@@ -216,13 +216,12 @@ describe('Core Content Components', () => {
         global: {
           provide: { [A2UI_CONTEXT_KEY as symbol]: mockContext },
           plugins: [vuetify],
-          stubs: { ComponentNode: true },
         },
         props: {
           node: {
             id: 'btn2',
             type: 'Button',
-            properties: { action: { event: { name: 'submit' } } },
+            properties: { label: 'Submit', action: { event: { name: 'submit' } } },
           } as any,
         },
       });
@@ -235,6 +234,73 @@ describe('Core Content Components', () => {
           surfaceId: 'test-surface',
           timestamp: expect.any(String),
           context: {},
+        }),
+      );
+    });
+
+    it('renders label text', () => {
+      const wrapper = mount(A2UIButton, {
+        global: {
+          provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
+          plugins: [vuetify],
+        },
+        props: {
+          node: {
+            id: 'btn-label',
+            type: 'Button',
+            properties: { label: 'Save', variant: 'primary' },
+          } as any,
+        },
+      });
+      expect(wrapper.text()).toContain('Save');
+      expect(wrapper.findComponent({ name: 'VBtn' }).exists()).toBe(true);
+    });
+  });
+
+  describe('A2UIIconButton', () => {
+    it('renders an icon button', () => {
+      const wrapper = mount(A2UIIconButton, {
+        global: {
+          provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
+          plugins: [vuetify],
+        },
+        props: {
+          node: {
+            id: 'ib1',
+            type: 'IconButton',
+            properties: { icon: 'close' },
+          } as any,
+        },
+      });
+      const btn = wrapper.findComponent({ name: 'VBtn' });
+      expect(btn.exists()).toBe(true);
+      expect(btn.props('icon')).toBe(true);
+      const icon = wrapper.findComponent({ name: 'VIcon' });
+      expect(icon.props('icon')).toBe('mdi-close');
+    });
+
+    it('triggers sendAction on click', async () => {
+      const mockContext = createMockContext();
+      const wrapper = mount(A2UIIconButton, {
+        global: {
+          provide: { [A2UI_CONTEXT_KEY as symbol]: mockContext },
+          plugins: [vuetify],
+        },
+        props: {
+          node: {
+            id: 'ib2',
+            type: 'IconButton',
+            properties: { icon: 'heart', action: { event: { name: 'like' } } },
+          } as any,
+        },
+      });
+
+      await wrapper.findComponent({ name: 'VBtn' }).trigger('click');
+      expect(mockContext.onAction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'like',
+          sourceComponentId: 'ib2',
+          surfaceId: 'test-surface',
         }),
       );
     });

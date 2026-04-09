@@ -130,8 +130,7 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
           components: [
             { id: 'root', component: 'Column', children: ['heading', 'greet-btn'] },
             { id: 'heading', component: 'Text', text: 'Hello from A2UI!', variant: 'h4' },
-            { id: 'greet-btn', component: 'Button', variant: 'primary', child: 'btn-label', action: { event: { name: 'greet' } } },
-            { id: 'btn-label', component: 'Text', text: 'Click Me' },
+            { id: 'greet-btn', component: 'Button', variant: 'primary', label: 'Click Me', action: { event: { name: 'greet' } } },
           ],
         },
       },

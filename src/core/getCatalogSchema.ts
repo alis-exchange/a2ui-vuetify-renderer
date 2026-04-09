@@ -31,11 +31,7 @@ export interface GetCatalogSchemaOptions {
  *
  * Pass `options.filter` to narrow the returned components.
  */
-export function getCatalogSchema(
-  registry: ComponentRegistry,
-  catalogId: string,
-  options?: GetCatalogSchemaOptions,
-): Record<string, any> {
+export function getCatalogSchema(registry: ComponentRegistry, catalogId: string, options?: GetCatalogSchemaOptions): Record<string, any> {
   const schema = JSON.parse(JSON.stringify(baseCatalog));
 
   if (!schema.components) {

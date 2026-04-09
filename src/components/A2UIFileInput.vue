@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import type { ComponentModel } from '../types';
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
+  import type { ComponentModel } from '../types';
 
   const props = defineProps<{
     node: ComponentModel;
@@ -24,24 +24,6 @@
       dispatchNodeAction(props.node, { files: fileNames });
     },
   });
-</script>
-
-<script lang="ts">
-  import { ActionSchema, DynamicStringSchema, DynamicValueSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
-  import { z } from 'zod';
-  import { CommonProps } from '../catalog/common-props';
-
-  export const FileInputApi: ComponentApi = {
-    name: 'FileInput',
-    schema: z
-      .object({
-        ...CommonProps,
-        label: DynamicStringSchema,
-        value: DynamicValueSchema.optional(),
-        action: ActionSchema.optional(),
-      })
-      .strict(),
-  };
 </script>
 
 <template>

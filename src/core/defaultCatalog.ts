@@ -19,6 +19,7 @@ import A2UIExpansionPanel from '../components/A2UIExpansionPanel.vue';
 import A2UIFileInput from '../components/A2UIFileInput.vue';
 import A2UIForm from '../components/A2UIForm.vue';
 import A2UIIcon from '../components/A2UIIcon.vue';
+import A2UIIconButton from '../components/A2UIIconButton.vue';
 import A2UIImage from '../components/A2UIImage.vue';
 import A2UIList from '../components/A2UIList.vue';
 import A2UIModal from '../components/A2UIModal.vue';
@@ -50,6 +51,7 @@ export function registerDefaultComponents() {
     Column: A2UIColumn,
     Card: A2UICard,
     Button: A2UIButton,
+    IconButton: A2UIIconButton,
     TextField: A2UITextField,
     TextArea: A2UITextArea,
     NumberInput: A2UINumberInput,

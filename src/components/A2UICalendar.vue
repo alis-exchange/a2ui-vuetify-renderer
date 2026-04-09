@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import type { ComponentModel } from '../types';
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
+  import type { ComponentModel } from '../types';
 
   const props = defineProps<{
     node: ComponentModel;
@@ -40,38 +40,6 @@
       event: event ? { name: event.name, start: event.start, end: event.end } : {},
       interaction: 'click:event',
     });
-  };
-</script>
-
-<script lang="ts">
-  import { ActionSchema, DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
-  import { z } from 'zod';
-  import { CommonProps } from '../catalog/common-props';
-
-  export const CalendarApi: ComponentApi = {
-    name: 'Calendar',
-    schema: z
-      .object({
-        ...CommonProps,
-        events: z.array(
-          z
-            .object({
-              name: z.string(),
-              start: z.string(),
-              end: z.string().optional(),
-              color: z.string().optional(),
-              timed: z.boolean().optional(),
-            })
-            .strict(),
-        ),
-        type: z.enum(['month', 'week', 'day', '4day', 'custom-weekly', 'custom-daily', 'category']).default('month').optional(),
-        value: DynamicStringSchema.optional(),
-        weekdays: z.array(z.number()).optional(),
-        color: z.string().optional(),
-        eventColor: z.string().optional(),
-        action: ActionSchema.optional(),
-      })
-      .strict(),
   };
 </script>
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import type { ComponentModel } from '../types';
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
+  import type { ComponentModel } from '../types';
 
   const props = defineProps<{
     node: ComponentModel;
@@ -34,33 +34,6 @@
   const handleChange = (val: any) => {
     modelValue.value = val;
     dispatchNodeAction(props.node, { value: val });
-  };
-</script>
-
-<script lang="ts">
-  import { ActionSchema, CheckableSchema, DynamicBooleanSchema, DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
-  import { z } from 'zod';
-  import { CommonProps } from '../catalog/common-props';
-
-  export const DatePickerApi: ComponentApi = {
-    name: 'DatePicker',
-    schema: z
-      .object({
-        ...CommonProps,
-        label: DynamicStringSchema.optional(),
-        value: DynamicStringSchema,
-        min: DynamicStringSchema.optional(),
-        max: DynamicStringSchema.optional(),
-        color: z.string().optional(),
-        multiple: z.union([z.boolean(), z.literal('range')]).optional(),
-        readonly: DynamicBooleanSchema.optional(),
-        disabled: DynamicBooleanSchema.optional(),
-        landscape: DynamicBooleanSchema.optional(),
-        showAdjacentMonths: DynamicBooleanSchema.optional(),
-        action: ActionSchema.optional(),
-        checks: CheckableSchema.shape.checks,
-      })
-      .strict(),
   };
 </script>
 

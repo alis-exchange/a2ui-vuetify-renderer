@@ -8,26 +8,6 @@
   const dynamicProps = useDynamicProps(() => props.node);
 </script>
 
-<script lang="ts">
-  import { DynamicBooleanSchema, DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
-  import { z } from 'zod';
-  import { CommonProps } from '../catalog/common-props';
-
-  export const AudioPlayerApi: ComponentApi = {
-    name: 'AudioPlayer',
-    schema: z
-      .object({
-        ...CommonProps,
-        url: DynamicStringSchema,
-        autoplay: DynamicBooleanSchema.optional(),
-        controls: DynamicBooleanSchema.optional(),
-        loop: DynamicBooleanSchema.optional(),
-        muted: DynamicBooleanSchema.optional(),
-      })
-      .strict(),
-  };
-</script>
-
 <template>
   <audio
     class="a2ui-audio w-100"

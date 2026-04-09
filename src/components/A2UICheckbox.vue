@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import type { ComponentModel } from '../types';
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
+  import type { ComponentModel } from '../types';
   import { createVuetifyRules } from '../utils/validation';
 
   const props = defineProps<{
@@ -29,25 +29,6 @@
     const checks = resolveValue(props.node.properties.checks);
     return createVuetifyRules(checks);
   });
-</script>
-
-<script lang="ts">
-  import { ActionSchema, CheckableSchema, DynamicBooleanSchema, DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
-  import { z } from 'zod';
-  import { CommonProps } from '../catalog/common-props';
-
-  export const CheckboxApi: ComponentApi = {
-    name: 'Checkbox',
-    schema: z
-      .object({
-        ...CommonProps,
-        label: DynamicStringSchema,
-        value: DynamicBooleanSchema,
-        action: ActionSchema.optional(),
-        checks: CheckableSchema.shape.checks,
-      })
-      .strict(),
-  };
 </script>
 
 <template>

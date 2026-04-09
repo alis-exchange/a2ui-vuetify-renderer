@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import type { ComponentModel } from '../types';
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
+  import type { ComponentModel } from '../types';
   import { createVuetifyRules } from '../utils/validation';
 
   const props = defineProps<{
@@ -44,26 +44,6 @@
 
   const handleBlur = () => {
     dispatchNodeAction(props.node, { value: modelValue.value });
-  };
-</script>
-
-<script lang="ts">
-  import { ActionSchema, CheckableSchema, DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
-  import { z } from 'zod';
-  import { CommonProps } from '../catalog/common-props';
-
-  export const TextAreaApi: ComponentApi = {
-    name: 'TextArea',
-    schema: z
-      .object({
-        ...CommonProps,
-        label: DynamicStringSchema,
-        value: DynamicStringSchema.optional(),
-        variant: z.enum(['filled', 'outlined', 'underlined']).default('outlined').optional(),
-        action: ActionSchema.optional(),
-        checks: CheckableSchema.shape.checks,
-      })
-      .strict(),
   };
 </script>
 

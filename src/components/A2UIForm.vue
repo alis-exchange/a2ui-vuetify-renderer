@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  import type { ComponentModel } from '../types';
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
   import ComponentNode from '../core/ComponentNode.vue';
+  import type { ComponentModel } from '../types';
 
   const props = defineProps<{
     node: ComponentModel;
@@ -20,22 +20,6 @@
       return child;
     });
   });
-</script>
-
-<script lang="ts">
-  import { ChildListSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
-  import { z } from 'zod';
-  import { CommonProps } from '../catalog/common-props';
-
-  export const FormApi: ComponentApi = {
-    name: 'Form',
-    schema: z
-      .object({
-        ...CommonProps,
-        children: ChildListSchema,
-      })
-      .strict(),
-  };
 </script>
 
 <template>

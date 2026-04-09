@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import type { ComponentModel } from '../types';
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
+  import type { ComponentModel } from '../types';
 
   const props = defineProps<{
     node: ComponentModel;
@@ -26,26 +26,6 @@
   });
 
   const multiple = computed(() => resolveValue(props.node.properties.variant) === 'multipleSelection');
-</script>
-
-<script lang="ts">
-  import { ActionSchema, DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
-  import { z } from 'zod';
-  import { CommonProps } from '../catalog/common-props';
-
-  export const ComboboxApi: ComponentApi = {
-    name: 'Combobox',
-    schema: z
-      .object({
-        ...CommonProps,
-        label: DynamicStringSchema.optional(),
-        options: z.array(z.any()),
-        value: z.union([z.string(), z.array(z.any())]),
-        variant: z.enum(['multipleSelection', 'mutuallyExclusive']).default('mutuallyExclusive').optional(),
-        action: ActionSchema.optional(),
-      })
-      .strict(),
-  };
 </script>
 
 <template>
