@@ -19,6 +19,9 @@ export type { GetCatalogSchemaOptions } from './core/getCatalogSchema';
 export { catalogFilters } from './core/catalogFilters';
 export type { CatalogFilter } from './core/catalogFilters';
 
+// Export shared types for custom component development
+export type { ComponentModel } from './types';
+
 // Export catalog ID for consumers to reference the schema
 export { CATALOG_ID } from './core/constants';
 

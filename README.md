@@ -213,11 +213,10 @@ Use the `useA2UI` composable to easily map A2UI JSON properties to your componen
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useA2UI } from '@alis-build/a2ui-vuetify-renderer';
+import { useA2UI, type ComponentModel } from '@alis-build/a2ui-vuetify-renderer';
 
 const props = defineProps<{
-  node: any; // The A2UI component node data
-  path?: string; // The data model scope path
+  node: ComponentModel;
 }>();
 
 // useA2UI automatically handles resolving dynamic data bindings (e.g. { path: '/myData' })
@@ -439,9 +438,9 @@ Custom components receive a `node` prop (the component node from A2UI). To resol
 ```vue
 <script setup lang="ts">
   import { toRef } from 'vue'
-  import { useDynamicProps, useA2UI } from '@alis-build/a2ui-vuetify-renderer'
+  import { useDynamicProps, useA2UI, type ComponentModel } from '@alis-build/a2ui-vuetify-renderer'
 
-  const props = defineProps<{ node: any }>()
+  const props = defineProps<{ node: ComponentModel }>()
 
   const dynamicProps = useDynamicProps(toRef(props, 'node'))
 
@@ -490,7 +489,7 @@ import {
 import { A2UiVueRenderer } from '@alis-build/a2ui-vuetify-renderer'
 
 // Types
-import type { A2UIContext, A2UIActionPayload, A2UiVueRendererOptions } from '@alis-build/a2ui-vuetify-renderer'
+import type { A2UIContext, A2UIActionPayload, A2UiVueRendererOptions, ComponentModel } from '@alis-build/a2ui-vuetify-renderer'
 
 // Injection keys (for advanced provide/inject usage)
 import { A2UI_CONTEXT_KEY, A2UI_REGISTRY_KEY } from '@alis-build/a2ui-vuetify-renderer'

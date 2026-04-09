@@ -40,12 +40,11 @@
 </template>
 
 <script setup lang="ts">
-  import { useA2UI } from '@alis-build/a2ui-vuetify-renderer';
+  import { useA2UI, type ComponentModel } from '@alis-build/a2ui-vuetify-renderer';
   import { computed, ref } from 'vue';
 
   const props = defineProps<{
-    node: any; // The A2UI component node data
-    path?: string; // The data model scope path
+    node: ComponentModel;
   }>();
 
   const hoveredIndex = ref<number | null>(null);

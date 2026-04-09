@@ -1,9 +1,9 @@
 <script setup lang="ts">
-  import { type SurfaceComponentsModel } from '@a2ui/web_core/v0_9';
+  import type { ComponentModel } from '../types';
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
   import ComponentNode from '../core/ComponentNode.vue';
-  type ComponentModel = NonNullable<ReturnType<SurfaceComponentsModel['get']>>;
+
 
   const props = defineProps<{
     node: ComponentModel;
