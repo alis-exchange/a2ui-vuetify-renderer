@@ -1,571 +1,88 @@
 import type { ComponentApi } from '@a2ui/web_core/v0_9';
-import { AccessibilityAttributesSchema, ActionSchema, CheckableSchema, ChildListSchema, ComponentIdSchema, DynamicBooleanSchema, DynamicNumberSchema, DynamicStringSchema, DynamicValueSchema } from '@a2ui/web_core/v0_9';
-import { z } from 'zod';
 
-const CommonProps = {
-  accessibility: AccessibilityAttributesSchema.optional(),
-  weight: z.number().describe("The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'.").optional(),
+import { AlertApi } from '../components/A2UIAlert.vue';
+import { AudioPlayerApi } from '../components/A2UIAudioPlayer.vue';
+import { AutocompleteApi } from '../components/A2UIAutocomplete.vue';
+import { AvatarApi } from '../components/A2UIAvatar.vue';
+import { BadgeApi } from '../components/A2UIBadge.vue';
+import { BannerApi } from '../components/A2UIBanner.vue';
+import { ButtonApi } from '../components/A2UIButton.vue';
+import { CalendarApi } from '../components/A2UICalendar.vue';
+import { CardApi } from '../components/A2UICard.vue';
+import { CheckboxApi } from '../components/A2UICheckbox.vue';
+import { ChipApi } from '../components/A2UIChip.vue';
+import { ChoicePickerApi } from '../components/A2UIChoicePicker.vue';
+import { ColumnApi } from '../components/A2UIColumn.vue';
+import { ComboboxApi } from '../components/A2UICombobox.vue';
+import { DatePickerApi } from '../components/A2UIDatePicker.vue';
+import { DividerApi } from '../components/A2UIDivider.vue';
+import { EmptyStateApi } from '../components/A2UIEmptyState.vue';
+import { ExpansionPanelApi } from '../components/A2UIExpansionPanel.vue';
+import { FileInputApi } from '../components/A2UIFileInput.vue';
+import { FormApi } from '../components/A2UIForm.vue';
+import { IconApi } from '../components/A2UIIcon.vue';
+import { ImageApi } from '../components/A2UIImage.vue';
+import { ListApi } from '../components/A2UIList.vue';
+import { ModalApi } from '../components/A2UIModal.vue';
+import { NumberInputApi } from '../components/A2UINumberInput.vue';
+import { RadioButtonApi } from '../components/A2UIRadioButton.vue';
+import { RangeSliderApi } from '../components/A2UIRangeSlider.vue';
+import { RatingApi } from '../components/A2UIRating.vue';
+import { RowApi } from '../components/A2UIRow.vue';
+import { SelectApi } from '../components/A2UISelect.vue';
+import { SliderApi } from '../components/A2UISlider.vue';
+import { TabsApi } from '../components/A2UITabs.vue';
+import { TableApi } from '../components/A2UITable.vue';
+import { TextApi } from '../components/A2UIText.vue';
+import { TextAreaApi } from '../components/A2UITextArea.vue';
+import { TextFieldApi } from '../components/A2UITextField.vue';
+import { TimePickerApi } from '../components/A2UITimePicker.vue';
+import { TreeViewApi } from '../components/A2UITreeView.vue';
+import { VideoApi } from '../components/A2UIVideo.vue';
+
+export {
+  AlertApi,
+  AudioPlayerApi,
+  AutocompleteApi,
+  AvatarApi,
+  BadgeApi,
+  BannerApi,
+  ButtonApi,
+  CalendarApi,
+  CardApi,
+  CheckboxApi,
+  ChipApi,
+  ChoicePickerApi,
+  ColumnApi,
+  ComboboxApi,
+  DatePickerApi,
+  DividerApi,
+  EmptyStateApi,
+  ExpansionPanelApi,
+  FileInputApi,
+  FormApi,
+  IconApi,
+  ImageApi,
+  ListApi,
+  ModalApi,
+  NumberInputApi,
+  RadioButtonApi,
+  RangeSliderApi,
+  RatingApi,
+  RowApi,
+  SelectApi,
+  SliderApi,
+  TabsApi,
+  TableApi,
+  TextApi,
+  TextAreaApi,
+  TextFieldApi,
+  TimePickerApi,
+  TreeViewApi,
+  VideoApi,
 };
 
-// ---------------------------------------------------------------------------
-// Content & Display
-// ---------------------------------------------------------------------------
-
-export const TextApi = {
-  name: 'Text',
-  schema: z
-    .object({
-      ...CommonProps,
-      text: DynamicStringSchema,
-      variant: z.enum(['h1', 'h2', 'h3', 'h4', 'h5', 'caption', 'body']).default('body').optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const ImageApi = {
-  name: 'Image',
-  schema: z
-    .object({
-      ...CommonProps,
-      url: DynamicStringSchema,
-      description: DynamicStringSchema.optional(),
-      fit: z.enum(['contain', 'cover', 'fill', 'none', 'scaleDown']).default('fill').optional(),
-      variant: z.enum(['icon', 'avatar', 'smallFeature', 'mediumFeature', 'largeFeature', 'header']).default('mediumFeature').optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const IconApi = {
-  name: 'Icon',
-  schema: z
-    .object({
-      ...CommonProps,
-      name: z.union([z.string(), z.object({ path: z.string() })]),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const DividerApi = {
-  name: 'Divider',
-  schema: z
-    .object({
-      ...CommonProps,
-      axis: z.enum(['horizontal', 'vertical']).default('horizontal').optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const AvatarApi = {
-  name: 'Avatar',
-  schema: z
-    .object({
-      ...CommonProps,
-      image: DynamicStringSchema.optional(),
-      text: DynamicStringSchema.optional(),
-      child: ComponentIdSchema.optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const BadgeApi = {
-  name: 'Badge',
-  schema: z
-    .object({
-      ...CommonProps,
-      content: DynamicStringSchema,
-      color: z.string().optional(),
-      child: ComponentIdSchema,
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const ChipApi = {
-  name: 'Chip',
-  schema: z
-    .object({
-      ...CommonProps,
-      text: DynamicStringSchema.optional(),
-      child: ComponentIdSchema.optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const AlertApi = {
-  name: 'Alert',
-  schema: z
-    .object({
-      ...CommonProps,
-      title: DynamicStringSchema.optional(),
-      text: DynamicStringSchema.optional(),
-      variant: z.enum(['success', 'info', 'warning', 'error']).default('info').optional(),
-      child: ComponentIdSchema.optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const BannerApi = {
-  name: 'Banner',
-  schema: z
-    .object({
-      ...CommonProps,
-      text: DynamicStringSchema,
-      icon: DynamicStringSchema.optional(),
-      child: ComponentIdSchema.optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const EmptyStateApi = {
-  name: 'EmptyState',
-  schema: z
-    .object({
-      ...CommonProps,
-      title: DynamicStringSchema.optional(),
-      text: DynamicStringSchema.optional(),
-      icon: DynamicStringSchema.optional(),
-      child: ComponentIdSchema.optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const RatingApi = {
-  name: 'Rating',
-  schema: z
-    .object({
-      ...CommonProps,
-      max: z.number().default(5).optional(),
-      value: DynamicNumberSchema,
-      action: ActionSchema.optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-// ---------------------------------------------------------------------------
-// Layout & Containers
-// ---------------------------------------------------------------------------
-
-export const RowApi = {
-  name: 'Row',
-  schema: z
-    .object({
-      ...CommonProps,
-      children: ChildListSchema,
-      justify: z.enum(['center', 'end', 'spaceAround', 'spaceBetween', 'spaceEvenly', 'start', 'stretch']).default('start').optional(),
-      align: z.enum(['start', 'center', 'end', 'stretch']).default('stretch').optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const ColumnApi = {
-  name: 'Column',
-  schema: z
-    .object({
-      ...CommonProps,
-      children: ChildListSchema,
-      justify: z.enum(['start', 'center', 'end', 'spaceBetween', 'spaceAround', 'spaceEvenly', 'stretch']).default('start').optional(),
-      align: z.enum(['center', 'end', 'start', 'stretch']).default('stretch').optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const ListApi = {
-  name: 'List',
-  schema: z
-    .object({
-      ...CommonProps,
-      children: ChildListSchema,
-      direction: z.enum(['vertical', 'horizontal']).default('vertical').optional(),
-      align: z.enum(['start', 'center', 'end', 'stretch']).default('stretch').optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const CardApi = {
-  name: 'Card',
-  schema: z
-    .object({
-      ...CommonProps,
-      child: ComponentIdSchema,
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const TabsApi = {
-  name: 'Tabs',
-  schema: z
-    .object({
-      ...CommonProps,
-      tabs: z
-        .array(
-          z
-            .object({
-              title: DynamicStringSchema,
-              child: ComponentIdSchema,
-            })
-            .strict(),
-        )
-        .min(1),
-      action: ActionSchema.optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const ModalApi = {
-  name: 'Modal',
-  schema: z
-    .object({
-      ...CommonProps,
-      trigger: ComponentIdSchema,
-      content: ComponentIdSchema,
-      open: DynamicBooleanSchema.optional(),
-      action: ActionSchema.optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const ExpansionPanelApi = {
-  name: 'ExpansionPanel',
-  schema: z
-    .object({
-      ...CommonProps,
-      title: DynamicStringSchema,
-      child: ComponentIdSchema,
-      action: ActionSchema.optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const FormApi = {
-  name: 'Form',
-  schema: z
-    .object({
-      ...CommonProps,
-      children: ChildListSchema,
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-// ---------------------------------------------------------------------------
-// Interactive & Forms
-// ---------------------------------------------------------------------------
-
-export const ButtonApi = {
-  name: 'Button',
-  schema: z
-    .object({
-      ...CommonProps,
-      child: ComponentIdSchema,
-      variant: z.enum(['default', 'primary', 'borderless']).default('default').optional(),
-      action: ActionSchema,
-      checks: CheckableSchema.shape.checks,
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const TextFieldApi = {
-  name: 'TextField',
-  schema: z
-    .object({
-      ...CommonProps,
-      label: DynamicStringSchema,
-      value: DynamicStringSchema.optional(),
-      variant: z.enum(['filled', 'outlined', 'underlined']).default('outlined').optional(),
-      action: ActionSchema.optional(),
-      checks: CheckableSchema.shape.checks,
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const TextAreaApi = {
-  name: 'TextArea',
-  schema: z
-    .object({
-      ...CommonProps,
-      label: DynamicStringSchema,
-      value: DynamicStringSchema.optional(),
-      variant: z.enum(['filled', 'outlined', 'underlined']).default('outlined').optional(),
-      action: ActionSchema.optional(),
-      checks: CheckableSchema.shape.checks,
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const NumberInputApi = {
-  name: 'NumberInput',
-  schema: z
-    .object({
-      ...CommonProps,
-      label: DynamicStringSchema,
-      value: DynamicNumberSchema.optional(),
-      variant: z.enum(['filled', 'outlined', 'underlined']).default('outlined').optional(),
-      action: ActionSchema.optional(),
-      checks: CheckableSchema.shape.checks,
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const CheckboxApi = {
-  name: 'Checkbox',
-  schema: z
-    .object({
-      ...CommonProps,
-      label: DynamicStringSchema,
-      value: DynamicBooleanSchema,
-      action: ActionSchema.optional(),
-      checks: CheckableSchema.shape.checks,
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const RadioButtonApi = {
-  name: 'RadioButton',
-  schema: z
-    .object({
-      ...CommonProps,
-      label: DynamicStringSchema.optional(),
-      options: z.array(
-        z
-          .object({
-            label: DynamicStringSchema,
-            value: z.string(),
-          })
-          .strict(),
-      ),
-      value: DynamicStringSchema,
-      action: ActionSchema.optional(),
-      checks: CheckableSchema.shape.checks,
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const SelectApi = {
-  name: 'Select',
-  schema: z
-    .object({
-      ...CommonProps,
-      label: DynamicStringSchema.optional(),
-      options: z.array(z.any()),
-      value: z.union([z.string(), z.array(z.any())]),
-      variant: z.enum(['multipleSelection', 'mutuallyExclusive']).default('mutuallyExclusive').optional(),
-      action: ActionSchema.optional(),
-      checks: CheckableSchema.shape.checks,
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const AutocompleteApi = {
-  name: 'Autocomplete',
-  schema: z
-    .object({
-      ...CommonProps,
-      label: DynamicStringSchema.optional(),
-      options: z.array(z.any()),
-      value: z.union([z.string(), z.array(z.any())]),
-      variant: z.enum(['multipleSelection', 'mutuallyExclusive']).default('mutuallyExclusive').optional(),
-      action: ActionSchema.optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const ComboboxApi = {
-  name: 'Combobox',
-  schema: z
-    .object({
-      ...CommonProps,
-      label: DynamicStringSchema.optional(),
-      options: z.array(z.any()),
-      value: z.union([z.string(), z.array(z.any())]),
-      variant: z.enum(['multipleSelection', 'mutuallyExclusive']).default('mutuallyExclusive').optional(),
-      action: ActionSchema.optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const FileInputApi = {
-  name: 'FileInput',
-  schema: z
-    .object({
-      ...CommonProps,
-      label: DynamicStringSchema,
-      value: DynamicValueSchema.optional(),
-      action: ActionSchema.optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const SliderApi = {
-  name: 'Slider',
-  schema: z
-    .object({
-      ...CommonProps,
-      label: DynamicStringSchema.optional(),
-      min: z.number().default(0).optional(),
-      max: z.number(),
-      value: DynamicNumberSchema,
-      action: ActionSchema.optional(),
-      checks: CheckableSchema.shape.checks,
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const RangeSliderApi = {
-  name: 'RangeSlider',
-  schema: z
-    .object({
-      ...CommonProps,
-      label: DynamicStringSchema.optional(),
-      min: z.number().default(0).optional(),
-      max: z.number(),
-      value: z.union([z.array(z.number()).min(2).max(2), z.object({ path: z.string() })]),
-      action: ActionSchema.optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const ChoicePickerApi = {
-  name: 'ChoicePicker',
-  schema: z
-    .object({
-      ...CommonProps,
-      label: DynamicStringSchema.optional(),
-      options: z.array(z.any()),
-      value: z.union([z.string(), z.array(z.any())]),
-      variant: z.enum(['multipleSelection', 'mutuallyExclusive']).default('mutuallyExclusive').optional(),
-      displayStyle: z.enum(['list', 'dropdown', 'segmented']).default('dropdown').optional(),
-      checks: CheckableSchema.shape.checks,
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-// ---------------------------------------------------------------------------
-// Date / Time
-// ---------------------------------------------------------------------------
-
-export const DatePickerApi = {
-  name: 'DatePicker',
-  schema: z
-    .object({
-      ...CommonProps,
-      label: DynamicStringSchema.optional(),
-      value: DynamicStringSchema,
-      min: DynamicStringSchema.optional(),
-      max: DynamicStringSchema.optional(),
-      color: z.string().optional(),
-      multiple: z.union([z.boolean(), z.literal('range')]).optional(),
-      readonly: DynamicBooleanSchema.optional(),
-      disabled: DynamicBooleanSchema.optional(),
-      landscape: DynamicBooleanSchema.optional(),
-      showAdjacentMonths: DynamicBooleanSchema.optional(),
-      action: ActionSchema.optional(),
-      checks: CheckableSchema.shape.checks,
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const TimePickerApi = {
-  name: 'TimePicker',
-  schema: z
-    .object({
-      ...CommonProps,
-      label: DynamicStringSchema.optional(),
-      value: DynamicStringSchema,
-      action: ActionSchema.optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const CalendarApi = {
-  name: 'Calendar',
-  schema: z
-    .object({
-      ...CommonProps,
-      events: z.array(
-        z
-          .object({
-            name: z.string(),
-            start: z.string(),
-            end: z.string().optional(),
-            color: z.string().optional(),
-            timed: z.boolean().optional(),
-          })
-          .strict(),
-      ),
-      type: z.enum(['month', 'week', 'day', '4day', 'custom-weekly', 'custom-daily', 'category']).default('month').optional(),
-      value: DynamicStringSchema.optional(),
-      weekdays: z.array(z.number()).optional(),
-      color: z.string().optional(),
-      eventColor: z.string().optional(),
-      action: ActionSchema.optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-// ---------------------------------------------------------------------------
-// Advanced & Data
-// ---------------------------------------------------------------------------
-
-export const TableApi = {
-  name: 'Table',
-  schema: z
-    .object({
-      ...CommonProps,
-      items: z.array(z.any()),
-      columns: z.array(
-        z.object({
-          title: z.string().optional(),
-          key: z.string().optional(),
-        }),
-      ),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const TreeViewApi = {
-  name: 'TreeView',
-  schema: z
-    .object({
-      ...CommonProps,
-      items: z.array(z.any()),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-// ---------------------------------------------------------------------------
-// Media
-// ---------------------------------------------------------------------------
-
-export const VideoApi = {
-  name: 'Video',
-  schema: z
-    .object({
-      ...CommonProps,
-      url: DynamicStringSchema,
-      autoplay: DynamicBooleanSchema.optional(),
-      controls: DynamicBooleanSchema.optional(),
-      loop: DynamicBooleanSchema.optional(),
-      muted: DynamicBooleanSchema.optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-export const AudioPlayerApi = {
-  name: 'AudioPlayer',
-  schema: z
-    .object({
-      ...CommonProps,
-      url: DynamicStringSchema,
-      autoplay: DynamicBooleanSchema.optional(),
-      controls: DynamicBooleanSchema.optional(),
-      loop: DynamicBooleanSchema.optional(),
-      muted: DynamicBooleanSchema.optional(),
-    })
-    .strict(),
-} satisfies ComponentApi;
-
-// ---------------------------------------------------------------------------
 // Aggregate export — order mirrors defaultCatalog.ts registration
-// ---------------------------------------------------------------------------
-
 export const VUETIFY_COMPONENTS: ComponentApi[] = [
   TextApi,
   ImageApi,
