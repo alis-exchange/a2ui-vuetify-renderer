@@ -27,6 +27,24 @@
   });
 </script>
 
+<script lang="ts">
+  import { ActionSchema, DynamicStringSchema, DynamicValueSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
+  import { z } from 'zod';
+  import { CommonProps } from '../catalog/common-props';
+
+  export const FileInputApi: ComponentApi = {
+    name: 'FileInput',
+    schema: z
+      .object({
+        ...CommonProps,
+        label: DynamicStringSchema,
+        value: DynamicValueSchema.optional(),
+        action: ActionSchema.optional(),
+      })
+      .strict(),
+  };
+</script>
+
 <template>
   <v-file-input
     v-model="modelValue"

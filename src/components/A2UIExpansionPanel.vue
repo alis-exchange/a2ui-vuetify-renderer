@@ -26,6 +26,24 @@
   });
 </script>
 
+<script lang="ts">
+  import { ActionSchema, ComponentIdSchema, DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
+  import { z } from 'zod';
+  import { CommonProps } from '../catalog/common-props';
+
+  export const ExpansionPanelApi: ComponentApi = {
+    name: 'ExpansionPanel',
+    schema: z
+      .object({
+        ...CommonProps,
+        title: DynamicStringSchema,
+        child: ComponentIdSchema,
+        action: ActionSchema.optional(),
+      })
+      .strict(),
+  };
+</script>
+
 <template>
   <v-expansion-panels v-model="expanded">
     <v-expansion-panel :title="title">

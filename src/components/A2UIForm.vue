@@ -23,6 +23,22 @@
   });
 </script>
 
+<script lang="ts">
+  import { ChildListSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
+  import { z } from 'zod';
+  import { CommonProps } from '../catalog/common-props';
+
+  export const FormApi: ComponentApi = {
+    name: 'Form',
+    schema: z
+      .object({
+        ...CommonProps,
+        children: ChildListSchema,
+      })
+      .strict(),
+  };
+</script>
+
 <template>
   <v-form>
     <ComponentNode

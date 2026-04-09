@@ -29,6 +29,24 @@
   };
 </script>
 
+<script lang="ts">
+  import { ActionSchema, DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
+  import { z } from 'zod';
+  import { CommonProps } from '../catalog/common-props';
+
+  export const TimePickerApi: ComponentApi = {
+    name: 'TimePicker',
+    schema: z
+      .object({
+        ...CommonProps,
+        label: DynamicStringSchema.optional(),
+        value: DynamicStringSchema,
+        action: ActionSchema.optional(),
+      })
+      .strict(),
+  };
+</script>
+
 <template>
   <v-text-field
     v-model="modelValue"

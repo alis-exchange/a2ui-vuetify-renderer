@@ -28,6 +28,28 @@
   });
 </script>
 
+<script lang="ts">
+  import type { ComponentApi } from '@a2ui/web_core/v0_9';
+  import { z } from 'zod';
+  import { CommonProps } from '../catalog/common-props';
+
+  export const TableApi: ComponentApi = {
+    name: 'Table',
+    schema: z
+      .object({
+        ...CommonProps,
+        items: z.array(z.any()),
+        columns: z.array(
+          z.object({
+            title: z.string().optional(),
+            key: z.string().optional(),
+          }),
+        ),
+      })
+      .strict(),
+  };
+</script>
+
 <template>
   <v-data-table
     v-if="items.length > 0"

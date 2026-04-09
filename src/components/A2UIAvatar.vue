@@ -21,6 +21,24 @@
   });
 </script>
 
+<script lang="ts">
+  import { ComponentIdSchema, DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
+  import { z } from 'zod';
+  import { CommonProps } from '../catalog/common-props';
+
+  export const AvatarApi: ComponentApi = {
+    name: 'Avatar',
+    schema: z
+      .object({
+        ...CommonProps,
+        image: DynamicStringSchema.optional(),
+        text: DynamicStringSchema.optional(),
+        child: ComponentIdSchema.optional(),
+      })
+      .strict(),
+  };
+</script>
+
 <template>
   <v-avatar :image="image">
     <template v-if="text">{{ text }}</template>

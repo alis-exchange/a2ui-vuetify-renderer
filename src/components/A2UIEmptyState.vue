@@ -23,6 +23,25 @@
   });
 </script>
 
+<script lang="ts">
+  import { ComponentIdSchema, DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
+  import { z } from 'zod';
+  import { CommonProps } from '../catalog/common-props';
+
+  export const EmptyStateApi: ComponentApi = {
+    name: 'EmptyState',
+    schema: z
+      .object({
+        ...CommonProps,
+        title: DynamicStringSchema.optional(),
+        text: DynamicStringSchema.optional(),
+        icon: DynamicStringSchema.optional(),
+        child: ComponentIdSchema.optional(),
+      })
+      .strict(),
+  };
+</script>
+
 <template>
   <v-empty-state
     :title="title"

@@ -48,6 +48,25 @@
   };
 </script>
 
+<script lang="ts">
+  import { ActionSchema, CheckableSchema, ComponentIdSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
+  import { z } from 'zod';
+  import { CommonProps } from '../catalog/common-props';
+
+  export const ButtonApi: ComponentApi = {
+    name: 'Button',
+    schema: z
+      .object({
+        ...CommonProps,
+        child: ComponentIdSchema,
+        variant: z.enum(['default', 'primary', 'borderless']).default('default').optional(),
+        action: ActionSchema,
+        checks: CheckableSchema.shape.checks,
+      })
+      .strict(),
+  };
+</script>
+
 <template>
   <v-btn
     v-bind="buttonProps"

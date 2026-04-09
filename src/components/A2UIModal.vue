@@ -23,6 +23,25 @@
   });
 </script>
 
+<script lang="ts">
+  import { ActionSchema, ComponentIdSchema, DynamicBooleanSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
+  import { z } from 'zod';
+  import { CommonProps } from '../catalog/common-props';
+
+  export const ModalApi: ComponentApi = {
+    name: 'Modal',
+    schema: z
+      .object({
+        ...CommonProps,
+        trigger: ComponentIdSchema,
+        content: ComponentIdSchema,
+        open: DynamicBooleanSchema.optional(),
+        action: ActionSchema.optional(),
+      })
+      .strict(),
+  };
+</script>
+
 <template>
   <v-dialog
     v-model="isOpen"

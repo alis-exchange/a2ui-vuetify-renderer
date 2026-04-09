@@ -13,6 +13,22 @@
   const items = computed(() => resolveValue(props.node.properties.items) || []);
 </script>
 
+<script lang="ts">
+  import type { ComponentApi } from '@a2ui/web_core/v0_9';
+  import { z } from 'zod';
+  import { CommonProps } from '../catalog/common-props';
+
+  export const TreeViewApi: ComponentApi = {
+    name: 'TreeView',
+    schema: z
+      .object({
+        ...CommonProps,
+        items: z.array(z.any()),
+      })
+      .strict(),
+  };
+</script>
+
 <template>
   <!-- Basic fallback for TreeView as v-treeview may not be natively in core Vuetify 3/4 without labs -->
   <v-list>

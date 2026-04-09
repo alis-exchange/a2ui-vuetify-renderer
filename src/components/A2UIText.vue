@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import type { SurfaceComponentsModel } from '@a2ui/web_core/v0_9';
+  import { type SurfaceComponentsModel } from '@a2ui/web_core/v0_9';
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
   type ComponentModel = NonNullable<ReturnType<SurfaceComponentsModel['get']>>;
@@ -38,6 +38,23 @@
         return 'text-body-1';
     }
   });
+</script>
+
+<script lang="ts">
+  import { DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
+  import { z } from 'zod';
+  import { CommonProps } from '../catalog/common-props';
+
+  export const TextApi: ComponentApi = {
+    name: 'Text',
+    schema: z
+      .object({
+        ...CommonProps,
+        text: DynamicStringSchema,
+        variant: z.enum(['h1', 'h2', 'h3', 'h4', 'h5', 'caption', 'body']).default('body').optional(),
+      })
+      .strict(),
+  };
 </script>
 
 <template>

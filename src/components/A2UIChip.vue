@@ -20,6 +20,23 @@
   });
 </script>
 
+<script lang="ts">
+  import { ComponentIdSchema, DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
+  import { z } from 'zod';
+  import { CommonProps } from '../catalog/common-props';
+
+  export const ChipApi: ComponentApi = {
+    name: 'Chip',
+    schema: z
+      .object({
+        ...CommonProps,
+        text: DynamicStringSchema.optional(),
+        child: ComponentIdSchema.optional(),
+      })
+      .strict(),
+  };
+</script>
+
 <template>
   <v-chip>
     <template v-if="text">{{ text }}</template>

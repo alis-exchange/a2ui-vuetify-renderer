@@ -32,6 +32,25 @@
   });
 </script>
 
+<script lang="ts">
+  import { ActionSchema, CheckableSchema, DynamicBooleanSchema, DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
+  import { z } from 'zod';
+  import { CommonProps } from '../catalog/common-props';
+
+  export const CheckboxApi: ComponentApi = {
+    name: 'Checkbox',
+    schema: z
+      .object({
+        ...CommonProps,
+        label: DynamicStringSchema,
+        value: DynamicBooleanSchema,
+        action: ActionSchema.optional(),
+        checks: CheckableSchema.shape.checks,
+      })
+      .strict(),
+  };
+</script>
+
 <template>
   <v-checkbox
     v-model="modelValue"
