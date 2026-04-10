@@ -165,8 +165,8 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
 | **`A2UIProvider`**         | Wraps a surface. Provides processor, surface ID, and action callback via `provide/inject`. Listens to processor `update` events to trigger re-renders. Bridges A2UI theme colors (`primaryColor`, `errorColor`, etc.) into a dynamic Vuetify theme via `v-theme-provider`.                        |
 | **`ComponentNode`**        | Recursive renderer. Resolves a component ID from the surface's `ComponentsModel`, looks up the Vue component in the registry, and renders it with `<component :is="...">`. Supports a `path` prop for scoped data context in dynamic lists. Falls back to an error placeholder for unknown types. |
 | **`ComponentRegistry`**    | A `Map<string, Component>` that maps A2UI type strings (e.g. `"Button"`) to Vue components. Exposes `register()`, `registerAll()`, `get()`, and `has()`. The singleton `defaultRegistry` is pre-populated by `registerDefaultComponents()`.                                                       |
-| **`useA2UI()`**            | Composable that injects the provider context. Returns `resolveValue`, `resolveDynamicChildren`, `sendAction`, `dispatchNodeAction`, `setData`, `surfaceId`, `dataContext`, and `dataContextPath`. Builds a `DataContext` from `@a2ui/web_core/v0_9` for path-based and function-call value resolution. Uses `SurfaceModel.dispatchAction()` for schema-validated action payloads. |
-| **`useDynamicProps()`**    | Composable for custom catalog components: given a node (ref, getter, or plain object), returns a computed ref of properties with each value passed through `resolveValue` for bindings.                                                                                                        |
+| **`useA2UI()`**            | Composable that injects the provider context. Returns `resolveValue<V>(value)`, `resolveDynamicChildren`, `sendAction`, `dispatchNodeAction`, `setData`, `surfaceId`, `dataContext`, and `dataContextPath`. `resolveValue` accepts an A2UI `DynamicValue \| undefined` (from `@a2ui/web_core/v0_9`) and resolves via `DataContext.resolveDynamicValue<V>()`; pass a type argument (e.g. `resolveValue<string>(…)`) so callers get a typed result. `dispatchNodeAction` expects a `ComponentModel`. Uses `SurfaceModel.dispatchAction()` for schema-validated action payloads. |
+| **`useDynamicProps()`**    | Composable for custom catalog components: given a node (ref, getter, or plain object), returns a computed ref of properties with each value passed through `resolveValue` (same generic resolver as `useA2UI`). Resolved values are still typed as `Record<string, any>` at the top level; use `resolveValue<V>()` directly when you need strong typing per field.                                                                                                        |
 | **`getCatalogSchema()`**   | Returns a deep-cloned JSON Schema for the Vuetify catalog, merging in stub entries for any extra components registered on a `ComponentRegistry` under the same `catalogId` (useful for agents or tooling). Accepts an optional `{ filter }` predicate to narrow the returned components — see **Filtering the catalog schema** below. |
 | **`catalogFilters`**       | Pre-built filter predicates for `getCatalogSchema`: `catalogFilters.customOnly` (non-built-in components only), `catalogFilters.only(...names)` (include-list), `catalogFilters.exclude(...names)` (exclude-list). |
 
@@ -177,7 +177,7 @@ Form components use internal helpers in `src/utils/validation.ts` to map A2UI `c
 1. **Messages in** — `MessageProcessor.processMessages()` parses JSONL and updates `SurfaceModel` state (components, data model, theme).
 2. **Reactivity bridge** — `A2UIProvider` subscribes to the processor's `update` event and increments a `shallowRef` key, causing Vue to re-render the subtree.
 3. **Tree resolution** — `ComponentNode` reads the flat adjacency list from `SurfaceComponentsModel`, resolves `children`/`child`/`trigger`/`content` references, and recursively renders the tree.
-4. **Value binding** — Components call `resolveValue()` which delegates to `DataContext.resolveDynamicValue()` — handling literals, `{ path }` lookups, and `{ call }` function expressions.
+4. **Value binding** — Components call `resolveValue<V>(value)` which delegates to `DataContext.resolveDynamicValue<V>()` — handling literals, `{ path }` lookups, and `{ call }` function expressions. Prefer an explicit `V` (e.g. `string`, `number[]`) for each property.
 5. **Two-way binding** — Input components use writable `computed` properties that call `setData()` on the surface's `DataModel` when the user types.
 6. **Actions out** — On user interaction (e.g. button click), components call `sendAction(name, sourceComponentId, context)` which resolves context values from the data model and dispatches a validated `A2uiClientAction` via the surface model (or falls back to the `onAction` callback).
 
@@ -221,12 +221,12 @@ const props = defineProps<{
 // useA2UI automatically handles resolving dynamic data bindings (e.g. { path: '/myData' })
 const { resolveValue, sendAction } = useA2UI();
 
-// Resolve the 'title' property from the A2UI JSON node
-const title = computed(() => resolveValue(props.node?.properties?.title) || 'Default Chart');
+// Resolve the 'title' property from the A2UI JSON node (generic = resolved type)
+const title = computed(() => resolveValue<string | undefined>(props.node.properties.title) ?? 'Default Chart');
 
 // Resolve the 'data' property from the A2UI JSON node, defaulting to an empty array
 const chartData = computed(() => {
-  const data = resolveValue(props.node?.properties?.data);
+  const data = resolveValue<number[] | undefined>(props.node.properties.data);
   return Array.isArray(data) ? data : [];
 });
 
@@ -432,7 +432,7 @@ const metadata = {
 
 ### Authoring
 
-Custom components receive a `node` prop (the component node from A2UI). To resolve data bindings (`path`, `call`, literals) for every field, use `useDynamicProps` with a ref, getter, or the node object (it uses Vue’s `toValue` internally):
+Custom components receive a `node` prop (the component node from A2UI). To resolve data bindings (`path`, `call`, literals) for every field, use `useDynamicProps` with a ref, getter, or the node object (it uses Vue’s `toValue` internally). Each entry is resolved with the same `resolveValue` helper as `useA2UI`; for strongly typed fields, call `resolveValue<V>(props.node.properties.someKey)` instead of reading only from `dynamicProps`.
 
 ```vue
 <script setup lang="ts">

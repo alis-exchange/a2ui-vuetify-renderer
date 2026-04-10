@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
-  import type { ComponentModel } from '../types';
+  import type { ComponentModel } from '@a2ui/web_core/v0_9';
 
   const props = defineProps<{
     node: ComponentModel;
@@ -9,14 +9,14 @@
 
   const { resolveValue, setData, dispatchNodeAction } = useA2UI();
 
-  const label = computed(() => resolveValue(props.node.properties.label));
-  const min = computed(() => resolveValue(props.node.properties.min) ?? 0);
-  const max = computed(() => resolveValue(props.node.properties.max) ?? 100);
+  const label = computed(() => resolveValue<string | undefined>(props.node.properties.label));
+  const min = computed(() => resolveValue<number>(props.node.properties.min) ?? 0);
+  const max = computed(() => resolveValue<number>(props.node.properties.max) ?? 100);
   const valuePath = computed(() => props.node.properties.value?.path);
 
   const modelValue = computed({
     get() {
-      return resolveValue(props.node.properties.value) ?? [min.value, max.value];
+      return resolveValue<number[]>(props.node.properties.value) ?? [min.value, max.value];
     },
     set(val: number[]) {
       if (valuePath.value) {

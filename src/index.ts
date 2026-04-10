@@ -20,7 +20,7 @@ export { getCatalogSchema } from './core/getCatalogSchema';
 export type { GetCatalogSchemaOptions } from './core/getCatalogSchema';
 
 // Export shared types for custom component development
-export type { ComponentModel } from './types';
+export type { ComponentModel } from '@a2ui/web_core/v0_9';
 
 // Export catalog ID for consumers to reference the schema
 export { CATALOG_ID } from './core/constants';

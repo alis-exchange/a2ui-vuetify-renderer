@@ -2,7 +2,7 @@
   import { computed, ref, watch } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
   import ComponentNode from '../core/ComponentNode.vue';
-  import type { ComponentModel } from '../types';
+  import type { ComponentModel } from '@a2ui/web_core/v0_9';
 
   const props = defineProps<{
     node: ComponentModel;
@@ -10,13 +10,8 @@
 
   const { resolveValue, dispatchNodeAction } = useA2UI();
 
-  const title = computed(() => resolveValue(props.node.properties.title));
-  const child = computed(() => {
-    const c = resolveValue(props.node.properties.child);
-    if (typeof c === 'string') return c;
-    if (c && typeof c === 'object' && c.id) return c.id;
-    return undefined;
-  });
+  const title = computed(() => resolveValue<string | undefined>(props.node.properties.title));
+  const child = computed(() => resolveValue<string | undefined>(props.node.properties.child));
 
   const expanded = ref<number[]>([]);
 

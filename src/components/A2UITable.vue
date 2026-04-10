@@ -1,7 +1,11 @@
 <script setup lang="ts">
+  import type { ComponentModel } from '@a2ui/web_core/v0_9';
   import { computed } from 'vue';
+  import { VDataTable } from 'vuetify/components';
   import { useA2UI } from '../composables/useA2UI';
-  import type { ComponentModel } from '../types';
+
+  type VDataTableProps = InstanceType<typeof VDataTable>['$props'];
+  type VDataTableItems = NonNullable<VDataTableProps['items']>;
 
   const props = defineProps<{
     node: ComponentModel;
@@ -9,13 +13,13 @@
 
   const { resolveValue } = useA2UI();
 
-  const items = computed(() => {
-    const resolved = resolveValue(props.node.properties.items);
-    return Array.isArray(resolved) ? resolved : [];
+  const items = computed<VDataTableItems>(() => {
+    const resolved = resolveValue<any[]>(props.node.properties.items);
+    return (Array.isArray(resolved) ? resolved : []) as VDataTableItems;
   });
 
-  const headers = computed(() => {
-    const resolved = resolveValue(props.node.properties.columns);
+  const headers = computed<VDataTableProps['headers']>(() => {
+    const resolved = resolveValue<any[]>(props.node.properties.columns);
     if (Array.isArray(resolved)) {
       return resolved.map((c) => ({ title: c.title || c, key: c.key || c }));
     }

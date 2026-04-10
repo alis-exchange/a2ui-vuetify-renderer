@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
-  import type { ComponentModel } from '../types';
+  import type { ComponentModel } from '@a2ui/web_core/v0_9';
 
   const props = defineProps<{
     node: ComponentModel;
@@ -11,7 +11,7 @@
 
   const text = computed(() => {
     const t = props.node.properties.text;
-    return resolveValue(t) ?? '';
+    return resolveValue<string>(t) ?? '';
   });
 
   const variantClass = computed(() => {

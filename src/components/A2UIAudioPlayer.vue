@@ -1,8 +1,9 @@
 <script setup lang="ts">
+  import type { ComponentModel } from '@a2ui/web_core/v0_9';
   import { useDynamicProps } from '../composables/useDynamicProps';
 
   const props = defineProps<{
-    node: any;
+    node: ComponentModel;
   }>();
 
   const dynamicProps = useDynamicProps(() => props.node);

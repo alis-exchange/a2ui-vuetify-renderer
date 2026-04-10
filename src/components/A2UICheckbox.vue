@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
-  import type { ComponentModel } from '../types';
+  import type { ComponentModel } from '@a2ui/web_core/v0_9';
   import { createVuetifyRules } from '../utils/validation';
 
   const props = defineProps<{
@@ -10,12 +10,12 @@
 
   const { resolveValue, setData, dispatchNodeAction } = useA2UI();
 
-  const label = computed(() => resolveValue(props.node.properties.label));
+  const label = computed(() => resolveValue<string | undefined>(props.node.properties.label));
   const valuePath = computed(() => props.node.properties.value?.path);
 
   const modelValue = computed({
     get() {
-      return resolveValue(props.node.properties.value) ?? false;
+      return resolveValue<boolean>(props.node.properties.value) ?? false;
     },
     set(val: boolean) {
       if (valuePath.value) {
@@ -26,7 +26,7 @@
   });
 
   const rules = computed(() => {
-    const checks = resolveValue(props.node.properties.checks);
+    const checks = resolveValue<any[]>(props.node.properties.checks) ?? [];
     return createVuetifyRules(checks);
   });
 </script>

@@ -1,7 +1,10 @@
 <script setup lang="ts">
+  import type { ComponentModel } from '@a2ui/web_core/v0_9';
   import { computed } from 'vue';
+  import { VDatePicker } from 'vuetify/components';
   import { useA2UI } from '../composables/useA2UI';
-  import type { ComponentModel } from '../types';
+
+  type VDatePickerProps = InstanceType<typeof VDatePicker>['$props'];
 
   const props = defineProps<{
     node: ComponentModel;
@@ -9,20 +12,20 @@
 
   const { resolveValue, setData, dispatchNodeAction } = useA2UI();
 
-  const label = computed(() => resolveValue(props.node.properties.label));
+  const label = computed(() => resolveValue<string | undefined>(props.node.properties.label));
   const valuePath = computed(() => props.node.properties.value?.path);
-  const min = computed(() => resolveValue(props.node.properties.min));
-  const max = computed(() => resolveValue(props.node.properties.max));
-  const color = computed(() => resolveValue(props.node.properties.color));
-  const multiple = computed(() => resolveValue(props.node.properties.multiple) ?? false);
-  const readonly = computed(() => resolveValue(props.node.properties.readonly) ?? false);
-  const disabled = computed(() => resolveValue(props.node.properties.disabled) ?? false);
-  const landscape = computed(() => resolveValue(props.node.properties.landscape) ?? false);
-  const showAdjacentMonths = computed(() => resolveValue(props.node.properties.showAdjacentMonths) ?? false);
+  const min = computed(() => resolveValue<VDatePickerProps['min']>(props.node.properties.min));
+  const max = computed(() => resolveValue<VDatePickerProps['max']>(props.node.properties.max));
+  const color = computed(() => resolveValue<VDatePickerProps['color']>(props.node.properties.color));
+  const multiple = computed(() => resolveValue<VDatePickerProps['multiple']>(props.node.properties.multiple) ?? false);
+  const readonly = computed(() => resolveValue<boolean>(props.node.properties.readonly) ?? false);
+  const disabled = computed(() => resolveValue<boolean>(props.node.properties.disabled) ?? false);
+  const landscape = computed(() => resolveValue<boolean>(props.node.properties.landscape) ?? false);
+  const showAdjacentMonths = computed(() => resolveValue<VDatePickerProps['showAdjacentMonths']>(props.node.properties.showAdjacentMonths) ?? false);
 
   const modelValue = computed({
     get() {
-      return resolveValue(props.node.properties.value);
+      return resolveValue<any>(props.node.properties.value);
     },
     set(val: any) {
       if (valuePath.value) {

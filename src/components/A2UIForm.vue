@@ -2,7 +2,7 @@
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
   import ComponentNode from '../core/ComponentNode.vue';
-  import type { ComponentModel } from '../types';
+  import type { ComponentModel } from '@a2ui/web_core/v0_9';
 
   const props = defineProps<{
     node: ComponentModel;
@@ -10,7 +10,7 @@
 
   const { resolveValue } = useA2UI();
 
-  const children = computed(() => resolveValue(props.node.properties.children) || []);
+  const children = computed(() => resolveValue<any[]>(props.node.properties.children) || []);
 
   const resolvedChildren = computed(() => {
     return children.value.map((child: any) => {

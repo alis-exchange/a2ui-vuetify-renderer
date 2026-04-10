@@ -2,7 +2,7 @@
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
   import ComponentNode from '../core/ComponentNode.vue';
-  import type { ComponentModel } from '../types';
+  import type { ComponentModel } from '@a2ui/web_core/v0_9';
 
   const props = defineProps<{
     node: ComponentModel;
@@ -11,7 +11,7 @@
   const { resolveValue, resolveDynamicChildren } = useA2UI();
 
   const justifyClass = computed(() => {
-    const justify = resolveValue(props.node.properties.justify);
+    const justify = resolveValue<string | undefined>(props.node.properties.justify);
     switch (justify) {
       case 'center':
         return 'justify-center';
@@ -28,7 +28,7 @@
   });
 
   const alignClass = computed(() => {
-    const align = resolveValue(props.node.properties.align);
+    const align = resolveValue<string | undefined>(props.node.properties.align);
     switch (align) {
       case 'start':
         return 'align-start';

@@ -2,7 +2,7 @@
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
   import ComponentNode from '../core/ComponentNode.vue';
-  import type { ComponentModel } from '../types';
+  import type { ComponentModel } from '@a2ui/web_core/v0_9';
 
   const props = defineProps<{
     node: ComponentModel;
@@ -10,14 +10,9 @@
 
   const { resolveValue } = useA2UI();
 
-  const image = computed(() => resolveValue(props.node.properties.image));
-  const text = computed(() => resolveValue(props.node.properties.text));
-  const child = computed(() => {
-    const c = resolveValue(props.node.properties.child);
-    if (typeof c === 'string') return c;
-    if (c && typeof c === 'object' && c.id) return c.id;
-    return undefined;
-  });
+  const image = computed(() => resolveValue<string | undefined>(props.node.properties.image));
+  const text = computed(() => resolveValue<string | undefined>(props.node.properties.text));
+  const child = computed(() => resolveValue<string | undefined>(props.node.properties.child));
 </script>
 
 <template>

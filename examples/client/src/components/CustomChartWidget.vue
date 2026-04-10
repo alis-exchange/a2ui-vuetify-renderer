@@ -53,10 +53,10 @@
   const { resolveValue, sendAction } = useA2UI();
 
   // Resolve properties from A2UI JSON payload
-  const title = computed(() => resolveValue(props.node?.properties?.title) || 'Default Chart');
+  const title = computed(() => resolveValue<string | undefined>(props.node.properties.title) ?? 'Default Chart');
 
   const chartData = computed(() => {
-    const data = resolveValue(props.node?.properties?.data);
+    const data = resolveValue<number[] | undefined>(props.node.properties.data);
     return Array.isArray(data) ? data : [];
   });
 

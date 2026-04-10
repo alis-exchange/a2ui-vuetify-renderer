@@ -1,7 +1,10 @@
 <script setup lang="ts">
+  import type { ComponentModel } from '@a2ui/web_core/v0_9';
   import { computed } from 'vue';
+  import { VRating } from 'vuetify/components';
   import { useA2UI } from '../composables/useA2UI';
-  import type { ComponentModel } from '../types';
+
+  type VRatingProps = InstanceType<typeof VRating>['$props'];
 
   const props = defineProps<{
     node: ComponentModel;
@@ -9,12 +12,12 @@
 
   const { resolveValue, setData, dispatchNodeAction } = useA2UI();
 
-  const max = computed(() => resolveValue(props.node.properties.max) || 5);
+  const max = computed(() => resolveValue<VRatingProps['length']>(props.node.properties.max) || 5);
   const valuePath = computed(() => props.node.properties.value?.path);
 
   const modelValue = computed({
     get() {
-      return resolveValue(props.node.properties.value) || 0;
+      return resolveValue<number>(props.node.properties.value) || 0;
     },
     set(val: number) {
       if (valuePath.value) {

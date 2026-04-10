@@ -39,7 +39,7 @@ renderer/
 │   │   └── vuetify-theme.ts           # Zod theme schema for Catalog constructor
 │   ├── composables/
 │   │   ├── A2UIProvider.vue           # Context provider + Vuetify theme bridge
-│   │   ├── useA2UI.ts                 # Core composable: resolveValue, sendAction, setData, etc.
+│   │   ├── useA2UI.ts                 # Core composable: resolveValue<V>, sendAction, setData, etc.
 │   │   └── useDynamicProps.ts         # Resolves all node properties through resolveValue
 │   ├── core/
 │   │   ├── ComponentNode.vue          # Recursive renderer (<component :is="...">)
@@ -135,16 +135,16 @@ The singleton `defaultRegistry` is pre-populated by `registerDefaultComponents()
 ### 5.6 useA2UI composable (`composables/useA2UI.ts`)
 
 Provides the bridge between `@a2ui/web_core` state and Vue component logic. Returns:
-- `resolveValue(node)` — resolves literal / `{ path }` / `{ call }` via `DataContext.resolveDynamicValue()`
+- `resolveValue<V = unknown>(value: DynamicValue | undefined): V | undefined` — resolves literal / `{ path }` / `{ call }` via `DataContext.resolveDynamicValue<V>()`; `DynamicValue` is from `@a2ui/web_core/v0_9`. Pass `V` explicitly for each property (e.g. `resolveValue<string>(props.node.properties.label)`).
 - `resolveDynamicChildren(childrenProp)` — handles static ID arrays and `{ path, componentId }` template iteration
 - `sendAction(name, sourceComponentId, context?)` — builds and dispatches actions (prefers `surface.dispatchAction()`, falls back to `onAction` callback)
-- `dispatchNodeAction(node, extraContext?)` — reads `node.properties.action`, resolves `event` or warns on `functionCall`
+- `dispatchNodeAction(node: ComponentModel, extraContext?)` — reads `node.properties.action`, resolves with `resolveValue<Action | undefined>`, then dispatches `event` or warns on `functionCall`
 - `setData(path, value)` — writes to the surface's `DataModel`
 - `surfaceId`, `dataContextPath`, `dataContext`
 
 ### 5.7 useDynamicProps composable (`composables/useDynamicProps.ts`)
 
-Accepts a `MaybeRefOrGetter<T>` node, returns a `computed` that runs every property through `resolveValue`. Designed for custom components that want automatic data binding without manually wrapping each property.
+Accepts a `MaybeRefOrGetter<T>` node, returns a `computed` that runs every property through `resolveValue` (same generic function as `useA2UI`). Designed for custom components that want automatic data binding without manually wrapping each property; use `resolveValue<V>()` on individual `node.properties` fields when you need a concrete `V`.
 
 ### 5.8 getCatalogSchema + catalogFilters
 
@@ -199,31 +199,29 @@ All default components follow the pattern `A2UI<TypeName>.vue` (e.g. `A2UIButton
 
 ### 7.2 Props contract
 
-Every component receives a single `node` prop typed as `ComponentModel` (from `SurfaceComponentsModel['get']`). The node's properties are accessed via `node.properties.<key>`. Components **must not** receive individual A2UI properties as Vue props — everything flows through the `node` object.
+Every component receives a single `node` prop typed as `ComponentModel` from `@a2ui/web_core/v0_9`. The node's properties are accessed via `node.properties.<key>`. Components **must not** receive individual A2UI properties as Vue props — everything flows through the `node` object.
 
 ### 7.3 Typical component pattern
 
 ```vue
 <script setup lang="ts">
-  import type { SurfaceComponentsModel } from '@a2ui/web_core/v0_9';
-  import { computed } from 'vue';
-  import { useA2UI } from '../composables/useA2UI';
+ import type { ComponentModel } from '@a2ui/web_core/v0_9';
+ import { computed } from 'vue';
+ import { useA2UI } from '../composables/useA2UI';
 
-  type ComponentModel = NonNullable<ReturnType<SurfaceComponentsModel['get']>>;
-
-  const props = defineProps<{
-    node: ComponentModel;
-  }>();
+ const props = defineProps<{
+ node: ComponentModel;
+ }>();
 
   const { resolveValue, setData, dispatchNodeAction } = useA2UI();
 
-  // Read properties through resolveValue (handles literals, paths, and function calls)
-  const label = computed(() => resolveValue(props.node.properties.label));
+  // Read properties through resolveValue<V> (handles literals, paths, and function calls)
+  const label = computed(() => resolveValue<string | undefined>(props.node.properties.label));
 
   // Two-way binding for input components
   const valuePath = computed(() => props.node.properties.value?.path);
   const modelValue = computed({
-    get() { return resolveValue(props.node.properties.value) ?? ''; },
+    get() { return resolveValue<string>(props.node.properties.value) ?? ''; },
     set(val: string) {
       if (valuePath.value) setData(valuePath.value, val);
     },
@@ -231,7 +229,7 @@ Every component receives a single `node` prop typed as `ComponentModel` (from `S
 
   // Validation
   const rules = computed(() => {
-    const checks = resolveValue(props.node.properties.checks);
+    const checks = resolveValue<any[] | undefined>(props.node.properties.checks);
     return createVuetifyRules(checks);
   });
 
@@ -245,7 +243,7 @@ Every component receives a single `node` prop typed as `ComponentModel` (from `S
 ```
 
 Key patterns:
-- **Always** use `resolveValue()` to read node properties — handles `{ path }` and `{ call }` bindings
+- **Always** use `resolveValue<V>()` to read node properties — handles `{ path }` and `{ call }` bindings; choose `V` to match the resolved runtime type
 - **Two-way binding**: use writable `computed` that calls `setData(path, val)` on set
 - **Actions**: use `dispatchNodeAction(node)` for standard button/click actions, or `sendAction(name, id, context)` for manual payloads
 - **Children**: use `<ComponentNode :id="childId" />` to render child references; use `resolveDynamicChildren` for iterating `{ path, componentId }` template lists
@@ -366,7 +364,7 @@ getCatalogSchema(defaultRegistry, CATALOG_ID, { filter: (name) => name.startsWit
 
 ## 12. Key Design Decisions
 
-1. **Single `node` prop** — Components receive the full component model, not individual props. This keeps the interface uniform and lets `resolveValue` handle all binding types.
+1. **Single `node` prop** — Components receive the full component model, not individual props. This keeps the interface uniform and lets `resolveValue<V>()` handle all binding types with an explicit resolved type per field.
 
 2. **Provide/inject over props drilling** — `A2UIProvider` provides context; components call `useA2UI()` to access the processor, data context, and action dispatchers. No prop threading through the tree.
 

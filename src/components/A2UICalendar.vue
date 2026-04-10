@@ -1,7 +1,18 @@
 <script setup lang="ts">
+  import type { ComponentModel } from '@a2ui/web_core/v0_9';
   import { computed } from 'vue';
+  import { VCalendar } from 'vuetify/components';
   import { useA2UI } from '../composables/useA2UI';
-  import type { ComponentModel } from '../types';
+
+  type VCalendarProps = InstanceType<typeof VCalendar>['$props'];
+  type VCalendarViewType = NonNullable<VCalendarProps['type']>;
+
+  const CALENDAR_TYPES: readonly VCalendarViewType[] = ['month', 'category', 'day', '4day', 'custom-daily', 'custom-weekly', 'week'];
+
+  function toCalendarViewType(raw: string | undefined): VCalendarViewType {
+    const v = raw ?? 'month';
+    return (CALENDAR_TYPES as readonly string[]).includes(v) ? (v as VCalendarViewType) : 'month';
+  }
 
   const props = defineProps<{
     node: ComponentModel;
@@ -9,15 +20,15 @@
 
   const { resolveValue, setData, dispatchNodeAction } = useA2UI();
 
-  const calendarType = computed(() => resolveValue(props.node.properties.type) ?? 'month');
-  const events = computed(() => resolveValue(props.node.properties.events) || []);
-  const weekdays = computed(() => resolveValue(props.node.properties.weekdays) ?? [0, 1, 2, 3, 4, 5, 6]);
-  const eventColor = computed(() => resolveValue(props.node.properties.eventColor) ?? resolveValue(props.node.properties.color) ?? 'primary');
+  const calendarType = computed<VCalendarProps['type']>(() => toCalendarViewType(resolveValue<string | undefined>(props.node.properties.type)));
+  const events = computed(() => resolveValue<any[]>(props.node.properties.events) || []);
+  const weekdays = computed(() => resolveValue<number[]>(props.node.properties.weekdays) ?? [0, 1, 2, 3, 4, 5, 6]);
+  const eventColor = computed(() => resolveValue<string | undefined>(props.node.properties.eventColor) ?? resolveValue<string | undefined>(props.node.properties.color) ?? 'primary');
   const valuePath = computed(() => props.node.properties.value?.path);
 
   const modelValue = computed({
     get() {
-      return resolveValue(props.node.properties.value) ?? '';
+      return resolveValue<any>(props.node.properties.value) ?? '';
     },
     set(val: any) {
       if (valuePath.value) {

@@ -1,7 +1,11 @@
 <script setup lang="ts">
+  import type { ComponentModel } from '@a2ui/web_core/v0_9';
   import { computed } from 'vue';
+  import { VBtn } from 'vuetify/components';
   import { useA2UI } from '../composables/useA2UI';
-  import type { ComponentModel } from '../types';
+
+  type VBtnProps = InstanceType<typeof VBtn>['$props'];
+  type VBtnVariant = VBtnProps['variant'];
 
   const props = defineProps<{
     node: ComponentModel;
@@ -10,11 +14,11 @@
   const { resolveValue, dispatchNodeAction } = useA2UI();
 
   const labelText = computed(() => {
-    const label = resolveValue(props.node.properties.label);
+    const label = resolveValue<string | undefined>(props.node.properties.label);
     if (label !== undefined && label !== null && String(label) !== '') {
       return String(label);
     }
-    const text = resolveValue(props.node.properties.text);
+    const text = resolveValue<string | undefined>(props.node.properties.text);
     if (text !== undefined && text !== null && String(text) !== '') {
       return String(text);
     }
@@ -22,7 +26,7 @@
   });
 
   const iconName = computed(() => {
-    const raw = resolveValue(props.node.properties.icon);
+    const raw = resolveValue<string | undefined>(props.node.properties.icon);
     if (raw === undefined || raw === null || raw === '') return '';
     const name = String(raw);
     if (name && !name.startsWith('mdi-')) {
@@ -32,9 +36,9 @@
   });
 
   const buttonProps = computed(() => {
-    const variant = resolveValue(props.node.properties.variant);
-    let color = undefined;
-    let variantProp: 'elevated' | 'flat' | 'tonal' | 'outlined' | 'text' | 'plain' = 'elevated';
+    const variant = resolveValue<string | undefined>(props.node.properties.variant);
+    let color: string | undefined = undefined;
+    let variantProp: VBtnVariant = 'elevated';
 
     switch (variant) {
       case 'primary':

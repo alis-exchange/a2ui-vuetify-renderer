@@ -1,11 +1,12 @@
 <script setup lang="ts">
+  import type { ComponentModel } from '@a2ui/web_core/v0_9';
   import { computed } from 'vue';
   import { useDynamicProps } from '../composables/useDynamicProps';
   import A2UIRadioButton from './A2UIRadioButton.vue';
   import A2UISelect from './A2UISelect.vue';
 
   const props = defineProps<{
-    node: any;
+    node: ComponentModel;
   }>();
 
   const dynamicProps = useDynamicProps(() => props.node);

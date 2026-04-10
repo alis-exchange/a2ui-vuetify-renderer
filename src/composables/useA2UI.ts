@@ -1,4 +1,4 @@
-import { DataContext, type A2uiClientAction } from '@a2ui/web_core/v0_9';
+import { DataContext, type A2uiClientAction, type Action, type ComponentModel, type DynamicValue } from '@a2ui/web_core/v0_9';
 import { computed, inject, type InjectionKey } from 'vue';
 
 export type A2UIActionPayload = A2uiClientAction;
@@ -27,9 +27,9 @@ export function useA2UI() {
     return new DataContext(surface, context.dataContextPath || '/');
   });
 
-  const resolveValue = (node: any) => {
-    if (!dataContext.value || node === undefined) return node;
-    return dataContext.value.resolveDynamicValue(node);
+  const resolveValue = <V = unknown>(value: DynamicValue | undefined): V | undefined => {
+    if (!dataContext.value || value === undefined) return value as V | undefined;
+    return dataContext.value.resolveDynamicValue<V>(value);
   };
 
   const resolveActionContext = (ctx: any) => {
@@ -83,17 +83,17 @@ export function useA2UI() {
     }
   };
 
-  const dispatchNodeAction = (node: { id: string; properties: Record<string, any> }, extraContext?: Record<string, any>) => {
-    const action = resolveValue(node.properties.action);
+  const dispatchNodeAction = (node: ComponentModel, extraContext?: Record<string, any>) => {
+    const action = resolveValue<Action | undefined>(node.properties.action);
     if (!action) return;
 
-    if (action.event) {
+    if ('event' in action) {
       const mergedContext = {
         ...(action.event.context || {}),
         ...(extraContext || {}),
       };
       sendAction(action.event.name, node.id, mergedContext);
-    } else if (action.functionCall) {
+    } else if ('functionCall' in action) {
       console.warn(`functionCall not yet supported for ${node.id}`);
     }
   };

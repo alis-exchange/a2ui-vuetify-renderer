@@ -1,8 +1,12 @@
 <script setup lang="ts">
+  import type { ComponentModel } from '@a2ui/web_core/v0_9';
   import { computed } from 'vue';
+  import { VTextField } from 'vuetify/components';
   import { useA2UI } from '../composables/useA2UI';
-  import type { ComponentModel } from '../types';
   import { createVuetifyRules } from '../utils/validation';
+
+  type VTextFieldProps = InstanceType<typeof VTextField>['$props'];
+  type VTextFieldVariant = VTextFieldProps['variant'];
 
   const props = defineProps<{
     node: ComponentModel;
@@ -10,12 +14,12 @@
 
   const { resolveValue, setData, dispatchNodeAction } = useA2UI();
 
-  const label = computed(() => resolveValue(props.node.properties.label));
+  const label = computed(() => resolveValue<string | undefined>(props.node.properties.label));
   const valuePath = computed(() => props.node.properties.value?.path);
 
   const modelValue = computed({
     get() {
-      return resolveValue(props.node.properties.value) ?? '';
+      return resolveValue<string>(props.node.properties.value) ?? '';
     },
     set(val: string) {
       if (valuePath.value) {
@@ -24,10 +28,9 @@
     },
   });
 
-  const variant = computed(() => resolveValue(props.node.properties.variant));
-
-  const vuetifyVariant = computed(() => {
-    switch (variant.value) {
+  const vuetifyVariant = computed<VTextFieldVariant>(() => {
+    const variant = resolveValue<string | undefined>(props.node.properties.variant);
+    switch (variant) {
       case 'filled':
         return 'filled';
       case 'outlined':
@@ -38,7 +41,7 @@
   });
 
   const rules = computed(() => {
-    const checks = resolveValue(props.node.properties.checks);
+    const checks = resolveValue<any[]>(props.node.properties.checks) ?? [];
     return createVuetifyRules(checks);
   });
 

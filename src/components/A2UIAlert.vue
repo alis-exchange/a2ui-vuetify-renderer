@@ -1,8 +1,12 @@
 <script setup lang="ts">
+  import type { ComponentModel } from '@a2ui/web_core/v0_9';
   import { computed } from 'vue';
+  import { VAlert } from 'vuetify/components';
   import { useA2UI } from '../composables/useA2UI';
   import ComponentNode from '../core/ComponentNode.vue';
-  import type { ComponentModel } from '../types';
+
+  type VAlertProps = InstanceType<typeof VAlert>['$props'];
+  type VAlertType = VAlertProps['type'];
 
   const props = defineProps<{
     node: ComponentModel;
@@ -10,15 +14,10 @@
 
   const { resolveValue } = useA2UI();
 
-  const title = computed(() => resolveValue(props.node.properties.title));
-  const text = computed(() => resolveValue(props.node.properties.text));
-  const type = computed(() => resolveValue(props.node.properties.variant) || 'info'); // success, info, warning, error
-  const child = computed(() => {
-    const c = resolveValue(props.node.properties.child);
-    if (typeof c === 'string') return c;
-    if (c && typeof c === 'object' && c.id) return c.id;
-    return undefined;
-  });
+  const title = computed(() => resolveValue<string | undefined>(props.node.properties.title));
+  const text = computed(() => resolveValue<string | undefined>(props.node.properties.text));
+  const type = computed(() => resolveValue<VAlertType>(props.node.properties.variant) || 'info');
+  const child = computed(() => resolveValue<string | undefined>(props.node.properties.child));
 </script>
 
 <template>
