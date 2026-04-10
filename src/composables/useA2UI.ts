@@ -94,7 +94,7 @@ export function useA2UI() {
       };
       sendAction(action.event.name, node.id, mergedContext);
     } else if ('functionCall' in action) {
-      console.warn(`functionCall not yet supported for ${node.id}`);
+      dataContext.value?.resolveAction(action);
     }
   };
 

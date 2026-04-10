@@ -89,4 +89,66 @@ describe('useA2UI composable', () => {
       context: {},
     });
   });
+
+  it('dispatchNodeAction invokes catalog invoker for functionCall actions', () => {
+    const invoker = vi.fn();
+    const dataModel = new DataModel({});
+
+    const mockContext = {
+      surfaceId: 'test-surface',
+      onAction: vi.fn(),
+      processor: {
+        model: {
+          getSurface: vi.fn().mockReturnValue({
+            id: 'test-surface',
+            dataModel,
+            catalog: { invoker },
+          }),
+        },
+      },
+      dataContextPath: '/',
+    };
+
+    let injected: ReturnType<typeof useA2UI> | null = null;
+
+    const TestComponent = defineComponent({
+      setup() {
+        injected = useA2UI();
+        return {};
+      },
+      template: '<div></div>',
+    });
+
+    const ProviderComponent = defineComponent({
+      components: { TestComponent },
+      setup() {
+        provide(A2UI_CONTEXT_KEY, mockContext);
+        return {};
+      },
+      template: '<TestComponent />',
+    });
+
+    mount(ProviderComponent);
+
+    injected!.dispatchNodeAction({
+      id: 'node-1',
+      properties: {
+        action: {
+          functionCall: {
+            call: 'openUrl',
+            args: { url: 'https://example.com' },
+          },
+        },
+      },
+    } as any);
+
+    expect(invoker).toHaveBeenCalledTimes(1);
+    expect(invoker).toHaveBeenCalledWith(
+      'openUrl',
+      { url: 'https://example.com' },
+      expect.objectContaining({ path: '/' }),
+      expect.any(AbortSignal),
+    );
+    expect(mockContext.onAction).not.toHaveBeenCalled();
+  });
 });
