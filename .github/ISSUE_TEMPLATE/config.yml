@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: A2UI Protocol v0.9
+    url: https://a2ui.org/specification/v0.9-a2ui/
+    about: Specification for messages, data binding, and the basic catalog concepts this renderer implements.
+  - name: Renderer development guide
+    url: https://a2ui.org/guides/renderer-development/
+    about: Background on how renderers relate to @a2ui/web_core and client responsibilities.
