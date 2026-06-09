@@ -1,5 +1,5 @@
 import { DataContext, type A2uiClientAction, type Action, type ComponentModel, type DynamicValue } from '@a2ui/web_core/v0_9';
-import { computed, inject, type InjectionKey } from 'vue';
+import { computed, inject, type ComputedRef, type InjectionKey } from 'vue';
 
 export type A2UIActionPayload = A2uiClientAction;
 
@@ -20,53 +20,15 @@ export interface A2UIContext {
 export const A2UI_CONTEXT_KEY: InjectionKey<A2UIContext> = Symbol('A2UI_CONTEXT_KEY');
 
 /**
- * Core composable for A2UI component development.
- *
- * Provides reactive data resolution, action dispatching, and data mutation
- * within an A2UI surface. Must be called inside a component that is a descendant
- * of `<A2UIProvider>`.
- *
- * @returns An object containing:
- * - `surfaceId` — the ID of the current A2UI surface
- * - `dataContextPath` — the current data scope path (e.g. `/items/0`)
- * - `dataContext` — a computed `DataContext` for the current scope
- * - `resolveValue` — resolves a `DynamicValue` to its concrete value
- * - `resolveDynamicChildren` — resolves a `children` property into renderable child descriptors
- * - `sendAction` — dispatches a named event action to the server
- * - `dispatchNodeAction` — dispatches the action defined on a component node
- * - `setData` — writes a value into the data model
- *
- * @throws Error if called outside of an `<A2UIProvider>` ancestor
- *
- * @example
- * ```vue
- * <script setup lang="ts">
- * import type { ComponentModel } from '@a2ui/web_core/v0_9';
- * import { computed } from 'vue';
- * import { useA2UI } from '../composables/useA2UI';
- *
- * const props = defineProps<{ node: ComponentModel }>();
- * const { resolveValue, dispatchNodeAction } = useA2UI();
- *
- * const label = computed(() => resolveValue<string>(props.node.properties.label));
- * const handleClick = () => dispatchNodeAction(props.node);
- * </script>
- * ```
+ * The return type of {@link useA2UI}.
  */
-export function useA2UI() {
-  const context = inject(A2UI_CONTEXT_KEY);
-
-  if (!context) {
-    throw new Error('useA2UI must be used within an A2UIProvider');
-  }
-
-  const surface = context.processor?.model?.getSurface(context.surfaceId);
-  const dataModel = surface?.dataModel;
-
-  const dataContext = computed(() => {
-    if (!surface?.dataModel || !surface?.catalog) return undefined;
-    return new DataContext(surface, context.dataContextPath || '/');
-  });
+export interface UseA2UIReturn {
+  /** The ID of the current A2UI surface. */
+  surfaceId: string;
+  /** The current data scope path (e.g. `"/items/0"`), or `undefined` at the root. */
+  dataContextPath: string | undefined;
+  /** A computed `DataContext` for the current scope, or `undefined` if the surface isn't ready. */
+  dataContext: ComputedRef<DataContext | undefined>;
 
   /**
    * Resolves a {@link DynamicValue} into its concrete runtime value.
@@ -95,37 +57,7 @@ export function useA2UI() {
    * const count = computed(() => resolveValue<number>(props.node.properties.count) ?? 0);
    * ```
    */
-  const resolveValue = <V = unknown>(value: DynamicValue | undefined): V | undefined => {
-    if (!dataContext.value || value === undefined) return value as V | undefined;
-    return dataContext.value.resolveDynamicValue<V>(value);
-  };
-
-  /**
-   * Resolves all values in an action context object by running each through {@link resolveValue}.
-   *
-   * Action context objects are key-value maps where each value may be a `DynamicValue`
-   * (literal, data binding, or function call). This function resolves every entry to its
-   * concrete value so the context can be sent to the server with actual data.
-   *
-   * @param ctx - A record of dynamic values to resolve. Returns the input unchanged if
-   *              it is not a non-null object.
-   * @returns A new object with all values resolved, or the original input if not an object.
-   *
-   * @example
-   * ```ts
-   * // Internally used by sendAction — typically not called directly.
-   * // Given context: { userId: { path: "/user/id" }, action: "delete" }
-   * // Returns:       { userId: "abc-123",            action: "delete" }
-   * ```
-   */
-  const resolveActionContext = (ctx: any) => {
-    if (!ctx || typeof ctx !== 'object') return ctx;
-    const resolved: Record<string, any> = {};
-    for (const key in ctx) {
-      resolved[key] = resolveValue(ctx[key]);
-    }
-    return resolved;
-  };
+  resolveValue: <V = unknown>(value: DynamicValue | undefined) => V | undefined;
 
   /**
    * Resolves a component's `children` property into an array of renderable child descriptors.
@@ -164,29 +96,7 @@ export function useA2UI() {
    * </template>
    * ```
    */
-  const resolveDynamicChildren = (childrenProp: any) => {
-    if (Array.isArray(childrenProp)) {
-      return childrenProp.map((child) => {
-        if (typeof child === 'string') return { id: child };
-        if (child && typeof child === 'object' && child.id) return { id: child.id };
-        return child;
-      });
-    }
-
-    if (childrenProp && typeof childrenProp === 'object' && childrenProp.path && childrenProp.componentId) {
-      const resolvedArray = resolveValue({ path: childrenProp.path });
-      if (Array.isArray(resolvedArray)) {
-        return resolvedArray.map((_, index) => {
-          return {
-            id: childrenProp.componentId,
-            path: `${childrenProp.path}/${index}`,
-          };
-        });
-      }
-    }
-
-    return [];
-  };
+  resolveDynamicChildren: (childrenProp: any) => Array<{ id: string; path?: string }>;
 
   /**
    * Dispatches a named event action, resolving any dynamic values in the context.
@@ -215,23 +125,7 @@ export function useA2UI() {
    * });
    * ```
    */
-  const sendAction = (name: string, sourceComponentId: string, actionContext?: Record<string, any>) => {
-    const resolvedContext = actionContext ? resolveActionContext(actionContext) : {};
-    const actionPayload = { event: { name, context: resolvedContext } };
-
-    if (surface && typeof surface.dispatchAction === 'function') {
-      surface.dispatchAction(actionPayload, sourceComponentId);
-    } else {
-      const payload: A2UIActionPayload = {
-        name,
-        sourceComponentId,
-        surfaceId: context.surfaceId,
-        timestamp: new Date().toISOString(),
-        context: resolvedContext,
-      };
-      context.onAction(payload);
-    }
-  };
+  sendAction: (name: string, sourceComponentId: string, actionContext?: Record<string, any>) => void;
 
   /**
    * Dispatches the action defined on a component node's `action` property.
@@ -263,20 +157,7 @@ export function useA2UI() {
    * };
    * ```
    */
-  const dispatchNodeAction = (node: ComponentModel, extraContext?: Record<string, any>) => {
-    const action = resolveValue<Action | undefined>(node.properties.action);
-    if (!action) return;
-
-    if ('event' in action) {
-      const mergedContext = {
-        ...(action.event.context || {}),
-        ...(extraContext || {}),
-      };
-      sendAction(action.event.name, node.id, mergedContext);
-    } else if ('functionCall' in action) {
-      dataContext.value?.resolveAction(action);
-    }
-  };
+  dispatchNodeAction: (node: ComponentModel, extraContext?: Record<string, any>) => void;
 
   /**
    * Writes a value into the surface's data model at the given path.
@@ -302,6 +183,129 @@ export function useA2UI() {
    * });
    * ```
    */
+  setData: (path: string, value: any) => void;
+}
+
+/**
+ * Core composable for A2UI component development.
+ *
+ * Provides reactive data resolution, action dispatching, and data mutation
+ * within an A2UI surface. Must be called inside a component that is a descendant
+ * of `<A2UIProvider>`.
+ *
+ * @returns An object containing:
+ * - `surfaceId` — the ID of the current A2UI surface
+ * - `dataContextPath` — the current data scope path (e.g. `/items/0`)
+ * - `dataContext` — a computed `DataContext` for the current scope
+ * - `resolveValue` — resolves a `DynamicValue` to its concrete value
+ * - `resolveDynamicChildren` — resolves a `children` property into renderable child descriptors
+ * - `sendAction` — dispatches a named event action to the server
+ * - `dispatchNodeAction` — dispatches the action defined on a component node
+ * - `setData` — writes a value into the data model
+ *
+ * @throws Error if called outside of an `<A2UIProvider>` ancestor
+ *
+ * @example
+ * ```vue
+ * <script setup lang="ts">
+ * import type { ComponentModel } from '@a2ui/web_core/v0_9';
+ * import { computed } from 'vue';
+ * import { useA2UI } from '../composables/useA2UI';
+ *
+ * const props = defineProps<{ node: ComponentModel }>();
+ * const { resolveValue, dispatchNodeAction } = useA2UI();
+ *
+ * const label = computed(() => resolveValue<string>(props.node.properties.label));
+ * const handleClick = () => dispatchNodeAction(props.node);
+ * </script>
+ * ```
+ */
+export function useA2UI(): UseA2UIReturn {
+  const context = inject(A2UI_CONTEXT_KEY);
+
+  if (!context) {
+    throw new Error('useA2UI must be used within an A2UIProvider');
+  }
+
+  const surface = context.processor?.model?.getSurface(context.surfaceId);
+  const dataModel = surface?.dataModel;
+
+  const dataContext = computed(() => {
+    if (!surface?.dataModel || !surface?.catalog) return undefined;
+    return new DataContext(surface, context.dataContextPath || '/');
+  });
+
+  const resolveValue = <V = unknown>(value: DynamicValue | undefined): V | undefined => {
+    if (!dataContext.value || value === undefined) return value as V | undefined;
+    return dataContext.value.resolveDynamicValue<V>(value);
+  };
+
+  const resolveActionContext = (ctx: any) => {
+    if (!ctx || typeof ctx !== 'object') return ctx;
+    const resolved: Record<string, any> = {};
+    for (const key in ctx) {
+      resolved[key] = resolveValue(ctx[key]);
+    }
+    return resolved;
+  };
+
+  const resolveDynamicChildren = (childrenProp: any) => {
+    if (Array.isArray(childrenProp)) {
+      return childrenProp.map((child) => {
+        if (typeof child === 'string') return { id: child };
+        if (child && typeof child === 'object' && child.id) return { id: child.id };
+        return child;
+      });
+    }
+
+    if (childrenProp && typeof childrenProp === 'object' && childrenProp.path && childrenProp.componentId) {
+      const resolvedArray = resolveValue({ path: childrenProp.path });
+      if (Array.isArray(resolvedArray)) {
+        return resolvedArray.map((_, index) => {
+          return {
+            id: childrenProp.componentId,
+            path: `${childrenProp.path}/${index}`,
+          };
+        });
+      }
+    }
+
+    return [];
+  };
+
+  const sendAction = (name: string, sourceComponentId: string, actionContext?: Record<string, any>) => {
+    const resolvedContext = actionContext ? resolveActionContext(actionContext) : {};
+    const actionPayload = { event: { name, context: resolvedContext } };
+
+    if (surface && typeof surface.dispatchAction === 'function') {
+      surface.dispatchAction(actionPayload, sourceComponentId);
+    } else {
+      const payload: A2UIActionPayload = {
+        name,
+        sourceComponentId,
+        surfaceId: context.surfaceId,
+        timestamp: new Date().toISOString(),
+        context: resolvedContext,
+      };
+      context.onAction(payload);
+    }
+  };
+
+  const dispatchNodeAction = (node: ComponentModel, extraContext?: Record<string, any>) => {
+    const action = resolveValue<Action | undefined>(node.properties.action);
+    if (!action) return;
+
+    if ('event' in action) {
+      const mergedContext = {
+        ...(action.event.context || {}),
+        ...(extraContext || {}),
+      };
+      sendAction(action.event.name, node.id, mergedContext);
+    } else if ('functionCall' in action) {
+      dataContext.value?.resolveAction(action);
+    }
+  };
+
   const setData = (path: string, value: any) => {
     if (dataModel) {
       dataModel.set(path, value);

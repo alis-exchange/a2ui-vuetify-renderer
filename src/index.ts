@@ -25,7 +25,7 @@ export type { A2UiVueRendererOptions } from './A2UIRendererPlugin';
 // Export Composables
 export { default as A2UIProvider } from './composables/A2UIProvider.vue';
 export { A2UI_CONTEXT_KEY, useA2UI } from './composables/useA2UI';
-export type { A2UIActionPayload, A2UIContext } from './composables/useA2UI';
+export type { A2UIActionPayload, A2UIContext, UseA2UIReturn } from './composables/useA2UI';
 export { useDynamicProps } from './composables/useDynamicProps';
 
 // Export Core Components

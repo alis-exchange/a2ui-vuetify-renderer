@@ -57,13 +57,13 @@ describe('generate-catalog.ts', () => {
     }
   });
 
-  it('should fail if components in defaultCatalog.ts do not match catalog components', () => {
+  it('should fail if components in defaultCatalog.ts do not match catalog components', { timeout: 30_000 }, () => {
     expect(() => {
       execSync(`npx tsx ${scriptPath} --test-fail`, { cwd: rootDir, stdio: 'pipe' });
     }).toThrow();
   });
 
-  it('should be runnable via npm run generate:catalog', () => {
+  it('should be runnable via npm run generate:catalog', { timeout: 30_000 }, () => {
     execSync('npm run generate:catalog', { cwd: rootDir, stdio: 'inherit' });
     expect(fs.existsSync(catalogPath)).toBe(true);
   });

@@ -46,10 +46,10 @@ renderer/
 │   │   ├── ComponentRegistry.ts       # Map<catalogId, Map<type, Component>>
 │   │   ├── catalogFilters.ts          # Predicate helpers for getCatalogSchema filtering
 │   │   ├── constants.ts               # CATALOG_ID constant
-│   │   ├── defaultCatalog.ts          # Registers 39 default components
+│   │   ├── defaultCatalog.ts          # Registers 40 default components
 │   │   └── getCatalogSchema.ts        # Merges base JSON Schema + custom stubs; supports filtering
 │   ├── components/
-│   │   └── A2UI*.vue                  # 39 Vuetify-backed component implementations
+│   │   └── A2UI*.vue                  # 40 Vuetify-backed component implementations
 │   └── utils/
 │       └── validation.ts              # A2UI checks → Vuetify rule functions
 ├── vite.config.ts                     # Library-mode build config
@@ -65,9 +65,9 @@ renderer/
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | Vue 3 (`^3.5.30`) with `<script setup>` + TypeScript |
-| Component library | Vuetify 4 (`^4.0.2`) |
-| Protocol core | `@a2ui/web_core` (`^0.9.0`) — message processing, state, data binding, validation |
+| Framework | Vue 3 (`^3.5.35`) with `<script setup>` + TypeScript |
+| Component library | Vuetify 4 (`^4.1.1`) |
+| Protocol core | `@a2ui/web_core` (`^0.10.0`) — message processing, state, data binding, validation |
 | Schema | Zod (`^3.25`) + `zod-to-json-schema` for catalog generation |
 | Build | Vite 8 library mode, `vite-plugin-vuetify` (auto-import), `vite-plugin-dts` |
 | Tests | Vitest 4 + `@vue/test-utils` + jsdom |
@@ -134,11 +134,13 @@ The singleton `defaultRegistry` is pre-populated by `registerDefaultComponents()
 
 ### 5.6 useA2UI composable (`composables/useA2UI.ts`)
 
-Provides the bridge between `@a2ui/web_core` state and Vue component logic. Returns:
+Provides the bridge between `@a2ui/web_core` state and Vue component logic. The function signature is `useA2UI(): UseA2UIReturn`. The explicit return type interface is required so that JSDoc on each member survives into the generated `.d.ts` — see §12.7.
+
+`UseA2UIReturn` members:
 - `resolveValue<V = unknown>(value: DynamicValue | undefined): V | undefined` — resolves literal / `{ path }` / `{ call }` via `DataContext.resolveDynamicValue<V>()`; `DynamicValue` is from `@a2ui/web_core/v0_9`. Pass `V` explicitly for each property (e.g. `resolveValue<string>(props.node.properties.label)`).
 - `resolveDynamicChildren(childrenProp)` — handles static ID arrays and `{ path, componentId }` template iteration
 - `sendAction(name, sourceComponentId, context?)` — builds and dispatches actions (prefers `surface.dispatchAction()`, falls back to `onAction` callback)
-- `dispatchNodeAction(node: ComponentModel, extraContext?)` — reads `node.properties.action`, resolves with `resolveValue<Action | undefined>`, then dispatches `event` or warns on `functionCall`
+- `dispatchNodeAction(node: ComponentModel, extraContext?)` — reads `node.properties.action`, resolves with `resolveValue<Action | undefined>`, then dispatches `event` or executes `functionCall` locally
 - `setData(path, value)` — writes to the surface's `DataModel`
 - `surfaceId`, `dataContextPath`, `dataContext`
 
@@ -375,6 +377,8 @@ getCatalogSchema(defaultRegistry, CATALOG_ID, { filter: (name) => name.startsWit
 5. **Generated catalog schema** — The JSON Schema is derived from Zod schemas (single source of truth) and validated against the component registry at generation time. This guarantees agents always see an accurate schema.
 
 6. **Vuetify auto-import** — `vite-plugin-vuetify` with `autoImport: true` means Vuetify components don't need explicit imports in `.vue` files. They're resolved at build time.
+
+7. **Explicit return type interfaces for composables** — When a composable returns an object with multiple members (like `useA2UI`), JSDoc on inner `const` declarations does **not** survive into the generated `.d.ts` file. TypeScript infers the return type structurally and strips the JSDoc. To ensure consumers see documentation when hovering over destructured members (e.g. `resolveValue`, `sendAction`), the composable must define an exported interface (e.g. `UseA2UIReturn`) with JSDoc on each property, and annotate the function return type explicitly. The JSDoc lives on the interface, not on the inner implementations. If you add a new composable that returns a multi-member object, follow this same pattern.
 
 ---
 
