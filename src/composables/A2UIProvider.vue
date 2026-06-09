@@ -1,3 +1,29 @@
+<!--
+  A2UIProvider — root context provider for an A2UI surface.
+
+  Wraps a subtree of A2UI components, providing them with access to the message
+  processor, surface ID, and action handler via Vue's provide/inject system.
+
+  Responsibilities:
+  - Provides the `A2UI_CONTEXT_KEY` injection consumed by `useA2UI()`.
+  - Listens for `update` events on the processor and forces child re-renders.
+  - Dynamically registers a scoped Vuetify theme when the surface defines
+    theme overrides (`primaryColor`, `errorColor`, `backgroundColor`, `surfaceColor`),
+    without mutating the global theme. Cleans up the theme on unmount.
+
+  @example
+  ```vue
+  <template>
+    <A2UIProvider
+      :processor="processor"
+      :surface-id="surfaceId"
+      :on-action="handleAction"
+    >
+      <ComponentNode :id="rootComponentId" />
+    </A2UIProvider>
+  </template>
+  ```
+-->
 <script setup lang="ts">
   import { computed, onMounted, onUnmounted, provide, shallowRef, watchEffect } from 'vue';
   import { useTheme } from 'vuetify';
@@ -5,8 +31,11 @@
   import { A2UI_CONTEXT_KEY } from './useA2UI';
 
   const props = defineProps<{
+    /** The A2UI message processor that owns the surface model and data model. */
     processor: any; // A2uiMessageProcessor
+    /** The ID of the A2UI surface to render. */
     surfaceId: string;
+    /** Optional callback invoked when a component dispatches an action (fallback path). */
     onAction?: (action: any) => void;
   }>();
 

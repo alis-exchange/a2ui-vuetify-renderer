@@ -1,4 +1,24 @@
-// Export the A2UI Vue Renderer Plugin
+/**
+ * @module @alis-build/a2ui-vuetify-renderer
+ *
+ * Vuetify-based renderer for the A2UI protocol.
+ *
+ * Install the {@link A2UiVueRenderer} plugin in your Vue app to render
+ * A2UI surfaces. Use `<A2UIProvider>` to scope a surface and `<ComponentNode>`
+ * to render individual components. The {@link useA2UI} composable gives
+ * component authors access to data resolution, action dispatch, and data mutation.
+ *
+ * @example
+ * ```ts
+ * import { createApp } from 'vue';
+ * import { A2UiVueRenderer } from '@alis-build/a2ui-vuetify-renderer';
+ *
+ * const app = createApp(App);
+ * app.use(A2UiVueRenderer);
+ * ```
+ */
+
+// Plugin
 export { A2UiVueRenderer, default as plugin } from './A2UIRendererPlugin';
 export type { A2UiVueRendererOptions } from './A2UIRendererPlugin';
 

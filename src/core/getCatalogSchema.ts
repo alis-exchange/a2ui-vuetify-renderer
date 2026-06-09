@@ -3,6 +3,9 @@ import baseCatalog from '../../catalog/vuetify-catalog.json';
 import type { CatalogFilter } from './catalogFilters';
 import type { ComponentRegistry } from './ComponentRegistry';
 
+/**
+ * Options for {@link getCatalogSchema}.
+ */
 export interface GetCatalogSchemaOptions {
   /**
    * Optional predicate to filter which components appear in the returned schema.
@@ -12,7 +15,7 @@ export interface GetCatalogSchemaOptions {
    *
    * @example
    * ```ts
-   * import { catalogFilters } from '@a2ui/vue-renderer'
+   * import { catalogFilters } from '@alis-build/a2ui-vuetify-renderer'
    *
    * // Only custom components
    * getCatalogSchema(registry, id, { filter: catalogFilters.customOnly })

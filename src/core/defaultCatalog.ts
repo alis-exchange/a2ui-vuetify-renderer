@@ -41,6 +41,16 @@ import A2UIVideo from '../components/A2UIVideo.vue';
 import { defaultRegistry } from './ComponentRegistry';
 import { CATALOG_ID } from './constants';
 
+/**
+ * Registers all built-in Vuetify-backed A2UI components into the {@link defaultRegistry}.
+ *
+ * Called automatically by the {@link A2UiVueRenderer} plugin during `app.use()`.
+ * You only need to call this directly if you are setting up the registry manually
+ * without using the plugin.
+ *
+ * Maps A2UI component type names (e.g. `"Button"`, `"TextField"`, `"List"`) to
+ * their corresponding Vue component implementations.
+ */
 export function registerDefaultComponents() {
   defaultRegistry.registerAll(CATALOG_ID, {
     Text: A2UIText,

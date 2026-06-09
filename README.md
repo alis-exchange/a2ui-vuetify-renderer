@@ -27,9 +27,9 @@ The library ships ESM (`dist/a2ui-vuetify-renderer.js`), UMD (`dist/a2ui-vuetify
 
 | Package          | Version   |
 | ---------------- | --------- |
-| `vue`            | `^3.5.30` |
-| `vuetify`        | `^4.0.2`  |
-| `@a2ui/web_core` | `^0.9.0`  |
+| `vue`            | `^3.5.35` |
+| `vuetify`        | `^4.1.1`  |
+| `@a2ui/web_core` | `^0.10.0` |
 
 ### Catalog ID
 
@@ -179,7 +179,7 @@ Form components use internal helpers in `src/utils/validation.ts` to map A2UI `c
 3. **Tree resolution** — `ComponentNode` reads the flat adjacency list from `SurfaceComponentsModel`, resolves `children`/`child`/`trigger`/`content` references, and recursively renders the tree.
 4. **Value binding** — Components call `resolveValue<V>(value)` which delegates to `DataContext.resolveDynamicValue<V>()` — handling literals, `{ path }` lookups, and `{ call }` function expressions. Prefer an explicit `V` (e.g. `string`, `number[]`) for each property.
 5. **Two-way binding** — Input components use writable `computed` properties that call `setData()` on the surface's `DataModel` when the user types.
-6. **Actions out** — On user interaction (e.g. button click), components call `sendAction(name, sourceComponentId, context)` which resolves context values from the data model and dispatches a validated `A2uiClientAction` via the surface model (or falls back to the `onAction` callback).
+6. **Actions out** — On user interaction, components call `dispatchNodeAction(node, extraContext?)` (reads `action` from the node, then dispatches) or `sendAction(name, sourceComponentId, context)` (fires a named event directly). Both resolve context from the data model and dispatch via `SurfaceModel.dispatchAction()` or the `onAction` callback.
 
 ### Dynamic list rendering
 
@@ -219,7 +219,7 @@ const props = defineProps<{
 }>();
 
 // useA2UI automatically handles resolving dynamic data bindings (e.g. { path: '/myData' })
-const { resolveValue, sendAction } = useA2UI();
+const { resolveValue, dispatchNodeAction } = useA2UI();
 
 // Resolve the 'title' property from the A2UI JSON node (generic = resolved type)
 const title = computed(() => resolveValue<string | undefined>(props.node.properties.title) ?? 'Default Chart');
@@ -230,12 +230,9 @@ const chartData = computed(() => {
   return Array.isArray(data) ? data : [];
 });
 
-// Emit an action back to the agent when a user interacts
+// Dispatch the action configured on the node (see ComponentApi below) with extra context
 const handleBarClick = (index: number, value: number) => {
-  sendAction('chartPointClicked', props.node.id, {
-    index,
-    value
-  });
+  dispatchNodeAction(props.node, { index, value });
 };
 </script>
 ```
@@ -246,9 +243,11 @@ Before rendering a surface, register your new component with the `defaultRegistr
 
 You can optionally provide a `ComponentApi` definition for your component. This is highly recommended as it allows `getCatalogSchema()` to expose your custom component's properties to the LLM agent, so the agent knows exactly what data your component expects.
 
+Include `ActionSchema` in the schema when your component emits user interactions back to the agent. The agent chooses the event name in JSON; your component decides **when** to fire it and what **extra context** to attach.
+
 ```typescript
 import { CATALOG_ID, defaultRegistry } from '@alis-build/a2ui-vuetify-renderer';
-import { DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
+import { ActionSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
 import CustomChartWidget from './components/CustomChartWidget.vue';
 
@@ -256,14 +255,194 @@ import CustomChartWidget from './components/CustomChartWidget.vue';
 const CustomChartApi: ComponentApi = {
   name: 'CustomChart',
   schema: z.object({
-    title: z.string().describe("The title of the chart").optional(),
-    data: z.object({ path: z.string() }).describe("Path to the data model array")
-  }).strict()
+    title: z.string().describe('The title of the chart').optional(),
+    data: z.object({ path: z.string() }).describe('Path to the data model array'),
+    action: ActionSchema.optional().describe('Fired when a bar is clicked; context includes index and value'),
+  }).strict(),
 };
 
 // Register the component under the type name "CustomChart" along with its API
 defaultRegistry.register(CATALOG_ID, 'CustomChart', CustomChartWidget, CustomChartApi);
 ```
+
+Use `ActionSchema` (required) when the component only makes sense with an action — e.g. `Button`. Use `ActionSchema.optional()` when interaction is optional — e.g. `TextField`, `Calendar`.
+
+#### Action shape
+
+`ActionSchema` from `@a2ui/web_core/v0_9` accepts either:
+
+- **Server action** — `{ event: { name: string, context?: object } }` — dispatched to the agent via `onAction`
+- **Client function** — `{ functionCall: { call: string, args?: object } }` — evaluated locally by the renderer
+
+In your Vue component, call `dispatchNodeAction(node, extraContext?)` on user interaction. It reads `node.properties.action`, merges `extraContext` into the event context, and dispatches. Built-in components such as `Button` and `Calendar` follow this same pattern.
+
+#### `dispatchNodeAction` vs `sendAction`
+
+Both functions emit actions back to the agent (or execute client-side `functionCall` actions). `dispatchNodeAction` is a higher-level helper that reads the node's `action` property first; for server events it delegates to `sendAction`.
+
+| | `dispatchNodeAction(node, extraContext?)` | `sendAction(name, sourceComponentId, context?)` |
+| --- | --- | --- |
+| **Who sets the event name** | The agent, via `action.event.name` in JSON | Your component code (first argument) |
+| **Static context** | From `action.event.context` in JSON (literals, `{ path }`, `{ call }` resolved) plus `extraContext` you pass at runtime | Only the `context` argument you pass |
+| **`functionCall` actions** | Yes — calls `dataContext.resolveAction()` | No — server events only |
+| **Visible in catalog schema** | Yes, when `action: ActionSchema` is in `ComponentApi` | No, unless the schema also declares `action` |
+| **When nothing happens** | Silently returns if `node.properties.action` is unset | Always dispatches when called |
+
+**Prefer `dispatchNodeAction`** for agent-driven UIs. The agent supplies `action` in `updateComponents` JSON; your component decides when to fire it and what runtime fields to add:
+
+```typescript
+// Agent JSON: { "action": { "event": { "name": "chartPointClicked" } } }
+dispatchNodeAction(props.node, { index, value });
+```
+
+**Use `sendAction`** when the event name is fixed in code and does not come from the node's `action` property — for example, `CustomChartWidget` in `examples/client`:
+
+```typescript
+sendAction('chartPointClicked', props.node.id, { index, value });
+```
+
+This works at runtime, but the agent will not see that event in `getCatalogSchema()` unless you also add `action: ActionSchema` and switch to `dispatchNodeAction`. Built-in components such as `Button` use `dispatchNodeAction`; see `A2UIButton.vue` and `A2UICalendar.vue` for reference.
+
+#### Multiple actions on one component
+
+A2UI defines **one standard `action` property per component node**. `dispatchNodeAction` only reads `node.properties.action`. When a component has more than one user interaction, pick the pattern that fits:
+
+| Goal | Pattern |
+| --- | --- |
+| Several gestures, one handler (agent branches on context) | **One `action` + context discriminator** |
+| Different event names, all on the same custom node | **Multiple `ActionSchema` properties** (custom) |
+| Separate affordances (Confirm / Cancel buttons) | **Child `Button` components** (standard A2UI) |
+| Fixed event names, not agent-configured | **Multiple `sendAction` calls** |
+
+##### 1. One `action`, discriminate in context (recommended)
+
+Use a single `action` on the node. Your component tags which interaction fired via `extraContext`. The agent (or your `onAction` handler) branches on a field such as `interaction`.
+
+`Calendar` is the built-in example. Its schema declares one optional `action` (`A2UICalendar.api.ts`); `A2UICalendar.vue` dispatches the same action for two gestures with different context:
+
+```typescript
+// A2UICalendar.api.ts — one action property
+action: ActionSchema.optional(),
+
+// Agent JSON — agent picks the event name once
+{
+  "id": "my-calendar",
+  "component": "Calendar",
+  "events": [{ "name": "Team standup", "start": "2026-06-09" }],
+  "value": { "path": "/selectedDate" },
+  "action": { "event": { "name": "calendarInteraction" } }
+}
+
+// A2UICalendar.vue — discriminate by interaction
+const handleClickDate = (_e: Event, day: any) => {
+  const date = day?.date;
+  if (date) modelValue.value = date;
+  dispatchNodeAction(props.node, { date, interaction: 'click:date' });
+};
+
+const handleClickEvent = (_e: Event, eventScope: any) => {
+  const event = eventScope?.event;
+  dispatchNodeAction(props.node, {
+    event: event ? { name: event.name, start: event.start, end: event.end } : {},
+    interaction: 'click:event',
+  });
+};
+```
+
+`Tabs` uses the same pattern for tab changes — one `action`, context carries `tabIndex` and `tabTitle` (`A2UITabs.vue`).
+
+##### 2. Multiple `ActionSchema` properties (custom)
+
+No built-in component in this catalog uses multiple `ActionSchema` properties on one node. If you extended `Calendar` so date clicks and event clicks each needed a **separate agent-configurable event name** (instead of one `action` + `interaction`), you could add custom properties to your `ComponentApi`:
+
+```typescript
+// Hypothetical extension of Calendar — not in the default catalog
+const ExtendedCalendarApi: ComponentApi = {
+  name: 'ExtendedCalendar',
+  schema: z.object({
+    events: z.array(z.object({ name: z.string(), start: z.string() }).strict()),
+    value: DynamicStringSchema.optional(),
+    onDateClickAction: ActionSchema.optional().describe('Fired when a date cell is clicked'),
+    onEventClickAction: ActionSchema.optional().describe('Fired when a calendar event is clicked'),
+  }).strict(),
+};
+```
+
+```json
+{
+  "onDateClickAction": { "event": { "name": "dateSelected" } },
+  "onEventClickAction": { "event": { "name": "eventSelected" } }
+}
+```
+
+`dispatchNodeAction` only reads `node.properties.action`, so resolve and dispatch each property yourself:
+
+```typescript
+import type { Action } from '@a2ui/web_core/v0_9';
+
+const { resolveValue, sendAction } = useA2UI();
+
+function dispatchConfiguredAction(
+  actionValue: unknown,
+  extraContext?: Record<string, unknown>,
+) {
+  const action = resolveValue<Action | undefined>(actionValue);
+  if (!action || !('event' in action)) return;
+
+  sendAction(action.event.name, props.node.id, {
+    ...(action.event.context ?? {}),
+    ...extraContext,
+  });
+}
+
+// Mirrors A2UICalendar.vue handlers, but reads separate action properties
+function handleClickDate(_e: Event, day: { date?: string }) {
+  dispatchConfiguredAction(props.node.properties.onDateClickAction, {
+    date: day?.date,
+    interaction: 'click:date',
+  });
+}
+
+function handleClickEvent(_e: Event, eventScope: { event?: { name: string; start: string; end?: string } }) {
+  const event = eventScope?.event;
+  dispatchConfiguredAction(props.node.properties.onEventClickAction, {
+    event: event ? { name: event.name, start: event.start, end: event.end } : {},
+    interaction: 'click:event',
+  });
+}
+```
+
+Prefer pattern 1 unless you truly need distinct event names per gesture on the same node.
+
+##### 3. Child `Button` components (standard A2UI)
+
+For discrete actions (Save, Close, Submit), put each action on a **child** `Button` with its own `action` property. `Modal` composes child nodes via `trigger` and `content` (`A2UIModal.vue`); buttons inside the modal body each carry a standard `action`:
+
+```json
+[
+  { "id": "settings-modal", "component": "Modal", "trigger": "open-settings-btn", "content": "settings-modal-body" },
+  { "id": "open-settings-btn", "component": "Button", "label": "Settings", "variant": "primary" },
+  {
+    "id": "settings-modal-body",
+    "component": "Column",
+    "children": ["settings-form", "save-settings-btn", "close-settings-btn"]
+  },
+  { "id": "save-settings-btn", "component": "Button", "label": "Save", "variant": "primary", "action": { "event": { "name": "saveSettings" } } },
+  { "id": "close-settings-btn", "component": "Button", "label": "Close", "action": { "event": { "name": "closeSettingsModal" } } }
+]
+```
+
+`Modal` itself can also emit on open/close via its optional `action` (`A2UIModal.vue` watches `isOpen` and calls `dispatchNodeAction` with `{ open }`). Put form state in the data model so Save's `action.event.context` can reference it (e.g. `{ "settings": { "path": "/settings" } }`).
+
+##### 4. Multiple `sendAction` calls (fixed names)
+
+When event names are fixed in code and do not need agent configuration. `CustomChartWidget` (`examples/client`) uses this for bar clicks:
+
+```typescript
+sendAction('chartPointClicked', props.node.id, { index, value });
+```
+
+Additional handlers on the same component would follow the same pattern with different names. Event names are invisible to `getCatalogSchema()` unless you add `action: ActionSchema` and migrate to `dispatchNodeAction` (patterns 1 or 2).
 
 ### 3. Send it from the Agent
 
@@ -274,7 +453,21 @@ Now your agent can send `updateComponents` messages using your new `"CustomChart
   "id": "my-custom-chart",
   "component": "CustomChart",
   "title": "Monthly Sales",
-  "data": { "path": "/salesData" }
+  "data": { "path": "/salesData" },
+  "action": { "event": { "name": "chartPointClicked" } }
+}
+```
+
+The agent sets `action.event.name`; your component attaches runtime context (e.g. `index`, `value`) via `dispatchNodeAction`. Optional static context can be included in `action.event.context` using literals or data bindings:
+
+```json
+{
+  "action": {
+    "event": {
+      "name": "chartPointClicked",
+      "context": { "chartId": { "path": "/activeChartId" } }
+    }
+  }
 }
 ```
 
@@ -357,7 +550,7 @@ const myFilter = getCatalogSchema(defaultRegistry, CATALOG_ID, {
 
 | A2UI type      | Vuetify component            | Notes                                                                                               |
 | -------------- | ---------------------------- | --------------------------------------------------------------------------------------------------- |
-| `Button`       | `v-btn`                      | `variant` → elevated/tonal/text; `action.event` triggers `sendAction`; `action.functionCall` logged |
+| `Button`       | `v-btn`                      | `variant` → elevated/tonal/text; `action.event` triggers `dispatchNodeAction` → `sendAction`; `action.functionCall` runs locally |
 | `TextField`    | `v-text-field`               | Two-way binding via `value.path`; `checks` → Vuetify rules                                          |
 | `TextArea`     | `v-textarea`                 | Same binding pattern                                                                                |
 | `NumberInput`  | `v-text-field type="number"` |                                                                                                     |
@@ -443,11 +636,14 @@ Custom components receive a `node` prop (the component node from A2UI). To resol
 
   const dynamicProps = useDynamicProps(toRef(props, 'node'))
 
-  const { sendAction, setData } = useA2UI()
+  const { dispatchNodeAction, sendAction, setData } = useA2UI()
 
   function handleClick(coords: { lat: number; lng: number }) {
     setData('/map/lastClick', coords)
-    sendAction('map_clicked', props.node.id, coords)
+    // Prefer dispatchNodeAction when the agent sets action on the node (see Custom Components above)
+    dispatchNodeAction(props.node, coords)
+    // Or sendAction for a fixed event name not configured in JSON (see CustomChartWidget):
+    // sendAction('chartPointClicked', props.node.id, { index, value })
   }
 </script>
 

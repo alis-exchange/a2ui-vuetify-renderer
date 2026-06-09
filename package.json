@@ -31,7 +31,10 @@
   },
   "keywords": [
     "a2ui",
-    "vuetify"
+    "a2ui-renderer",
+    "vuetify",
+    "a2ui-vue",
+    "a2ui-vue-renderer"
   ],
   "homepage": "https://github.com/alis-exchange/a2ui-vuetify-renderer",
   "repository": {
@@ -45,16 +48,16 @@
   "dependencies": {
     "@mdi/font": "^7.4.47",
     "sass": "^1.98.0",
-    "zod": "^3.25.0",
+    "zod": "^3.25.76",
     "zod-to-json-schema": "^3.25.2"
   },
   "peerDependencies": {
-    "@a2ui/web_core": "^0.9.0",
-    "vue": "^3.5.30",
-    "vuetify": "^4.0.2"
+    "@a2ui/web_core": "^0.10.0",
+    "vue": "^3.5.35",
+    "vuetify": "^4.1.1"
   },
   "devDependencies": {
-    "@a2ui/web_core": "^0.9.0",
+    "@a2ui/web_core": "^0.10.0",
     "@types/node": "^24.12.0",
     "@vitejs/plugin-vue": "^6.0.5",
     "@vitest/coverage-v8": "4.1.0",
@@ -73,30 +76,15 @@
     "prettier-plugin-organize-imports": "4.3.0",
     "tsx": "^4.19.0",
     "typescript": "~5.9.3",
-    "vite": "^8.0.3",
+    "vite": "^8.0.16",
     "vite-plugin-dts": "^4.5.4",
     "vite-plugin-vue-devtools": "^8.1.1",
     "vite-plugin-vuetify": "^2.1.3",
     "vitest": "^4.1.1",
-    "vue": "^3.5.31",
+    "vue": "^3.5.35",
     "vue-tsc": "^3.2.6",
-    "vuetify": "^4.0.4"
+    "vuetify": "^4.1.1"
   },
-  "pnpm": {
-    "overrides": {
-      "vite": "^8.0.0-beta.13"
-    },
-    "supportedArchitectures": {
-      "os": [
-        "linux",
-        "darwin",
-        "win32"
-      ],
-      "cpu": [
-        "x64",
-        "arm64"
-      ]
-    }
-  },
-  "style": "./dist/a2ui-vuetify-renderer.css"
+  "style": "./dist/a2ui-vuetify-renderer.css",
+  "packageManager": "pnpm@11.5.2"
 }

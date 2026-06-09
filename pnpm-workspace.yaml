@@ -1,0 +1,11 @@
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+supportedArchitectures:
+  os:
+    - linux
+    - darwin
+    - win32
+  cpu:
+    - x64
+    - arm64

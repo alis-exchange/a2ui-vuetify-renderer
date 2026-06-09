@@ -1,5 +1,6 @@
 import baseCatalog from '../../catalog/vuetify-catalog.json';
 
+/** A predicate that decides whether a component should be included in the catalog schema. */
 export type CatalogFilter = (componentName: string) => boolean;
 
 const baseComponentKeys = new Set(Object.keys(baseCatalog.components));
@@ -9,7 +10,7 @@ const baseComponentKeys = new Set(Object.keys(baseCatalog.components));
  *
  * @example
  * ```ts
- * import { getCatalogSchema, catalogFilters } from '@a2ui/vue-renderer'
+ * import { getCatalogSchema, catalogFilters } from '@alis-build/a2ui-vuetify-renderer'
  *
  * // Only custom (non-built-in) components
  * getCatalogSchema(registry, catalogId, { filter: catalogFilters.customOnly })

@@ -84,7 +84,15 @@ export {
   VideoApi,
 };
 
-// Aggregate export — order mirrors defaultCatalog.ts registration
+/**
+ * All built-in Vuetify component API definitions in registration order.
+ *
+ * Each entry is a {@link ComponentApi} containing the component's type name
+ * and its Zod schema. Exported for consumers that need programmatic access
+ * to the full catalog (e.g. for schema generation or tooling).
+ *
+ * Order mirrors the registration in `defaultCatalog.ts`.
+ */
 export const VUETIFY_COMPONENTS: ComponentApi[] = [
   TextApi,
   ImageApi,

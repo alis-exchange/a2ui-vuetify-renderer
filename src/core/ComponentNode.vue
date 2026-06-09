@@ -1,3 +1,23 @@
+<!--
+  ComponentNode — renders a single A2UI component by its ID.
+
+  Looks up the component model from the surface by `id`, resolves the matching
+  Vue component from the `ComponentRegistry` based on the node's type, and
+  renders it dynamically via `<component :is>`.
+
+  When a `path` prop is provided (used by dynamic list children), the node
+  provides a new `A2UI_CONTEXT_KEY` with an updated `dataContextPath` so
+  descendants resolve data bindings relative to that list item's scope.
+
+  If no matching component is registered, renders a red error fallback.
+  If the node ID doesn't exist in the surface, renders an orange debug box.
+
+  @example
+  ```vue
+  <ComponentNode id="header-text" />
+  <ComponentNode id="list-item-template" :path="`/items/${index}`" />
+  ```
+-->
 <script setup lang="ts">
   import { computed, inject, provide } from 'vue';
   import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
@@ -5,8 +25,10 @@
   import { CATALOG_ID } from './constants';
 
   const props = defineProps<{
+    /** The component ID as defined in the surface's component model. */
     id: string;
-    path?: string; // Optional path override for dynamic template children
+    /** Optional data context path override for dynamic template children (e.g. `/items/0`). */
+    path?: string;
   }>();
 
   const context = inject(A2UI_CONTEXT_KEY);
