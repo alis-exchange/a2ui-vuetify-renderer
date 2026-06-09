@@ -1,4 +1,6 @@
-## [0.1.17](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.18...v0.1.17) (2026-06-09)
+## [0.1.18](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.2.0...v0.1.18) (2026-06-09)
+
+# [0.2.0](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.18...v0.2.0) (2026-06-09)
 
 ## [0.1.18](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.17...v0.1.18) (2026-06-09)
 
