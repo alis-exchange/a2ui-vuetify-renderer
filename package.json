@@ -1,6 +1,6 @@
 {
   "name": "@alis-build/a2ui-vuetify-renderer",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "A2UI Vuetify Renderer",
   "author": "www.alisx.com",
   "type": "module",
