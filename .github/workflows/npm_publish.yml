@@ -8,6 +8,10 @@ on:
 jobs:
     changelog:
         runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        outputs:
+            branch: ${{ steps.extract_branch.outputs.branch }}
 
         steps:
             # Step 1: Checkout the repository with full history
@@ -37,7 +41,7 @@ jobs:
             - name: Set up Node.js
               uses: actions/setup-node@v5
               with:
-                  node-version: "22"
+                  node-version: "24"
                   cache: "pnpm"
 
             # Step 5: Install project dependencies (tsx, zod, etc. for catalog generation)
@@ -86,6 +90,8 @@ jobs:
         steps:
             - name: Checkout code
               uses: actions/checkout@v5
+              with:
+                  ref: ${{ needs.changelog.outputs.branch }}
 
             - name: Set up pnpm
               uses: pnpm/action-setup@v6
@@ -93,7 +99,7 @@ jobs:
             - name: Set up Node.js
               uses: actions/setup-node@v5
               with:
-                  node-version: "22"
+                  node-version: "24"
                   registry-url: "https://registry.npmjs.org"
                   scope: "@alis-build"
                   cache: "pnpm"
