@@ -101,7 +101,7 @@ describe('Layout and Misc Components', () => {
           node: {
             id: 'ava1',
             type: 'Avatar',
-            properties: { image: 'url', child: { id: 'iconChild' } },
+            properties: { image: 'url', child: 'iconChild' },
             onUpdated: { subscribe: vi.fn() },
           } as any,
         },

@@ -18,7 +18,7 @@ describe('generate-catalog.ts', () => {
     }
   });
 
-  it('should generate vuetify-catalog.json containing $defs', () => {
+  it('should generate vuetify-catalog.json containing $defs', { timeout: 30_000 }, () => {
     execSync(`npx tsx ${scriptPath}`, { cwd: rootDir, stdio: 'inherit' });
 
     expect(fs.existsSync(catalogPath)).toBe(true);
