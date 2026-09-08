@@ -14424,7 +14424,7 @@
           "required": [
             "value"
           ],
-          "additionalProperties": true
+          "additionalProperties": false
         },
         "returnType": {
           "const": "string"

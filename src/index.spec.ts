@@ -23,4 +23,10 @@ describe('index.ts', () => {
     expect(exports.registerDefaultComponents).toBeDefined();
     expect(typeof exports.registerDefaultComponents).toBe('function');
   });
+
+  it('should export the Vuetify catalog function factory and openUrl override', () => {
+    expect(typeof exports.createVuetifyFunctions).toBe('function');
+    expect(Array.isArray(exports.VUETIFY_FUNCTIONS)).toBe(true);
+    expect(exports.VuetifyOpenUrlImplementation.name).toBe('openUrl');
+  });
 });
