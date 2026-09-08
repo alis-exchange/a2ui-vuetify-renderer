@@ -6,7 +6,12 @@
 
   Responsibilities:
   - Provides the `A2UI_CONTEXT_KEY` injection consumed by `useA2UI()`.
-  - Listens for `update` events on the processor and forces child re-renders.
+  - Owns one web_core `NodeResolver` for the surface (created when the surface
+    appears, disposed when it is deleted or the provider unmounts). Descendant
+    `ComponentNode`s render from its live tree, so server messages and local
+    data-model writes both re-render without remounting.
+  - Forwards surface errors (unknown component types, cyclic references,
+    expression failures) to `onError`, or `console.error` when no handler is set.
   - Dynamically registers a scoped Vuetify theme when the surface defines
     theme overrides (`primaryColor`, `errorColor`, `backgroundColor`, `surfaceColor`),
     without mutating the global theme. Cleans up the theme on unmount.
@@ -18,40 +23,92 @@
       :processor="processor"
       :surface-id="surfaceId"
       :on-action="handleAction"
+      :on-error="handleError"
     >
-      <ComponentNode :id="rootComponentId" />
+      <ComponentNode id="root" />
     </A2UIProvider>
   </template>
   ```
 -->
 <script setup lang="ts">
-  import { computed, onMounted, onUnmounted, provide, shallowRef, watchEffect } from 'vue';
+  import { NodeResolver, type Subscription } from '@a2ui/web_core/v0_9';
+  import { computed, onUnmounted, provide, shallowRef, toRaw, watch, watchEffect } from 'vue';
   import { useTheme } from 'vuetify';
   import { VThemeProvider } from 'vuetify/components';
   import { A2UI_CONTEXT_KEY } from './useA2UI';
 
-  const props = defineProps<{
-    /** The A2UI message processor that owns the surface model and data model. */
-    processor: any; // A2uiMessageProcessor
-    /** The ID of the A2UI surface to render. */
-    surfaceId: string;
-    /** Optional callback invoked when a component dispatches an action (fallback path). */
-    onAction?: (action: any) => void;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      /** The A2UI message processor that owns the surface model and data model. */
+      processor: any; // A2uiMessageProcessor
+      /** The ID of the A2UI surface to render. */
+      surfaceId: string;
+      /** Optional callback invoked when a component dispatches an action (fallback path). */
+      onAction?: (action: any) => void;
+      /** Receives errors the surface reports (unknown types, cyclic references, expression failures). */
+      onError?: (error: unknown) => void;
+      /**
+       * Render from web_core's live node tree (default). Set to `false` for the static
+       * legacy path, which only reflects the surface as it was when the subtree mounted.
+       */
+      nodeResolver?: boolean;
+    }>(),
+    { nodeResolver: true },
+  );
 
-  // We track the surface locally to trigger re-renders if needed,
-  // though the provider's primary role is just providing context.
-  const updateKey = shallowRef(0);
+  // web_core objects must not be handed around as Vue reactive proxies (signals and identity
+  // checks inside web_core would see the proxy), so everything below uses the raw instance.
+  const processor = computed(() => toRaw(props.processor));
 
-  const handleUpdate = () => {
-    updateKey.value++;
+  // Bumped on surface creation/deletion so the slot remounts against the new surface object.
+  const surfaceKey = shallowRef(0);
+  const resolver = shallowRef<NodeResolver | undefined>(undefined);
+  let errorSubscription: Subscription | undefined;
+  let createdSubscription: Subscription | undefined;
+  let deletedSubscription: Subscription | undefined;
+
+  const detachSurface = () => {
+    errorSubscription?.unsubscribe();
+    errorSubscription = undefined;
+    resolver.value?.dispose();
+    resolver.value = undefined;
+    surfaceKey.value++;
   };
 
-  onMounted(() => {
-    if (props.processor && typeof props.processor.addEventListener === 'function') {
-      props.processor.addEventListener('update', handleUpdate);
+  const attachSurface = (surface: any) => {
+    detachSurface();
+    if (!surface) return;
+    errorSubscription = surface.onError?.subscribe((error: unknown) => {
+      if (props.onError) props.onError(error);
+      else console.error('[A2UI] surface error:', error);
+    });
+    if (props.nodeResolver && surface.catalog) {
+      resolver.value = new NodeResolver(surface, surface.catalog);
     }
-  });
+  };
+
+  const unsubscribeModel = () => {
+    createdSubscription?.unsubscribe();
+    deletedSubscription?.unsubscribe();
+    createdSubscription = deletedSubscription = undefined;
+  };
+
+  // The surface may not exist yet when the provider mounts, and can be deleted and recreated
+  // later; SurfaceGroupModel's events are the only signal web_core gives for that.
+  const subscribeModel = () => {
+    unsubscribeModel();
+    const model = processor.value?.model;
+    createdSubscription = model?.onSurfaceCreated?.subscribe((surface: any) => {
+      if (surface?.id === props.surfaceId) attachSurface(surface);
+    });
+    deletedSubscription = model?.onSurfaceDeleted?.subscribe((id: string) => {
+      if (id === props.surfaceId) detachSurface();
+    });
+    attachSurface(model?.getSurface?.(props.surfaceId));
+  };
+
+  subscribeModel();
+  watch(() => [props.processor, props.surfaceId, props.nodeResolver], subscribeModel);
 
   const themeName = computed(() => `a2ui-theme-${props.surfaceId}`);
   const activeThemeName = shallowRef<string | undefined>(undefined);
@@ -66,18 +123,17 @@
   };
 
   onUnmounted(() => {
-    if (props.processor && typeof props.processor.removeEventListener === 'function') {
-      props.processor.removeEventListener('update', handleUpdate);
-    }
+    unsubscribeModel();
+    detachSurface();
     cleanupTheme();
   });
 
   watchEffect(() => {
-    // Trigger dependency on updateKey and surfaceId
-    updateKey.value;
+    // Re-evaluate whenever the surface is created or deleted
+    surfaceKey.value;
 
-    if (props.processor && props.processor.model) {
-      const surface = props.processor.model.getSurface(props.surfaceId);
+    if (processor.value && processor.value.model) {
+      const surface = processor.value.model.getSurface(props.surfaceId);
       if (surface && surface.theme) {
         const { primaryColor, errorColor, backgroundColor, surfaceColor } = surface.theme;
 
@@ -116,7 +172,10 @@
       return props.surfaceId;
     },
     get processor() {
-      return props.processor;
+      return processor.value;
+    },
+    get resolver() {
+      return resolver.value;
     },
     onAction: (action: any) => {
       if (props.onAction) {
@@ -128,7 +187,7 @@
 
 <template>
   <div
-    :key="updateKey"
+    :key="surfaceKey"
     class="a2ui-provider"
   >
     <v-theme-provider
