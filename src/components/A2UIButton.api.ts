@@ -18,8 +18,8 @@ export const ButtonApi: ComponentApi = {
       action: ActionSchema,
       checks: CheckableSchema.shape.checks,
     })
-    .strict()
-    .refine((data) => data.label !== undefined || data.text !== undefined || data.icon !== undefined, {
-      message: 'Button requires at least one of label, text, or icon',
-    }),
+    // No refine(): a ZodEffects root hides the shape from web_core's binder (every prop would
+    // become static, losing action closures and isValid). Agents should still send at least one
+    // of label, text or icon; the JSON catalog could never express that rule anyway.
+    .strict(),
 };

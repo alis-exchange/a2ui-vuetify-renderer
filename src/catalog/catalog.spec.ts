@@ -1,4 +1,4 @@
-import { A2uiValidationError, Catalog, MessageProcessor, type A2uiMessage } from '@a2ui/web_core/v0_9';
+import { A2uiValidationError, Catalog, MessageProcessor, scrapeSchemaBehavior, type A2uiMessage } from '@a2ui/web_core/v0_9';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CATALOG_ID } from '../core/constants';
 import { VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA } from './index';
@@ -61,9 +61,12 @@ describe('Vuetify catalog under MessageProcessor validation', () => {
     expect(Array.isArray((error as A2uiValidationError).details)).toBe(true);
   });
 
-  it('enforces schema refinements such as Button needing a label, text or icon', () => {
-    processor.processMessages([createSurface]);
-    expect(() => processor.processMessages([update([{ id: 'btn', component: 'Button', action: { event: { name: 'go' } } }])])).toThrow('Button requires at least one of label, text, or icon');
+  it('keeps every component schema readable by the binder', () => {
+    // A ZodEffects root (refine/transform) hides the shape from GenericBinder, which then treats
+    // every prop as static: no action closures, no isValid. Guard against that regressing.
+    for (const api of VUETIFY_COMPONENTS) {
+      expect(scrapeSchemaBehavior(api.schema).type, api.name).toBe('OBJECT');
+    }
   });
 
   it('rejects legacy ad-hoc check shapes', () => {
