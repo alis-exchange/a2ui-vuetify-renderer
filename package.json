@@ -23,7 +23,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc -b && vite build",
+    "build": "vue-tsc -b && vite build && tsx scripts/check-dist-externals.ts",
     "preview": "vite preview",
     "test": "vitest run",
     "generate:catalog": "tsx scripts/generate-catalog.ts",
