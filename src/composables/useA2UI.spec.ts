@@ -143,12 +143,7 @@ describe('useA2UI composable', () => {
     } as any);
 
     expect(invoker).toHaveBeenCalledTimes(1);
-    expect(invoker).toHaveBeenCalledWith(
-      'openUrl',
-      { url: 'https://example.com' },
-      expect.objectContaining({ path: '/' }),
-      expect.any(AbortSignal),
-    );
+    expect(invoker).toHaveBeenCalledWith('openUrl', { url: 'https://example.com' }, expect.objectContaining({ path: '/' }), expect.any(AbortSignal));
     expect(mockContext.onAction).not.toHaveBeenCalled();
   });
 });

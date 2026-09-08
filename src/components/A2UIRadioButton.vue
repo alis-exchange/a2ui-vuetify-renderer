@@ -1,7 +1,7 @@
 <script setup lang="ts">
+  import type { ComponentModel } from '@a2ui/web_core/v0_9';
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
-  import type { ComponentModel } from '@a2ui/web_core/v0_9';
   import { createVuetifyRules } from '../utils/validation';
 
   const props = defineProps<{

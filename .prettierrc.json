@@ -8,7 +8,6 @@
   "printWidth": 240,
   "bracketSpacing": true,
   "vueIndentScriptAndStyle": true,
-  "spaceBeforeFunctionParent": true,
   "singleAttributePerLine": true,
   "arrowParens": "always",
   "bracketSameLine": false,

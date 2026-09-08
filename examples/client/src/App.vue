@@ -149,10 +149,9 @@
                       {{ log.code }}
                     </v-chip>
                     <div class="text-caption">{{ log.message }}</div>
-                    <pre
-                      v-if="log.details"
-                      class="text-caption"
-                    >{{ JSON.stringify(log.details, null, 2) }}</pre>
+                    <template v-if="log.details">
+                      <pre class="text-caption">{{ JSON.stringify(log.details, null, 2) }}</pre>
+                    </template>
                   </v-list-item>
                 </v-list>
                 <div
