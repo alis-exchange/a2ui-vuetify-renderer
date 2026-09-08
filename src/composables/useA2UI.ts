@@ -14,10 +14,15 @@ export interface A2UIContext {
   onAction: (action: A2UIActionPayload) => void;
   processor: any; // A2uiMessageProcessor
   dataContextPath?: string; // e.g. path in the data model
-  /** PROTOTYPE (NodeResolver spike): the surface's node resolver when the provider runs in node mode. */
+  /** The surface's node resolver when the provider runs in node mode. */
   resolver?: NodeResolver;
-  /** PROTOTYPE (NodeResolver spike): the enclosing node's resolved props. Reading it subscribes to that node's changes. */
+  /** The enclosing node's resolved props in node mode. Reading it subscribes to that node's changes. */
   nodeProps?: ShallowRef<NodeProps | undefined>;
+  /**
+   * Node mode: the binder's resolved value for each raw `{ path }` / `{ call }` property object,
+   * keyed by that object, so `resolveValue` can return it instead of evaluating a second time.
+   */
+  resolvedByRaw?: ShallowRef<WeakMap<object, unknown> | undefined>;
 }
 
 /** Vue injection key for the A2UI context. Provided by `A2UIProvider`, consumed by `useA2UI`. */
@@ -33,7 +38,7 @@ export interface UseA2UIReturn {
   dataContextPath: string | undefined;
   /** A computed `DataContext` for the current scope, or `undefined` if the surface isn't ready. */
   dataContext: ComputedRef<DataContext | undefined>;
-  /** PROTOTYPE (NodeResolver spike): resolved props of the enclosing node; its value is `undefined` in legacy mode. */
+  /** Resolved props of the enclosing node in node mode; its value is `undefined` on the legacy path. */
   nodeProps: ShallowRef<NodeProps | undefined> | undefined;
 
   /**
@@ -242,9 +247,13 @@ export function useA2UI(): UseA2UIReturn {
   });
 
   const resolveValue = <V = unknown>(value: DynamicValue | undefined): V | undefined => {
-    // PROTOTYPE (NodeResolver spike): touching the node's resolved props makes every computed
-    // built on resolveValue re-run when web_core reports a change for this node.
+    // Touching the node's resolved props makes every computed built on resolveValue re-run when
+    // web_core reports a change for this node.
     context.nodeProps?.value;
+    // In node mode the binder already evaluated this exact property object; reuse its value
+    // rather than resolving (and, for function calls, executing) it a second time.
+    const resolved = context.resolvedByRaw?.value;
+    if (resolved && value !== null && typeof value === 'object' && resolved.has(value)) return resolved.get(value) as V | undefined;
     if (!dataContext.value || value === undefined) return value as V | undefined;
     return dataContext.value.resolveDynamicValue<V>(value);
   };

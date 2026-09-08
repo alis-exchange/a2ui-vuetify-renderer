@@ -27,7 +27,7 @@
   ```
 -->
 <script setup lang="ts">
-  import { effect, getValue, type ComponentNode as A2uiNode, type NodeProps } from '@a2ui/web_core/v0_9';
+  import { ResolvedBinding, effect, getValue, type ComponentNode as A2uiNode, type NodeProps } from '@a2ui/web_core/v0_9';
   import { computed, inject, onUnmounted, provide, shallowRef, watch } from 'vue';
   import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
   import { A2UI_REGISTRY_KEY, ComponentRegistry, defaultRegistry } from './ComponentRegistry';
@@ -45,6 +45,11 @@
 
   const context = inject(A2UI_CONTEXT_KEY);
   const registry = inject<ComponentRegistry>(A2UI_REGISTRY_KEY, defaultRegistry);
+
+  const surface = computed(() => {
+    if (!context) return undefined;
+    return context.processor.model?.getSurface(context.surfaceId);
+  });
 
   // The resolver's root, tracked only for the top-level `id="root"` node.
   const rootNode = shallowRef<A2uiNode | undefined>(undefined);
@@ -74,6 +79,8 @@
   // Mirror of the live node's resolved props. web_core's effect re-runs whenever the props
   // signal emits; writing into a shallowRef lets every computed built on resolveValue re-run.
   const nodeProps = shallowRef<NodeProps | undefined>(undefined);
+  // Binder results keyed by the raw property object they came from (see useA2UI.resolveValue).
+  const resolvedByRaw = shallowRef<WeakMap<object, unknown> | undefined>(undefined);
   let stopProps: (() => void) | undefined;
   watch(
     liveNode,
@@ -82,10 +89,21 @@
       stopProps = undefined;
       if (!n) {
         nodeProps.value = undefined;
+        resolvedByRaw.value = undefined;
         return;
       }
       stopProps = effect(() => {
-        nodeProps.value = getValue(n.props);
+        const resolved = getValue(n.props);
+        const raw = surface.value?.componentsModel?.get(n.componentId)?.properties as Record<string, unknown> | undefined;
+        const byRaw = new WeakMap<object, unknown>();
+        if (raw) {
+          for (const [key, value] of Object.entries(resolved)) {
+            const rawValue = raw[key];
+            if (value instanceof ResolvedBinding && rawValue !== null && typeof rawValue === 'object') byRaw.set(rawValue, value.value);
+          }
+        }
+        resolvedByRaw.value = byRaw;
+        nodeProps.value = resolved;
       });
     },
     { immediate: true },
@@ -113,13 +131,9 @@
         return liveNode.value?.dataPath ?? props.path ?? context.dataContextPath;
       },
       nodeProps,
+      resolvedByRaw,
     });
   }
-
-  const surface = computed(() => {
-    if (!context) return undefined;
-    return context.processor.model?.getSurface(context.surfaceId);
-  });
 
   const node = computed(() => {
     // Re-read the model whenever the live node reports a change (a re-sent component keeps its

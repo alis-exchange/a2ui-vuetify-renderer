@@ -1,8 +1,9 @@
-import { Catalog, MessageProcessor, type A2uiMessage } from '@a2ui/web_core/v0_9';
+import { Catalog, MessageProcessor, NodeResolver, createFunctionImplementation, getValue, type A2uiMessage } from '@a2ui/web_core/v0_9';
 import { mount } from '@vue/test-utils';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { h, nextTick } from 'vue';
 import { createVuetify } from 'vuetify';
+import { z } from 'zod';
 import { A2UIProvider, CATALOG_ID, ComponentNode, VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA, registerDefaultComponents } from './index';
 
 /**
@@ -105,6 +106,35 @@ describe('NodeResolver rendering end to end', () => {
     await nextTick();
     expect(wrapper.text()).toContain('I arrived late');
     expect(wrapper.text()).not.toContain('[pending: late]');
+  });
+
+  it('does not evaluate a bound function again in resolveValue once the binder has', () => {
+    const calls = { count: 0 };
+    const counting = createFunctionImplementation({ name: 'countCalls', returnType: 'string', schema: z.object({}) }, () => {
+      calls.count++;
+      return 'counted';
+    });
+    const catalog = new Catalog(CATALOG_ID, VUETIFY_COMPONENTS, [...VUETIFY_FUNCTIONS, counting], VUETIFY_THEME_SCHEMA);
+    const build = () => {
+      const processor = new MessageProcessor([catalog], undefined, { version: 'v0.9' });
+      processor.processMessages([{ version: 'v0.9', createSurface: { surfaceId: SURFACE, catalogId: CATALOG_ID } }, update([{ id: 'root', component: 'Text', text: { call: 'countCalls', args: {} } }])]);
+      return processor;
+    };
+
+    // Baseline: what web_core's binder alone costs to resolve the tree.
+    const bare = new NodeResolver(build().model.getSurface(SURFACE)!, catalog);
+    getValue(getValue(bare.rootNode)!.props);
+    const binderOnly = calls.count;
+    bare.dispose();
+
+    calls.count = 0;
+    const wrapper = mount(A2UIProvider, {
+      global: { plugins: [createVuetify()] },
+      props: { processor: build(), surfaceId: SURFACE, onAction: vi.fn(), onError: vi.fn() },
+      slots: { default: () => h(ComponentNode, { id: 'root' }) },
+    });
+    expect(wrapper.text()).toContain('counted');
+    expect(calls.count).toBe(binderOnly);
   });
 
   it('reports unknown component types through onError', async () => {
