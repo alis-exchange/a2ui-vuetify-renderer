@@ -118,25 +118,6 @@ const $defs: Record<string, any> = {
     oneOf: [{ required: ['event'] }, { required: ['functionCall'] }],
     additionalProperties: false,
   },
-  Checkable: {
-    type: 'object',
-    properties: {
-      checks: {
-        type: 'array',
-        description: 'An optional list of function calls that return a boolean to evaluate the validity or disabled state of the component.',
-        items: {
-          type: 'object',
-          properties: {
-            call: { type: 'string' },
-            args: { type: 'object' },
-            errorMessage: { type: 'string' },
-            disableOnFail: { type: 'boolean', default: false },
-          },
-          required: ['call'],
-        },
-      },
-    },
-  },
 };
 
 // ---------------------------------------------------------------------------

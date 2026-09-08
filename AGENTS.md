@@ -179,7 +179,7 @@ Since `@a2ui/web_core` 0.10.6, `MessageProcessor.processMessages` validates ever
 ### 6.1 The JSON Schema (`catalog/vuetify-catalog.json`)
 
 A generated file — **never edit manually**. Contains:
-- `$defs` for shared types (`DynamicString`, `ChildList`, `Action`, `Checkable`, `ComponentCommon`, `CatalogComponentCommon`, etc.)
+- `$defs` for shared types (`DynamicString`, `ChildList`, `Action`, `ComponentCommon`, `CatalogComponentCommon`, etc.). `checks` is inlined per component from web_core's `CheckRuleSchema` (`{ condition, message }`).
 - `components` map with a JSON Schema entry per A2UI type
 - `functions` array with function schemas
 - Metadata: `$schema`, `$id`, `catalogId`, `title`, `description`
