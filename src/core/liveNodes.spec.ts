@@ -58,7 +58,10 @@ describe('findLiveNode', () => {
   });
 
   it('returns undefined for unknown ids or missing props', () => {
-    const { rootProps } = resolveSurface([{ id: 'root', component: 'Card', child: 'body' }, { id: 'body', component: 'Text', text: 'hi' }]);
+    const { rootProps } = resolveSurface([
+      { id: 'root', component: 'Card', child: 'body' },
+      { id: 'body', component: 'Text', text: 'hi' },
+    ]);
     expect(findLiveNode(rootProps, 'nope')).toBeUndefined();
     expect(findLiveNode(undefined, 'body')).toBeUndefined();
   });

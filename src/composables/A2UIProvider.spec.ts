@@ -118,7 +118,12 @@ describe('A2UIProvider.vue', () => {
     const onError = vi.fn();
     processor.processMessages([createSurface()]);
     mountProvider(processor, { onError });
-    processor.processMessages([update([{ id: 'root', component: 'Card', child: 'weird' }, { id: 'weird', component: 'Nope' }])]);
+    processor.processMessages([
+      update([
+        { id: 'root', component: 'Card', child: 'weird' },
+        { id: 'weird', component: 'Nope' },
+      ]),
+    ]);
     await nextTick();
     expect(onError).toHaveBeenCalledWith(expect.objectContaining({ code: 'UNKNOWN_COMPONENT_TYPE' }));
   });

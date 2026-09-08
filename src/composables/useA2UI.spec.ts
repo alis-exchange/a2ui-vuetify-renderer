@@ -171,14 +171,16 @@ describe('useA2UI in node mode', () => {
         };
       },
     });
-    mount(defineComponent({
-      components: { TestComponent },
-      setup() {
-        provide(A2UI_CONTEXT_KEY, mockContext);
-        return {};
-      },
-      template: '<TestComponent />',
-    }));
+    mount(
+      defineComponent({
+        components: { TestComponent },
+        setup() {
+          provide(A2UI_CONTEXT_KEY, mockContext);
+          return {};
+        },
+        template: '<TestComponent />',
+      }),
+    );
     expect(seen).toBe('Ada');
 
     // Simulate web_core reporting a change for this node after a local write.

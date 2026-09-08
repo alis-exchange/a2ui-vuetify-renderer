@@ -102,7 +102,12 @@ describe('NodeResolver rendering end to end', () => {
 
   it('reports unknown component types through onError', async () => {
     const { processor, onError } = createSurface();
-    processor.processMessages([update([{ id: 'root', component: 'Column', children: ['weird'] }, { id: 'weird', component: 'Nope' }])]);
+    processor.processMessages([
+      update([
+        { id: 'root', component: 'Column', children: ['weird'] },
+        { id: 'weird', component: 'Nope' },
+      ]),
+    ]);
     await nextTick();
     expect(onError).toHaveBeenCalledWith(expect.objectContaining({ code: 'UNKNOWN_COMPONENT_TYPE' }));
   });

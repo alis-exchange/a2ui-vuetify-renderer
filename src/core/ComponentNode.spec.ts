@@ -182,7 +182,10 @@ describe('ComponentNode.vue in node mode', async () => {
   });
 
   it('renders the resolver root for id="root"', () => {
-    const { processor, resolver, registry } = setup([{ id: 'root', component: 'Card', child: 'body' }, { id: 'body', component: 'Text', text: 'x' }]);
+    const { processor, resolver, registry } = setup([
+      { id: 'root', component: 'Card', child: 'body' },
+      { id: 'body', component: 'Text', text: 'x' },
+    ]);
     const wrapper = mountNode({ id: 'root' }, { processor, resolver }, registry);
     expect(wrapper.find('.mock-text').text()).toBe('root');
   });
