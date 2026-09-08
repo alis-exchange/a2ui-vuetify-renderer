@@ -146,6 +146,10 @@ Provides the bridge between `@a2ui/web_core` state and Vue component logic. The 
 - `surfaceId`, `dataContextPath`, `dataContext`
 - `nodeProps` — `ShallowRef` of the enclosing node's resolved props in node mode (`undefined` value on the legacy path). Read it for binder outputs such as `isValid` / `validationErrors`; `resolveValue` already subscribes to it.
 
+### 5.7a useChecks composable (`composables/useChecks.ts`)
+
+`useChecks(node)` returns `rules` (via `createVuetifyRules(checks, resolveValue)`), `isValid` and `validationErrors` (from `nodeProps` in node mode; `true` / `undefined` on the legacy path) and `errorMessages(value)` (binder messages, else the rules run against `value`). Button/IconButton gate on `isValid`; Slider passes `rules` + `error-messages`; DatePicker renders `errorMessages(modelValue)`. Custom components should use it rather than reading `nodeProps` directly.
+
 ### 5.7 useDynamicProps composable (`composables/useDynamicProps.ts`)
 
 Accepts a `MaybeRefOrGetter<T>` node, returns a `computed` that runs every property through `resolveValue` (same generic function as `useA2UI`). Designed for custom components that want automatic data binding without manually wrapping each property; use `resolveValue<V>()` on individual `node.properties` fields when you need a concrete `V`.

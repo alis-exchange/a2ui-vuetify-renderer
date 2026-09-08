@@ -29,4 +29,8 @@ describe('index.ts', () => {
     expect(Array.isArray(exports.VUETIFY_FUNCTIONS)).toBe(true);
     expect(exports.VuetifyOpenUrlImplementation.name).toBe('openUrl');
   });
+
+  it('should export useChecks for custom components', () => {
+    expect(typeof exports.useChecks).toBe('function');
+  });
 });

@@ -3,6 +3,7 @@
   import { computed } from 'vue';
   import { VBtn } from 'vuetify/components';
   import { useA2UI } from '../composables/useA2UI';
+  import { useChecks } from '../composables/useChecks';
 
   type VBtnProps = InstanceType<typeof VBtn>['$props'];
   type VBtnVariant = VBtnProps['variant'];
@@ -11,12 +12,11 @@
     node: ComponentModel;
   }>();
 
-  const { resolveValue, dispatchNodeAction, nodeProps } = useA2UI();
+  const { resolveValue, dispatchNodeAction } = useA2UI();
 
-  // In node mode web_core's binder evaluates `checks` and reports the outcome on the node's
-  // resolved props; a failing check disables the button and surfaces the message.
-  const isValid = computed(() => nodeProps?.value?.isValid !== false);
-  const validationErrors = computed(() => (nodeProps?.value?.validationErrors as string[] | undefined) ?? []);
+  // A failing check (evaluated by web_core's binder in node mode) disables the button and
+  // surfaces the message.
+  const { isValid, validationErrors } = useChecks(() => props.node);
 
   const labelText = computed(() => {
     const label = resolveValue<string | undefined>(props.node.properties.label);
@@ -75,7 +75,7 @@
     v-bind="buttonProps"
     :prepend-icon="iconName && labelText ? iconName : undefined"
     :disabled="!isValid"
-    :title="validationErrors.join(', ') || undefined"
+    :title="validationErrors?.join(', ') || undefined"
     @click="handleClick"
   >
     <span v-if="iconName && labelText">{{ labelText }}</span>

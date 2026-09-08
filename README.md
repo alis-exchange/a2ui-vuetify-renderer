@@ -191,6 +191,7 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
 | **`ComponentNode`**        | Recursive renderer. `id="root"` picks the resolver's root node; any other id is looked up among the live child nodes in the parent's resolved props. Mirrors the node's props signal into the context (`nodeProps`) and scopes descendants to the node's data path, so `resolveValue` is reactive. Children that have not arrived render as `[pending: id]` and are swapped in place. Types the catalog does not know are reported through `onError` and rendered from the registry without live bindings. Supports a `path` prop for scoped data context on the legacy path. |
 | **`ComponentRegistry`**    | A `Map<string, Component>` that maps A2UI type strings (e.g. `"Button"`) to Vue components. Exposes `register()`, `registerAll()`, `get()`, and `has()`. The singleton `defaultRegistry` is pre-populated by `registerDefaultComponents()`.                                                       |
 | **`useA2UI()`**            | Composable that injects the provider context. Returns `resolveValue<V>(value)`, `resolveDynamicChildren`, `sendAction`, `dispatchNodeAction`, `setData`, `surfaceId`, `dataContext`, and `dataContextPath`. `resolveValue` accepts an A2UI `DynamicValue \| undefined` (from `@a2ui/web_core/v0_9`) and resolves via `DataContext.resolveDynamicValue<V>()`; pass a type argument (e.g. `resolveValue<string>(…)`) so callers get a typed result. `dispatchNodeAction` expects a `ComponentModel`. Uses `SurfaceModel.dispatchAction()` for schema-validated action payloads. |
+| **`useChecks()`**          | Composable bridging a node's `checks` to Vue: `rules` for Vuetify inputs, plus `isValid` / `validationErrors` as reported by web_core's binder in node mode (Button and IconButton gate on them, Slider and DatePicker display them). `errorMessages(value)` falls back to the rules on the legacy path. |
 | **`useDynamicProps()`**    | Composable for custom catalog components: given a node (ref, getter, or plain object), returns a computed ref of properties with each value passed through `resolveValue` (same generic resolver as `useA2UI`). Resolved values are still typed as `Record<string, any>` at the top level; use `resolveValue<V>()` directly when you need strong typing per field.                                                                                                        |
 | **`getCatalogSchema()`**   | Returns a deep-cloned JSON Schema for the Vuetify catalog, merging in stub entries for any extra components registered on a `ComponentRegistry` under the same `catalogId` (useful for agents or tooling). Accepts an optional `{ filter }` predicate to narrow the returned components — see **Filtering the catalog schema** below. |
 | **`catalogFilters`**       | Pre-built filter predicates for `getCatalogSchema`: `catalogFilters.customOnly` (non-built-in components only), `catalogFilters.only(...names)` (include-list), `catalogFilters.exclude(...names)` (exclude-list). |
@@ -706,7 +707,7 @@ Everything is available from the package root:
 import { A2UIProvider, ComponentNode } from '@alis-build/a2ui-vuetify-renderer'
 
 // Composables
-import { useA2UI, useDynamicProps } from '@alis-build/a2ui-vuetify-renderer'
+import { useA2UI, useDynamicProps, useChecks } from '@alis-build/a2ui-vuetify-renderer'
 
 // Registry & catalog bootstrap
 import {
@@ -727,7 +728,7 @@ import {
 import { A2UiVueRenderer } from '@alis-build/a2ui-vuetify-renderer'
 
 // Types
-import type { A2UIContext, A2UIActionPayload, A2UiVueRendererOptions, VuetifyFunctionsOptions, ComponentModel } from '@alis-build/a2ui-vuetify-renderer'
+import type { A2UIContext, A2UIActionPayload, A2UiVueRendererOptions, VuetifyFunctionsOptions, UseChecksReturn, ComponentModel } from '@alis-build/a2ui-vuetify-renderer'
 
 // Injection keys (for advanced provide/inject usage)
 import { A2UI_CONTEXT_KEY, A2UI_REGISTRY_KEY } from '@alis-build/a2ui-vuetify-renderer'

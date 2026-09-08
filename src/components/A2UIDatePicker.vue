@@ -3,7 +3,7 @@
   import { computed } from 'vue';
   import { VDatePicker } from 'vuetify/components';
   import { useA2UI } from '../composables/useA2UI';
-  import { createVuetifyRules } from '../utils/validation';
+  import { useChecks } from '../composables/useChecks';
 
   type VDatePickerProps = InstanceType<typeof VDatePicker>['$props'];
 
@@ -35,13 +35,10 @@
     },
   });
 
-  // v-date-picker has no rules prop, so failing checks are rendered underneath instead.
-  const errorMessages = computed(() => {
-    const checks = resolveValue<any[]>(props.node.properties.checks) ?? [];
-    return createVuetifyRules(checks, resolveValue)
-      .map((rule) => rule(modelValue.value))
-      .filter((result): result is string => typeof result === 'string');
-  });
+  // v-date-picker has no rules prop, so failing checks are rendered underneath instead:
+  // the binder's messages in node mode, the rules run against the value otherwise.
+  const checks = useChecks(() => props.node);
+  const errorMessages = computed(() => checks.errorMessages(modelValue.value));
 
   const handleChange = (val: any) => {
     modelValue.value = val;

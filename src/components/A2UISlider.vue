@@ -2,7 +2,7 @@
   import type { ComponentModel } from '@a2ui/web_core/v0_9';
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
-  import { createVuetifyRules } from '../utils/validation';
+  import { useChecks } from '../composables/useChecks';
 
   const props = defineProps<{
     node: ComponentModel;
@@ -26,10 +26,8 @@
     },
   });
 
-  const rules = computed(() => {
-    const checks = resolveValue<any[]>(props.node.properties.checks) ?? [];
-    return createVuetifyRules(checks, resolveValue);
-  });
+  // Rules cover the legacy path; in node mode the binder's messages are shown as well.
+  const { rules, validationErrors } = useChecks(() => props.node);
 
   const handleEnd = () => {
     dispatchNodeAction(props.node, { value: modelValue.value });
@@ -43,6 +41,7 @@
     :min="min"
     :max="max"
     :rules="rules"
+    :error-messages="validationErrors"
     @end="handleEnd"
   ></v-slider>
 </template>
