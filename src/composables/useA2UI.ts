@@ -1,5 +1,5 @@
-import { DataContext, type A2uiClientAction, type Action, type ComponentModel, type DynamicValue } from '@a2ui/web_core/v0_9';
-import { computed, inject, type ComputedRef, type InjectionKey } from 'vue';
+import { DataContext, type A2uiClientAction, type Action, type ComponentModel, type DynamicValue, type NodeProps, type NodeResolver } from '@a2ui/web_core/v0_9';
+import { computed, inject, type ComputedRef, type InjectionKey, type ShallowRef } from 'vue';
 
 export type A2UIActionPayload = A2uiClientAction;
 
@@ -14,6 +14,10 @@ export interface A2UIContext {
   onAction: (action: A2UIActionPayload) => void;
   processor: any; // A2uiMessageProcessor
   dataContextPath?: string; // e.g. path in the data model
+  /** PROTOTYPE (NodeResolver spike): the surface's node resolver when the provider runs in node mode. */
+  resolver?: NodeResolver;
+  /** PROTOTYPE (NodeResolver spike): the enclosing node's resolved props. Reading it subscribes to that node's changes. */
+  nodeProps?: ShallowRef<NodeProps | undefined>;
 }
 
 /** Vue injection key for the A2UI context. Provided by `A2UIProvider`, consumed by `useA2UI`. */
@@ -29,6 +33,8 @@ export interface UseA2UIReturn {
   dataContextPath: string | undefined;
   /** A computed `DataContext` for the current scope, or `undefined` if the surface isn't ready. */
   dataContext: ComputedRef<DataContext | undefined>;
+  /** PROTOTYPE (NodeResolver spike): resolved props of the enclosing node; its value is `undefined` in legacy mode. */
+  nodeProps: ShallowRef<NodeProps | undefined> | undefined;
 
   /**
    * Resolves a {@link DynamicValue} into its concrete runtime value.
@@ -236,6 +242,9 @@ export function useA2UI(): UseA2UIReturn {
   });
 
   const resolveValue = <V = unknown>(value: DynamicValue | undefined): V | undefined => {
+    // PROTOTYPE (NodeResolver spike): touching the node's resolved props makes every computed
+    // built on resolveValue re-run when web_core reports a change for this node.
+    context.nodeProps?.value;
     if (!dataContext.value || value === undefined) return value as V | undefined;
     return dataContext.value.resolveDynamicValue<V>(value);
   };
@@ -316,6 +325,7 @@ export function useA2UI(): UseA2UIReturn {
     surfaceId: context.surfaceId,
     dataContextPath: context.dataContextPath,
     dataContext,
+    nodeProps: context.nodeProps,
     resolveValue,
     resolveDynamicChildren,
     sendAction,
