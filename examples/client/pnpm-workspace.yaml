@@ -1,0 +1,5 @@
+# Makes the example its own pnpm root: without this, `pnpm install` here silently
+# installs the repository root workspace instead. Mirrors the root's allowBuilds.
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true

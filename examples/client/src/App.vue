@@ -42,6 +42,12 @@
                   >
                     3. Delete Surface
                   </v-btn>
+                  <v-btn
+                    color="warning"
+                    @click="sendInvalidMessage"
+                  >
+                    4. Send Invalid Message
+                  </v-btn>
                 </div>
               </v-card-text>
             </v-card>
@@ -119,6 +125,44 @@
                 </div>
               </v-card-text>
             </v-card>
+
+            <v-card
+              variant="outlined"
+              class="mt-4"
+            >
+              <v-card-title>Rejected Messages</v-card-title>
+              <v-card-text>
+                <v-list
+                  v-if="errorLogs.length > 0"
+                  density="compact"
+                >
+                  <v-list-item
+                    v-for="(log, idx) in errorLogs"
+                    :key="idx"
+                    class="mb-2 bg-red-lighten-5 rounded"
+                  >
+                    <v-chip
+                      size="x-small"
+                      color="error"
+                      class="mb-1"
+                    >
+                      {{ log.code }}
+                    </v-chip>
+                    <div class="text-caption">{{ log.message }}</div>
+                    <pre
+                      v-if="log.details"
+                      class="text-caption"
+                    >{{ JSON.stringify(log.details, null, 2) }}</pre>
+                  </v-list-item>
+                </v-list>
+                <div
+                  v-else
+                  class="text-body-2 text-grey"
+                >
+                  No errors. web_core rejects updateComponents messages whose components fail the catalog schema; they show up here.
+                </div>
+              </v-card-text>
+            </v-card>
           </v-col>
         </v-row>
       </v-container>
@@ -128,29 +172,24 @@
 
 <script setup lang="ts">
   import type { ComponentApi } from '@a2ui/web_core/v0_9';
-  import { Catalog, MessageProcessor } from '@a2ui/web_core/v0_9';
-  import { CATALOG_ID, VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA, defaultRegistry } from '@alis-build/a2ui-vuetify-renderer';
-  import { defineAsyncComponent, h, onMounted, ref } from 'vue';
+  import { Catalog, MessageProcessor, type A2uiClientCapabilities, type A2uiMessage } from '@a2ui/web_core/v0_9';
+  import { CATALOG_ID, VUETIFY_COMPONENTS, VUETIFY_THEME_SCHEMA, createVuetifyFunctions, defaultRegistry } from '@alis-build/a2ui-vuetify-renderer';
+  import { defineAsyncComponent, defineComponent, h, onMounted, ref } from 'vue';
   import { z } from 'zod';
   import CustomChartWidget from './components/CustomChartWidget.vue';
 
   const surfaceId = 'main-surface';
   const formSurfaceActive = ref(false);
 
-  // 1. Simulate Client Capabilities Reporting
-  const clientMetadata = {
-    a2uiClientCapabilities: {
-      supportedCatalogIds: [CATALOG_ID],
-    },
-  };
-
-  // 2. Demonstrate Lazy Loading of Custom Components
+  // 1. Demonstrate Lazy Loading of Custom Components
   const AsyncGraphComponent = defineAsyncComponent(() =>
-    Promise.resolve({
-      render() {
-        return h('div', { style: 'border: 2px dashed green; padding: 10px;' }, ['I am a Lazy Loaded Graph Component!']);
-      },
-    }),
+    Promise.resolve(
+      defineComponent({
+        render() {
+          return h('div', { style: 'border: 2px dashed green; padding: 10px;' }, ['I am a Lazy Loaded Graph Component!']);
+        },
+      }),
+    ),
   );
 
   const CustomGraphApi: ComponentApi = {
@@ -160,7 +199,7 @@
 
   defaultRegistry.register(CATALOG_ID, 'CustomGraph', AsyncGraphComponent, CustomGraphApi);
 
-  // 3. Register our static custom component with a schema
+  // 2. Register our static custom component with a schema
   const CustomChartApi: ComponentApi = {
     name: 'CustomChart',
     schema: z
@@ -176,7 +215,8 @@
   // Inject custom components into the mock catalog schema to bypass A2UI validation errors
   const customComponentsSchema = [...VUETIFY_COMPONENTS, CustomGraphApi, CustomChartApi];
 
-  const mockCatalog = new Catalog(CATALOG_ID, customComponentsSchema as any, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA);
+  // Locale-aware formatNumber / formatCurrency / pluralize, plus the Vuetify openUrl (http, https, mailto, tel).
+  const mockCatalog = new Catalog(CATALOG_ID, customComponentsSchema as any, createVuetifyFunctions({ locale: navigator.language }), VUETIFY_THEME_SCHEMA);
   const actionLogs = ref<any[]>([]);
 
   const handleAction = (action: any) => {
@@ -185,11 +225,43 @@
   };
 
   // Simulated transport message dispatcher
-  const processor = ref(new MessageProcessor([mockCatalog], handleAction));
+  const processor = ref(new MessageProcessor([mockCatalog], handleAction, { version: 'v0.9' }));
+
+  // 3. Client capabilities to send to the agent on connection (pass { version: 'v0.9.1' } to advertise v0.9.1)
+  const clientMetadata: A2uiClientCapabilities = processor.value.getClientCapabilities();
+
+  // web_core validates every updateComponents component against the catalog schema and throws
+  // A2uiValidationError for the whole message. A real transport should catch it like this.
+  const errorLogs = ref<{ time: string; code: string; message: string; details?: unknown }[]>([]);
+
+  const safeProcess = (messages: A2uiMessage[]): boolean => {
+    try {
+      processor.value.processMessages(messages);
+      return true;
+    } catch (err) {
+      const e = err as { code?: string; message?: string; details?: unknown };
+      console.error('Message rejected by web_core:', err);
+      errorLogs.value.unshift({ time: new Date().toISOString(), code: e.code ?? 'UNKNOWN_ERROR', message: e.message ?? String(err), details: e.details });
+      return false;
+    }
+  };
+
+  // Shows the validation path: `foo` is not in the strict Button schema, so the message is rejected.
+  const sendInvalidMessage = () => {
+    safeProcess([
+      {
+        version: 'v0.9',
+        updateComponents: {
+          surfaceId,
+          components: [{ id: 'bad-btn', component: 'Button', label: 'Oops', action: { event: { name: 'noop' } }, foo: 'bar' }],
+        },
+      },
+    ]);
+  };
 
   // Lifecycle Demo Methods
   const createFormSurface = () => {
-    processor.value.processMessages([
+    const created = safeProcess([
       {
         version: 'v0.9',
         createSurface: {
@@ -252,11 +324,11 @@
         },
       },
     ]);
-    formSurfaceActive.value = true;
+    formSurfaceActive.value = created;
   };
 
   const updateFormModel = () => {
-    processor.value.processMessages([
+    safeProcess([
       {
         version: 'v0.9',
         updateDataModel: {
@@ -273,7 +345,7 @@
   };
 
   const deleteFormSurface = () => {
-    processor.value.processMessages([
+    safeProcess([
       {
         version: 'v0.9',
         deleteSurface: {
@@ -286,7 +358,7 @@
 
   onMounted(() => {
     // Simulate receiving initial layout payload from the agent
-    processor.value.processMessages([
+    safeProcess([
       {
         version: 'v0.9',
         createSurface: {

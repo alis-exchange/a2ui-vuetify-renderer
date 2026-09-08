@@ -29,7 +29,7 @@ The library ships ESM (`dist/a2ui-vuetify-renderer.js`), UMD (`dist/a2ui-vuetify
 | ---------------- | --------- |
 | `vue`            | `^3.5.35` |
 | `vuetify`        | `^4.1.1`  |
-| `@a2ui/web_core` | `^0.10.0` |
+| `@a2ui/web_core` | `^0.10.7` |
 
 ### Catalog ID
 
@@ -89,15 +89,15 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
 ```vue
 <script setup lang="ts">
   import { ref, onMounted } from 'vue'
-  import { MessageProcessor, Catalog } from '@a2ui/web_core/v0_9'
+  import { MessageProcessor, Catalog, A2uiValidationError } from '@a2ui/web_core/v0_9'
   import type { A2uiClientAction } from '@a2ui/web_core/v0_9'
   import {
     A2UIProvider,
     ComponentNode,
     CATALOG_ID,
     VUETIFY_COMPONENTS,
-    VUETIFY_FUNCTIONS,
     VUETIFY_THEME_SCHEMA,
+    createVuetifyFunctions,
     registerDefaultComponents,
   } from '@alis-build/a2ui-vuetify-renderer'
 
@@ -107,14 +107,16 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
     console.log('Action from A2UI:', action)
   }
 
-  const catalog = new Catalog(CATALOG_ID, VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA)
-  const processor = new MessageProcessor([catalog], handleAction)
+  // createVuetifyFunctions({ locale }) gives locale-aware formatNumber / formatCurrency / pluralize
+  const catalog = new Catalog(CATALOG_ID, VUETIFY_COMPONENTS, createVuetifyFunctions({ locale: navigator.language }), VUETIFY_THEME_SCHEMA)
+  const processor = new MessageProcessor([catalog], handleAction, { version: 'v0.9' })
   const surfaceId = 'demo-surface'
   const ready = ref(false)
 
   onMounted(() => {
     processor.processMessages([
       {
+        version: 'v0.9',
         createSurface: {
           surfaceId,
           catalogId: CATALOG_ID,
@@ -123,18 +125,25 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
       },
     ])
 
-    processor.processMessages([
-      {
-        updateComponents: {
-          surfaceId,
-          components: [
-            { id: 'root', component: 'Column', children: ['heading', 'greet-btn'] },
-            { id: 'heading', component: 'Text', text: 'Hello from A2UI!', variant: 'h4' },
-            { id: 'greet-btn', component: 'Button', variant: 'primary', label: 'Click Me', action: { event: { name: 'greet' } } },
-          ],
+    try {
+      processor.processMessages([
+        {
+          version: 'v0.9',
+          updateComponents: {
+            surfaceId,
+            components: [
+              { id: 'root', component: 'Column', children: ['heading', 'greet-btn'] },
+              { id: 'heading', component: 'Text', text: 'Hello from A2UI!', variant: 'h4' },
+              { id: 'greet-btn', component: 'Button', variant: 'primary', label: 'Click Me', action: { event: { name: 'greet' } } },
+            ],
+          },
         },
-      },
-    ])
+      ])
+    } catch (e) {
+      // web_core rejects the whole message when any component fails the catalog schema
+      if (e instanceof A2uiValidationError) console.error(e.message, e.details)
+      throw e
+    }
 
     ready.value = true
   })
@@ -170,11 +179,11 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
 | **`getCatalogSchema()`**   | Returns a deep-cloned JSON Schema for the Vuetify catalog, merging in stub entries for any extra components registered on a `ComponentRegistry` under the same `catalogId` (useful for agents or tooling). Accepts an optional `{ filter }` predicate to narrow the returned components — see **Filtering the catalog schema** below. |
 | **`catalogFilters`**       | Pre-built filter predicates for `getCatalogSchema`: `catalogFilters.customOnly` (non-built-in components only), `catalogFilters.only(...names)` (include-list), `catalogFilters.exclude(...names)` (exclude-list). |
 
-Form components use internal helpers in `src/utils/validation.ts` to map A2UI `checks` to Vuetify validation rules.
+Form components map A2UI `checks` (`[{ condition: DynamicBoolean, message }]`) to Vuetify validation rules via `createVuetifyRules(checks, resolveValue)` in `src/utils/validation.ts`. Each `condition` (a literal, `{ path }` or `{ call, args }`) is resolved through the surface `DataContext` every time a rule runs, so it sees the live data model.
 
 ### Data flow
 
-1. **Messages in** — `MessageProcessor.processMessages()` parses JSONL and updates `SurfaceModel` state (components, data model, theme).
+1. **Messages in** — `MessageProcessor.processMessages()` parses JSONL and updates `SurfaceModel` state (components, data model, theme). Since `@a2ui/web_core` 0.10.6 every component in an `updateComponents` message is validated against the catalog's Zod schema before any state changes: one invalid component throws `A2uiValidationError` (`code: 'VALIDATION_ERROR'`, `details` = Zod issues) and rejects the whole message. All Vuetify schemas are strict, so unknown properties are errors; unknown component *types* are skipped. Catch the error in your transport layer (`formatZodIssue` from web_core renders single issues).
 2. **Reactivity bridge** — `A2UIProvider` subscribes to the processor's `update` event and increments a `shallowRef` key, causing Vue to re-render the subtree.
 3. **Tree resolution** — `ComponentNode` reads the flat adjacency list from `SurfaceComponentsModel`, resolves `children`/`child`/`trigger`/`content` references, and recursively renders the tree.
 4. **Value binding** — Components call `resolveValue<V>(value)` which delegates to `DataContext.resolveDynamicValue<V>()` — handling literals, `{ path }` lookups, and `{ call }` function expressions. Prefer an explicit `V` (e.g. `string`, `number[]`) for each property.
@@ -551,7 +560,7 @@ const myFilter = getCatalogSchema(defaultRegistry, CATALOG_ID, {
 | A2UI type      | Vuetify component            | Notes                                                                                               |
 | -------------- | ---------------------------- | --------------------------------------------------------------------------------------------------- |
 | `Button`       | `v-btn`                      | `variant` → elevated/tonal/text; `action.event` triggers `dispatchNodeAction` → `sendAction`; `action.functionCall` runs locally |
-| `TextField`    | `v-text-field`               | Two-way binding via `value.path`; `checks` → Vuetify rules                                          |
+| `TextField`    | `v-text-field`               | Two-way binding via `value.path`; `checks` (`{ condition, message }`) → Vuetify rules               |
 | `TextArea`     | `v-textarea`                 | Same binding pattern                                                                                |
 | `NumberInput`  | `v-text-field type="number"` |                                                                                                     |
 | `Checkbox`     | `v-checkbox`                 |                                                                                                     |
@@ -612,16 +621,17 @@ While the A2UI Vue Renderer focuses solely on the UI layer, host applications mu
 You must explicitly announce which `catalogId`s your renderer supports to the AI agent during the connection handshake. Failure to do so may result in the server sending unhandled component types.
 
 ```typescript
-import { CATALOG_ID } from '@alis-build/a2ui-vuetify-renderer'
+// The processor derives the capabilities from its catalogs
+const metadata = processor.getClientCapabilities()
+// { 'v0.9': { supportedCatalogIds: [CATALOG_ID] } }
 
-// Construct your metadata payload to be sent over your transport layer
-const metadata = {
-  a2uiClientCapabilities: {
-    supportedCatalogIds: [CATALOG_ID, 'my-custom-catalog-v1']
-  }
-}
+// Advertise protocol v0.9.1 instead (messages with version 'v0.9.1' are accepted either way),
+// or embed the full catalog schemas for agents that cannot fetch CATALOG_ID
+const metadata091 = processor.getClientCapabilities({ version: 'v0.9.1', includeInlineCatalogs: true })
 // Send metadata to the server...
 ```
+
+`MessageProcessor` takes the default version as its third argument: `new MessageProcessor([catalog], handleAction, { version: 'v0.9.1' })`.
 
 ### Authoring
 
@@ -656,6 +666,21 @@ Custom components receive a `node` prop (the component node from A2UI). To resol
 </template>
 ```
 
+## Catalog functions
+
+`createVuetifyFunctions({ locale })` returns the `FunctionImplementation[]` for the Vuetify catalog: the basic catalog functions (`required`, `regex`, `formatString`, `and`, …) with two differences:
+
+- **Locale** — `formatNumber`, `formatCurrency` and `pluralize` use the given BCP 47 locale (e.g. `navigator.language`). Omit it for the host runtime locale.
+- **`openUrl`** — the basic catalog's `openUrl` (web_core ≥ 0.10.2) only allows `http:`/`https:`. The Vuetify override keeps that protection but also allows `mailto:` and `tel:`:
+
+| URL scheme                                       | Behaviour                                                        |
+| ------------------------------------------------ | ---------------------------------------------------------------- |
+| `http:`, `https:` (relative URLs resolve first)  | `window.open(url, '_blank', 'noopener,noreferrer')`              |
+| `mailto:`, `tel:`                                | `window.location.assign(url)` (no blank tab left behind)         |
+| anything else (`javascript:`, `data:`, `file:`…) | throws `A2uiExpressionError` (`Unsupported URL scheme: …`)       |
+
+Function names, schemas and return types are identical to the basic catalog, so `catalog/vuetify-catalog.json` does not change. `VUETIFY_FUNCTIONS` is `createVuetifyFunctions()` and `VuetifyOpenUrlImplementation` is exported on its own.
+
 ## Exports
 
 Everything is available from the package root:
@@ -676,6 +701,8 @@ import {
   VUETIFY_COMPONENTS,
   VUETIFY_FUNCTIONS,
   VUETIFY_THEME_SCHEMA,
+  createVuetifyFunctions,
+  VuetifyOpenUrlImplementation,
   getCatalogSchema,
   catalogFilters,
 } from '@alis-build/a2ui-vuetify-renderer'
@@ -684,7 +711,7 @@ import {
 import { A2UiVueRenderer } from '@alis-build/a2ui-vuetify-renderer'
 
 // Types
-import type { A2UIContext, A2UIActionPayload, A2UiVueRendererOptions, ComponentModel } from '@alis-build/a2ui-vuetify-renderer'
+import type { A2UIContext, A2UIActionPayload, A2UiVueRendererOptions, VuetifyFunctionsOptions, ComponentModel } from '@alis-build/a2ui-vuetify-renderer'
 
 // Injection keys (for advanced provide/inject usage)
 import { A2UI_CONTEXT_KEY, A2UI_REGISTRY_KEY } from '@alis-build/a2ui-vuetify-renderer'
@@ -715,7 +742,7 @@ renderer/
 │   └── vuetify-catalog.json        # JSON Schema + catalogId for agents
 ├── examples/client/                # Vite app for manual integration testing
 ├── scripts/
-│   └── generate-catalog.mjs        # Catalog JSON build script
+│   └── generate-catalog.ts         # Catalog JSON build script
 ├── src/
 │   ├── index.ts                    # Public API barrel
 │   ├── A2UIRendererPlugin.ts       # Vue plugin (install)
@@ -723,7 +750,7 @@ renderer/
 │   ├── catalog/
 │   │   ├── index.ts                # Barrel for catalog exports
 │   │   ├── vuetify-components.ts   # Zod-based ComponentApi[] for all Vuetify components
-│   │   ├── vuetify-functions.ts    # FunctionImplementation[] (delegates to basic catalog)
+│   │   ├── vuetify-functions.ts    # createVuetifyFunctions(): basic catalog + Vuetify openUrl
 │   │   └── vuetify-theme.ts        # Zod theme schema for Catalog constructor
 │   ├── composables/
 │   │   ├── A2UIProvider.vue        # Context provider + theme bridge
@@ -739,7 +766,7 @@ renderer/
 │   ├── components/
 │   │   └── A2UI*.vue               # Vuetify-backed (and media) implementations
 │   └── utils/
-│       └── validation.ts           # A2UI checks → Vuetify rules
+│       └── validation.ts           # A2UI checks ({ condition, message }) → Vuetify rules
 ├── dist/                           # Built library output
 ├── vite.config.ts                  # Vite lib mode + vuetify auto-import
 ├── vitest.config.ts                # Test config (jsdom, vuetify inlined)
@@ -753,6 +780,7 @@ Tests use Vitest with `@vue/test-utils` and `jsdom`. Vuetify is inlined during t
 - **Core** — plugin, provider, `useA2UI`, `useDynamicProps`, `ComponentNode`, `ComponentRegistry`, `getCatalogSchema`, barrel `index.spec.ts`
 - **Components** — grouped specs (`CoreComponents`, `FormInputs`, …) plus focused tests for `Tabs`, `Modal`, `Video`, `AudioPlayer`, `ChoicePicker`
 - **Tooling** — `scripts/generate-catalog.spec.ts`, `validation.spec.ts`
+- **Catalog** — `catalog/vuetify-functions.spec.ts` (locale, `openUrl` allowlist) and `catalog/catalog.spec.ts` (strict message validation under `MessageProcessor`)
 
 ## License
 

@@ -9,11 +9,11 @@ importers:
   .:
     dependencies:
       '@a2ui/web_core':
-        specifier: ^0.9.0
-        version: 0.9.0
+        specifier: ^0.10.7
+        version: 0.10.7
       '@alis-build/a2ui-vuetify-renderer':
         specifier: file:../..
-        version: file:../..(@a2ui/web_core@0.9.0)(vue@3.5.31(typescript@5.9.3))(vuetify@4.0.4)
+        version: file:../..(@a2ui/web_core@0.10.7)(vue@3.5.31(typescript@5.9.3))(vuetify@4.0.4)
       '@mdi/font':
         specifier: ^7.4.47
         version: 7.4.47
@@ -51,15 +51,15 @@ importers:
 
 packages:
 
-  '@a2ui/web_core@0.9.0':
-    resolution: {integrity: sha512-TsMWuEeuVDsScGIGPy/fWIZu+EOBRfhx6KwjKh3VwY1AwysRenQM8zDr8VrSk14Wck/aBgVxk2zWVrMCK2/s6A==}
+  '@a2ui/web_core@0.10.7':
+    resolution: {integrity: sha512-9czuUjSgsomHYy79lKExwtmMza9iCqaXJx7aw5xOGMLKNPziwux5fj4UnsV41bQkLDeZwNu2LoOwn5c2ceyDsQ==}
 
   '@alis-build/a2ui-vuetify-renderer@file:../..':
     resolution: {directory: ../.., type: directory}
     peerDependencies:
-      '@a2ui/web_core': ^0.9.0
-      vue: ^3.5.30
-      vuetify: ^4.0.2
+      '@a2ui/web_core': ^0.10.7
+      vue: ^3.5.35
+      vuetify: ^4.1.1
 
   '@babel/helper-string-parser@7.27.1':
     resolution: {integrity: sha512-qMlSxKbpRlAridDExk92nSobyDdpPijUq2DW6oDnUqd0iOGxmQjyqhMIihI9+zv4LPyZdRje2cavWPbCbWm3eA==}
@@ -190,8 +190,8 @@ packages:
     resolution: {integrity: sha512-tmmZ3lQxAe/k/+rNnXQRawJ4NjxO2hqiOLTHvWchtGZULp4RyFeh6aU4XdOYBFe2KE1oShQTv4AblOs2iOrNnQ==}
     engines: {node: '>= 10.0.0'}
 
-  '@preact/signals-core@1.14.0':
-    resolution: {integrity: sha512-AowtCcCU/33lFlh1zRFf/u+12rfrhtNakj7UpaGEsmMwUKpKWMVvcktOGcwBBNiB4lWrZWc01LhiyyzVklJyaQ==}
+  '@preact/signals-core@1.14.4':
+    resolution: {integrity: sha512-HNB6HYeYKhQbJ1aKl+YRjrS4+QWHLKX6qKoUsfS/m0vqzsVaEBiZiaKbG/e+NKk2ch5ALQr/ihWaMHxiCuuWHA==}
 
   '@rolldown/binding-android-arm64@1.0.0-rc.12':
     resolution: {integrity: sha512-pv1y2Fv0JybcykuiiD3qBOBdz6RteYojRFY1d+b95WVuzx211CRh+ytI/+9iVyWQ6koTh5dawe4S/yRfOFjgaA==}
@@ -375,8 +375,8 @@ packages:
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
 
-  date-fns@4.1.0:
-    resolution: {integrity: sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg==}
+  date-fns@4.4.0:
+    resolution: {integrity: sha512-+1UMbeh68lH1SegH83CGWwpb6OHHbpSgr3+s5Eww5M4CAgswBpoWS0AjTOfEJ33HiYKz1hdj/KTFprzXHmq/6w==}
 
   debug@4.4.3:
     resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
@@ -658,16 +658,16 @@ packages:
 
 snapshots:
 
-  '@a2ui/web_core@0.9.0':
+  '@a2ui/web_core@0.10.7':
     dependencies:
-      '@preact/signals-core': 1.14.0
-      date-fns: 4.1.0
+      '@preact/signals-core': 1.14.4
+      date-fns: 4.4.0
       zod: 3.25.76
       zod-to-json-schema: 3.25.2(zod@3.25.76)
 
-  '@alis-build/a2ui-vuetify-renderer@file:../..(@a2ui/web_core@0.9.0)(vue@3.5.31(typescript@5.9.3))(vuetify@4.0.4)':
+  '@alis-build/a2ui-vuetify-renderer@file:../..(@a2ui/web_core@0.10.7)(vue@3.5.31(typescript@5.9.3))(vuetify@4.0.4)':
     dependencies:
-      '@a2ui/web_core': 0.9.0
+      '@a2ui/web_core': 0.10.7
       '@mdi/font': 7.4.47
       sass: 1.98.0
       vue: 3.5.31(typescript@5.9.3)
@@ -778,7 +778,7 @@ snapshots:
       '@parcel/watcher-win32-x64': 2.5.6
     optional: true
 
-  '@preact/signals-core@1.14.0': {}
+  '@preact/signals-core@1.14.4': {}
 
   '@rolldown/binding-android-arm64@1.0.0-rc.12':
     optional: true
@@ -944,7 +944,7 @@ snapshots:
 
   csstype@3.2.3: {}
 
-  date-fns@4.1.0: {}
+  date-fns@4.4.0: {}
 
   debug@4.4.3:
     dependencies:

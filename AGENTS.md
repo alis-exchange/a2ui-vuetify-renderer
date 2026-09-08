@@ -35,7 +35,7 @@ renderer/
 │   ├── catalog/
 │   │   ├── index.ts                   # Re-exports components, functions, theme
 │   │   ├── vuetify-components.ts      # Zod-based ComponentApi for every component
-│   │   ├── vuetify-functions.ts       # FunctionImplementation[] (delegates to basic catalog)
+│   │   ├── vuetify-functions.ts       # createVuetifyFunctions({ locale }): basic catalog + Vuetify openUrl (http/https/mailto/tel)
 │   │   └── vuetify-theme.ts           # Zod theme schema for Catalog constructor
 │   ├── composables/
 │   │   ├── A2UIProvider.vue           # Context provider + Vuetify theme bridge
@@ -51,7 +51,7 @@ renderer/
 │   ├── components/
 │   │   └── A2UI*.vue                  # 40 Vuetify-backed component implementations
 │   └── utils/
-│       └── validation.ts              # A2UI checks → Vuetify rule functions
+│       └── validation.ts              # A2UI checks ({ condition, message }) → Vuetify rule functions
 ├── vite.config.ts                     # Library-mode build config
 ├── vitest.config.ts                   # Test config (jsdom, vuetify inlined)
 ├── tsconfig.json                      # Project references (tsconfig.app + tsconfig.node)
@@ -67,7 +67,7 @@ renderer/
 |-------|-----------|
 | Framework | Vue 3 (`^3.5.35`) with `<script setup>` + TypeScript |
 | Component library | Vuetify 4 (`^4.1.1`) |
-| Protocol core | `@a2ui/web_core` (`^0.10.0`) — message processing, state, data binding, validation |
+| Protocol core | `@a2ui/web_core` (`^0.10.7`) — message processing, state, data binding, validation |
 | Schema | Zod (`^3.25`) + `zod-to-json-schema` for catalog generation |
 | Build | Vite 8 library mode, `vite-plugin-vuetify` (auto-import), `vite-plugin-dts` |
 | Tests | Vitest 4 + `@vue/test-utils` + jsdom |
@@ -159,11 +159,20 @@ Accepts a `MaybeRefOrGetter<T>` node, returns a `computed` that runs every prope
 
 ### 5.9 Validation (`utils/validation.ts`)
 
-`createVuetifyRules(checks)` converts A2UI `checks` arrays into Vuetify validation rule functions. Supports `required`, `regex`, `minLength`, `maxLength`, and arbitrary function checks.
+`createVuetifyRules(checks, resolveValue)` converts A2UI `checks` arrays into Vuetify validation rule functions.
+
+- **Protocol shape** (what agents send, enforced by web_core's `CheckRuleSchema`): `{ condition: DynamicBoolean, message }`. `condition` is a literal boolean, `{ path }` or `{ call, args }`; it is resolved with `resolveValue` (from `useA2UI()`) every time the rule runs, so it reads the live data model. Truthy passes, otherwise the rule returns `message`. A missing resolver or a resolver that throws counts as a pass: a broken rule must never lock the user out of an input.
+- **Legacy shapes** (`'required'`, `{ type: 'required' | 'regex' | 'minLength' | 'maxLength' }`, raw functions) still work for direct callers, but `MessageProcessor` (web_core ≥ 0.10.6) rejects them before they reach a component.
+
+### 5.10 Catalog functions (`catalog/vuetify-functions.ts`)
+
+`createVuetifyFunctions({ locale })` builds the `FunctionImplementation[]` from web_core's `createBasicCatalogFunctions` and swaps `openUrl` for `VuetifyOpenUrlImplementation` (allows `http:`, `https:`, `mailto:`, `tel:`; everything else throws `A2uiExpressionError` like upstream). Replace by name, never append: the generator iterates the array. `VUETIFY_FUNCTIONS` is `createVuetifyFunctions()`.
 
 ---
 
 ## 6. Catalog System
+
+Since `@a2ui/web_core` 0.10.6, `MessageProcessor.processMessages` validates every `updateComponents` component against its Zod schema (all Vuetify schemas are `.strict()`) before mutating state and throws `A2uiValidationError` for the whole message on the first failure. `src/catalog/catalog.spec.ts` pins this behaviour.
 
 ### 6.1 The JSON Schema (`catalog/vuetify-catalog.json`)
 
@@ -231,8 +240,8 @@ Every component receives a single `node` prop typed as `ComponentModel` from `@a
 
   // Validation
   const rules = computed(() => {
-    const checks = resolveValue<any[] | undefined>(props.node.properties.checks);
-    return createVuetifyRules(checks);
+    const checks = resolveValue<any[] | undefined>(props.node.properties.checks) ?? [];
+    return createVuetifyRules(checks, resolveValue);
   });
 
   // Actions
@@ -249,7 +258,7 @@ Key patterns:
 - **Two-way binding**: use writable `computed` that calls `setData(path, val)` on set
 - **Actions**: use `dispatchNodeAction(node)` for standard button/click actions, or `sendAction(name, id, context)` for manual payloads
 - **Children**: use `<ComponentNode :id="childId" />` to render child references; use `resolveDynamicChildren` for iterating `{ path, componentId }` template lists
-- **Validation**: pass `checks` through `createVuetifyRules()` to get Vuetify-compatible rule arrays
+- **Validation**: pass `checks` and `resolveValue` through `createVuetifyRules(checks, resolveValue)` so `{ condition, message }` rules resolve against the data model
 
 ---
 
