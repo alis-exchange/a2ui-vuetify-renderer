@@ -3,6 +3,7 @@
   import { computed } from 'vue';
   import { VDatePicker } from 'vuetify/components';
   import { useA2UI } from '../composables/useA2UI';
+  import { createVuetifyRules } from '../utils/validation';
 
   type VDatePickerProps = InstanceType<typeof VDatePicker>['$props'];
 
@@ -34,6 +35,14 @@
     },
   });
 
+  // v-date-picker has no rules prop, so failing checks are rendered underneath instead.
+  const errorMessages = computed(() => {
+    const checks = resolveValue<any[]>(props.node.properties.checks) ?? [];
+    return createVuetifyRules(checks, resolveValue)
+      .map((rule) => rule(modelValue.value))
+      .filter((result): result is string => typeof result === 'string');
+  });
+
   const handleChange = (val: any) => {
     modelValue.value = val;
     dispatchNodeAction(props.node, { value: val });
@@ -41,17 +50,25 @@
 </script>
 
 <template>
-  <v-date-picker
-    :model-value="modelValue"
-    :title="label"
-    :min="min"
-    :max="max"
-    :color="color"
-    :multiple="multiple"
-    :readonly="readonly"
-    :disabled="disabled"
-    :landscape="landscape"
-    :show-adjacent-months="showAdjacentMonths"
-    @update:model-value="handleChange"
-  ></v-date-picker>
+  <div>
+    <v-date-picker
+      :model-value="modelValue"
+      :title="label"
+      :min="min"
+      :max="max"
+      :color="color"
+      :multiple="multiple"
+      :readonly="readonly"
+      :disabled="disabled"
+      :landscape="landscape"
+      :show-adjacent-months="showAdjacentMonths"
+      @update:model-value="handleChange"
+    ></v-date-picker>
+    <div
+      v-if="errorMessages.length"
+      class="a2ui-date-picker-errors text-error text-caption mt-1"
+    >
+      {{ errorMessages.join(', ') }}
+    </div>
+  </div>
 </template>
