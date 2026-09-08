@@ -27,7 +27,7 @@
 
   const rules = computed(() => {
     const checks = resolveValue<any[]>(props.node.properties.checks) ?? [];
-    return createVuetifyRules(checks);
+    return createVuetifyRules(checks, resolveValue);
   });
 </script>
 

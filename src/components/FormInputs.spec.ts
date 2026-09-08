@@ -9,7 +9,7 @@ import A2UITextField from './A2UITextField.vue';
 
 const vuetify = createVuetify();
 
-function createMockContext(data: any = {}) {
+function createMockContext(data: any = {}, invoker: (...args: any[]) => any = () => undefined) {
   const dataModel = new DataModel(data);
   return {
     surfaceId: 'test-surface',
@@ -19,7 +19,7 @@ function createMockContext(data: any = {}) {
         getSurface: vi.fn().mockReturnValue({
           id: 'test-surface',
           dataModel: dataModel,
-          catalog: { invoker: () => undefined },
+          catalog: { invoker },
         }),
       },
     },
@@ -92,6 +92,54 @@ describe('Form Inputs', () => {
       const rules = tf.props('rules') as any[];
       expect(rules.length).toBe(1);
       expect(rules[0]('')).toBe('Needed');
+    });
+
+    it('evaluates protocol check conditions against the live data model', () => {
+      const mockContext = createMockContext({ ok: false });
+      const wrapper = mount(A2UITextField, {
+        global: {
+          provide: { [A2UI_CONTEXT_KEY as symbol]: mockContext },
+          plugins: [vuetify],
+        },
+        props: {
+          node: {
+            id: 'tf-checks',
+            type: 'TextField',
+            properties: { label: 'Name', checks: [{ condition: { path: '/ok' }, message: 'nope' }] },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
+      });
+      const rules = wrapper.findComponent({ name: 'VTextField' }).props('rules') as any[];
+      expect(rules[0]('x')).toBe('nope');
+
+      mockContext.processor.model.getSurface().dataModel.set('/ok', true);
+      expect(rules[0]('x')).toBe(true);
+    });
+
+    it('resolves function-call check conditions through the catalog invoker', () => {
+      const invoker = vi.fn().mockReturnValue(true);
+      const mockContext = createMockContext({ user: { name: 'John' } }, invoker);
+      const wrapper = mount(A2UITextField, {
+        global: {
+          provide: { [A2UI_CONTEXT_KEY as symbol]: mockContext },
+          plugins: [vuetify],
+        },
+        props: {
+          node: {
+            id: 'tf-call',
+            type: 'TextField',
+            properties: {
+              label: 'Name',
+              checks: [{ condition: { call: 'required', args: { value: { path: '/user/name' } } }, message: 'Name is required' }],
+            },
+            onUpdated: { subscribe: vi.fn() },
+          } as any,
+        },
+      });
+      const rules = wrapper.findComponent({ name: 'VTextField' }).props('rules') as any[];
+      expect(rules[0]('x')).toBe(true);
+      expect(invoker).toHaveBeenCalledWith('required', { value: 'John' }, expect.anything(), expect.any(AbortSignal));
     });
 
     it('dispatches action on blur when action is defined', async () => {
