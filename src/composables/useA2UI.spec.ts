@@ -147,3 +147,44 @@ describe('useA2UI composable', () => {
     expect(mockContext.onAction).not.toHaveBeenCalled();
   });
 });
+
+describe('useA2UI in node mode', () => {
+  it('re-evaluates computeds built on resolveValue when the node props change', async () => {
+    const { DataModel } = await import('@a2ui/web_core/v0_9');
+    const { computed, defineComponent, nextTick, provide, shallowRef } = await import('vue');
+    const dataModel = new DataModel({ name: 'Ada' });
+    const nodeProps = shallowRef<Record<string, unknown> | undefined>({});
+    const mockContext = {
+      surfaceId: 'test-surface',
+      onAction: vi.fn(),
+      processor: { model: { getSurface: () => ({ id: 'test-surface', dataModel, catalog: { invoker: () => undefined } }) } },
+      nodeProps,
+    };
+    let seen: string | undefined;
+    const TestComponent = defineComponent({
+      setup() {
+        const { resolveValue } = useA2UI();
+        const name = computed(() => resolveValue<string>({ path: '/name' }));
+        return () => {
+          seen = name.value;
+          return null;
+        };
+      },
+    });
+    mount(defineComponent({
+      components: { TestComponent },
+      setup() {
+        provide(A2UI_CONTEXT_KEY, mockContext);
+        return {};
+      },
+      template: '<TestComponent />',
+    }));
+    expect(seen).toBe('Ada');
+
+    // Simulate web_core reporting a change for this node after a local write.
+    dataModel.set('/name', 'Grace');
+    nodeProps.value = { changed: true };
+    await nextTick();
+    expect(seen).toBe('Grace');
+  });
+});

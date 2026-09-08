@@ -11,7 +11,12 @@
     node: ComponentModel;
   }>();
 
-  const { resolveValue, dispatchNodeAction } = useA2UI();
+  const { resolveValue, dispatchNodeAction, nodeProps } = useA2UI();
+
+  // In node mode web_core's binder evaluates `checks` and reports the outcome on the node's
+  // resolved props; a failing check disables the button and surfaces the message.
+  const isValid = computed(() => nodeProps?.value?.isValid !== false);
+  const validationErrors = computed(() => (nodeProps?.value?.validationErrors as string[] | undefined) ?? []);
 
   const labelText = computed(() => {
     const label = resolveValue<string | undefined>(props.node.properties.label);
@@ -69,6 +74,8 @@
   <v-btn
     v-bind="buttonProps"
     :prepend-icon="iconName && labelText ? iconName : undefined"
+    :disabled="!isValid"
+    :title="validationErrors.join(', ') || undefined"
     @click="handleClick"
   >
     <span v-if="iconName && labelText">{{ labelText }}</span>
