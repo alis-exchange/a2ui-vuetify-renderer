@@ -122,6 +122,9 @@
   });
 
   const node = computed(() => {
+    // Re-read the model whenever the live node reports a change (a re-sent component keeps its
+    // id but may be a new ComponentModel instance).
+    nodeProps.value;
     const componentId = liveNode.value?.componentId ?? props.id;
     return componentId ? surface.value?.componentsModel?.get(componentId) : undefined;
   });

@@ -259,6 +259,8 @@ export function useA2UI(): UseA2UIReturn {
   };
 
   const resolveDynamicChildren = (childrenProp: any) => {
+    // Static lists never go through resolveValue, so subscribe to the node here as well.
+    context.nodeProps?.value;
     if (Array.isArray(childrenProp)) {
       return childrenProp.map((child) => {
         if (typeof child === 'string') return { id: child };
