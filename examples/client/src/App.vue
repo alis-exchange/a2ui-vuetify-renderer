@@ -62,6 +62,7 @@
                 <A2uiProvider
                   surface-id="form-surface"
                   :processor="processor"
+                  :on-error="handleError"
                   @action="handleAction"
                 >
                   <A2uiComponentNode id="root" />
@@ -76,6 +77,7 @@
             <A2uiProvider
               :surface-id="surfaceId"
               :processor="processor"
+              :on-error="handleError"
               @action="handleAction"
             >
               <A2uiComponentNode id="root" />
@@ -130,7 +132,7 @@
               variant="outlined"
               class="mt-4"
             >
-              <v-card-title>Rejected Messages</v-card-title>
+              <v-card-title>Rejected Messages &amp; Surface Errors</v-card-title>
               <v-card-text>
                 <v-list
                   v-if="errorLogs.length > 0"
@@ -243,6 +245,12 @@
       errorLogs.value.unshift({ time: new Date().toISOString(), code: e.code ?? 'UNKNOWN_ERROR', message: e.message ?? String(err), details: e.details });
       return false;
     }
+  };
+
+  // Surface-level errors (unknown component types, cyclic references, expression failures).
+  const handleError = (error: unknown) => {
+    const e = error as { code?: string; message?: string };
+    errorLogs.value.unshift({ time: new Date().toISOString(), code: e.code ?? 'SURFACE_ERROR', message: e.message ?? String(error) });
   };
 
   // Shows the validation path: `foo` is not in the strict Button schema, so the message is rejected.

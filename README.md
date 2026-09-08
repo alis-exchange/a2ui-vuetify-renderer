@@ -106,6 +106,9 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
   const handleAction = (action: A2uiClientAction) => {
     console.log('Action from A2UI:', action)
   }
+  const handleError = (error: unknown) => {
+    console.error('A2UI surface error:', error) // unknown component types, cyclic references, expression failures
+  }
 
   // createVuetifyFunctions({ locale }) gives locale-aware formatNumber / formatCurrency / pluralize
   const catalog = new Catalog(CATALOG_ID, VUETIFY_COMPONENTS, createVuetifyFunctions({ locale: navigator.language }), VUETIFY_THEME_SCHEMA)
@@ -157,6 +160,7 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
         :processor="processor"
         :surface-id="surfaceId"
         :on-action="handleAction"
+        :on-error="handleError"
       >
         <ComponentNode id="root" />
       </A2UIProvider>
@@ -167,12 +171,22 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
 
 ## Architecture
 
+### `A2UIProvider` props
+
+| Prop            | Type                       | Default         | Purpose                                                                                                                         |
+| --------------- | -------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `processor`     | `MessageProcessor`         | required        | Owns the surface, component and data models                                                                                     |
+| `surface-id`    | `string`                   | required        | The surface to render                                                                                                           |
+| `on-action`     | `(action) => void`         | –               | Fallback handler for component actions                                                                                          |
+| `on-error`      | `(error) => void`          | `console.error` | Surface errors reported by web_core (`UNKNOWN_COMPONENT_TYPE`, `CYCLIC_REFERENCE`, expression failures)                          |
+| `node-resolver` | `boolean`                  | `true`          | Render from web_core's live node tree. `false` is the static legacy path, which only reflects the surface as of the first paint |
+
 ### Core modules
 
 | Module                     | Role                                                                                                                                                                                                                                                                                              |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`A2UIProvider`**         | Wraps a surface. Provides processor, surface ID, and action callback via `provide/inject`. Listens to processor `update` events to trigger re-renders. Bridges A2UI theme colors (`primaryColor`, `errorColor`, etc.) into a dynamic Vuetify theme via `v-theme-provider`.                        |
-| **`ComponentNode`**        | Recursive renderer. Resolves a component ID from the surface's `ComponentsModel`, looks up the Vue component in the registry, and renders it with `<component :is="...">`. Supports a `path` prop for scoped data context in dynamic lists. Falls back to an error placeholder for unknown types. |
+| **`A2UIProvider`**         | Wraps a surface. Provides processor, surface ID, and action callback via `provide/inject`. Owns one web_core `NodeResolver` for the surface (created when the surface appears, disposed when it is deleted or the provider unmounts) and forwards surface errors to `onError`. Bridges A2UI theme colors (`primaryColor`, `errorColor`, etc.) into a dynamic Vuetify theme via `v-theme-provider`.                        |
+| **`ComponentNode`**        | Recursive renderer. `id="root"` picks the resolver's root node; any other id is looked up among the live child nodes in the parent's resolved props. Mirrors the node's props signal into the context (`nodeProps`) and scopes descendants to the node's data path, so `resolveValue` is reactive. Children that have not arrived render as `[pending: id]` and are swapped in place. Types the catalog does not know are reported through `onError` and rendered from the registry without live bindings. Supports a `path` prop for scoped data context on the legacy path. |
 | **`ComponentRegistry`**    | A `Map<string, Component>` that maps A2UI type strings (e.g. `"Button"`) to Vue components. Exposes `register()`, `registerAll()`, `get()`, and `has()`. The singleton `defaultRegistry` is pre-populated by `registerDefaultComponents()`.                                                       |
 | **`useA2UI()`**            | Composable that injects the provider context. Returns `resolveValue<V>(value)`, `resolveDynamicChildren`, `sendAction`, `dispatchNodeAction`, `setData`, `surfaceId`, `dataContext`, and `dataContextPath`. `resolveValue` accepts an A2UI `DynamicValue \| undefined` (from `@a2ui/web_core/v0_9`) and resolves via `DataContext.resolveDynamicValue<V>()`; pass a type argument (e.g. `resolveValue<string>(…)`) so callers get a typed result. `dispatchNodeAction` expects a `ComponentModel`. Uses `SurfaceModel.dispatchAction()` for schema-validated action payloads. |
 | **`useDynamicProps()`**    | Composable for custom catalog components: given a node (ref, getter, or plain object), returns a computed ref of properties with each value passed through `resolveValue` (same generic resolver as `useA2UI`). Resolved values are still typed as `Record<string, any>` at the top level; use `resolveValue<V>()` directly when you need strong typing per field.                                                                                                        |
@@ -184,7 +198,7 @@ Form components map A2UI `checks` (`[{ condition: DynamicBoolean, message }]`) t
 ### Data flow
 
 1. **Messages in** — `MessageProcessor.processMessages()` parses JSONL and updates `SurfaceModel` state (components, data model, theme). Since `@a2ui/web_core` 0.10.6 every component in an `updateComponents` message is validated against the catalog's Zod schema before any state changes: one invalid component throws `A2uiValidationError` (`code: 'VALIDATION_ERROR'`, `details` = Zod issues) and rejects the whole message. All Vuetify schemas are strict, so unknown properties are errors; unknown component *types* are skipped. Catch the error in your transport layer (`formatZodIssue` from web_core renders single issues).
-2. **Reactivity bridge** — `A2UIProvider` subscribes to the processor's `update` event and increments a `shallowRef` key, causing Vue to re-render the subtree.
+2. **Reactivity bridge** — `A2UIProvider` owns a web_core `NodeResolver`; each `ComponentNode` mirrors its node's `props` signal into a `shallowRef` that `resolveValue` and `resolveDynamicChildren` read. Server messages and local `setData()` writes both re-render the affected components without remounting. The binder also evaluates `checks` and reports `isValid` / `validationErrors` on the node, which Button and IconButton use to disable themselves.
 3. **Tree resolution** — `ComponentNode` reads the flat adjacency list from `SurfaceComponentsModel`, resolves `children`/`child`/`trigger`/`content` references, and recursively renders the tree.
 4. **Value binding** — Components call `resolveValue<V>(value)` which delegates to `DataContext.resolveDynamicValue<V>()` — handling literals, `{ path }` lookups, and `{ call }` function expressions. Prefer an explicit `V` (e.g. `string`, `number[]`) for each property.
 5. **Two-way binding** — Input components use writable `computed` properties that call `setData()` on the surface's `DataModel` when the user types.
@@ -559,7 +573,7 @@ const myFilter = getCatalogSchema(defaultRegistry, CATALOG_ID, {
 
 | A2UI type      | Vuetify component            | Notes                                                                                               |
 | -------------- | ---------------------------- | --------------------------------------------------------------------------------------------------- |
-| `Button`       | `v-btn`                      | `variant` → elevated/tonal/text; `action.event` triggers `dispatchNodeAction` → `sendAction`; `action.functionCall` runs locally |
+| `Button`       | `v-btn`                      | `variant` → elevated/tonal/text; `action.event` triggers `dispatchNodeAction` → `sendAction`; `action.functionCall` runs locally; disabled while its `checks` fail |
 | `TextField`    | `v-text-field`               | Two-way binding via `value.path`; `checks` (`{ condition, message }`) → Vuetify rules               |
 | `TextArea`     | `v-textarea`                 | Same binding pattern                                                                                |
 | `NumberInput`  | `v-text-field type="number"` |                                                                                                     |
@@ -777,7 +791,8 @@ renderer/
 
 Tests use Vitest with `@vue/test-utils` and `jsdom`. Vuetify is inlined during tests via `vitest.config.ts`. Test files live alongside source as `*.spec.ts`:
 
-- **Core** — plugin, provider, `useA2UI`, `useDynamicProps`, `ComponentNode`, `ComponentRegistry`, `getCatalogSchema`, barrel `index.spec.ts`
+- **Core** — plugin, provider (real `MessageProcessor`), `useA2UI`, `useDynamicProps`, `ComponentNode`, `liveNodes`, `ComponentRegistry`, `getCatalogSchema`, barrel `index.spec.ts`
+- **End to end** — `nodeResolver.spec.ts` renders the shipped components through the resolver: typing updates siblings, checks gate the Button, template lists grow on local writes, placeholders upgrade
 - **Components** — grouped specs (`CoreComponents`, `FormInputs`, …) plus focused tests for `Tabs`, `Modal`, `Video`, `AudioPlayer`, `ChoicePicker`
 - **Tooling** — `scripts/generate-catalog.spec.ts`, `validation.spec.ts`
 - **Catalog** — `catalog/vuetify-functions.spec.ts` (locale, `openUrl` allowlist) and `catalog/catalog.spec.ts` (strict message validation under `MessageProcessor`)

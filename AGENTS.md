@@ -103,21 +103,22 @@ All public API is exported from this barrel. If you add a new public symbol, it 
 
 ### 5.3 A2UIProvider (`composables/A2UIProvider.vue`)
 
-- Wraps a single surface. Receives `processor`, `surfaceId`, `onAction` props.
-- Provides `A2UI_CONTEXT_KEY` to descendants via `provide/inject`.
-- Listens to the processor's `update` event and increments a `shallowRef` key to trigger Vue re-renders.
+- Wraps a single surface. Receives `processor`, `surfaceId`, `onAction`, `onError` and `nodeResolver` (default `true`) props.
+- Provides `A2UI_CONTEXT_KEY` to descendants via `provide/inject`, handing out the **raw** processor (`toRaw`), never Vue's reactive proxy, because web_core's signals and identity checks must see the real objects.
+- Subscribes to `processor.model.onSurfaceCreated` / `onSurfaceDeleted` (the only lifecycle events web_core emits; `MessageProcessor` is not an `EventTarget`). When the surface exists it creates one `NodeResolver(surface, surface.catalog)`, exposed as `context.resolver`, and disposes it on delete/unmount.
+- Forwards `surface.onError` events to `onError` (or `console.error`).
 - Reads `surface.theme` and dynamically creates a scoped Vuetify theme (`v-theme-provider`) mapping `primaryColor`, `errorColor`, `backgroundColor`, `surfaceColor` to Vuetify color tokens. Cleans up the theme on unmount.
 
 ### 5.4 ComponentNode (`core/ComponentNode.vue`)
 
 The recursive heart of the renderer:
-1. Injects `A2UI_CONTEXT_KEY` to get the processor and surface ID.
-2. Looks up the component node by `id` from `SurfaceComponentsModel`.
-3. Resolves the Vue component from the `ComponentRegistry` by type name + `catalogId`.
-4. Renders via `<component :is="resolvedComponent" :node="node">`.
-5. If the component type is unknown, renders a red error placeholder.
-6. If the node doesn't exist yet, renders an orange "Missing node" debug box.
-7. Supports `path` prop for dynamic list scoping — when provided, creates a new `A2UI_CONTEXT_KEY` with the scoped `dataContextPath`.
+1. Injects `A2UI_CONTEXT_KEY` to get the processor, surface ID, resolver and the parent's `nodeProps`.
+2. Finds its live web_core node: `id="root"` directly under the provider reads `resolver.rootNode`; any other `id` is found with `findLiveNode(parentNodeProps, id, path)` (`core/liveNodes.ts`: single refs, child lists, template items by data path, `tabs[].child`). Containers keep passing ids, which is why none of the 40 components needed changes.
+3. Mirrors the node's `props` signal into a `shallowRef` (`effect` + `getValue`) and provides it as `nodeProps`, with `dataContextPath = node.dataPath`. `resolveValue` / `resolveDynamicChildren` read `nodeProps`, so every computed built on them re-runs when web_core reports a change.
+4. Reads the raw `ComponentModel` from `SurfaceComponentsModel` (components still resolve raw properties one-shot) and resolves the Vue component from the `ComponentRegistry` by type name + `catalogId`.
+5. Renders via `<component :is="resolvedComponent" :node="node">`.
+6. `pending` / `cyclic` nodes render a `[state: id]` placeholder and are swapped in place when resolvable; `unknown-type` nodes still try the registry (custom components outside the catalog), else the red error fallback.
+7. Without a live node (legacy path, `nodeResolver=false`) it falls back to the static lookup by `id`; a missing node renders the orange "Missing node" debug box; `path` scopes descendants.
 8. Applies `flex-grow-N` classes from the node's `weight` property.
 
 ### 5.5 ComponentRegistry (`core/ComponentRegistry.ts`)
@@ -143,6 +144,7 @@ Provides the bridge between `@a2ui/web_core` state and Vue component logic. The 
 - `dispatchNodeAction(node: ComponentModel, extraContext?)` — reads `node.properties.action`, resolves with `resolveValue<Action | undefined>`, then dispatches `event` or executes `functionCall` locally
 - `setData(path, value)` — writes to the surface's `DataModel`
 - `surfaceId`, `dataContextPath`, `dataContext`
+- `nodeProps` — `ShallowRef` of the enclosing node's resolved props in node mode (`undefined` value on the legacy path). Read it for binder outputs such as `isValid` / `validationErrors`; `resolveValue` already subscribes to it.
 
 ### 5.7 useDynamicProps composable (`composables/useDynamicProps.ts`)
 
@@ -258,7 +260,8 @@ Key patterns:
 - **Two-way binding**: use writable `computed` that calls `setData(path, val)` on set
 - **Actions**: use `dispatchNodeAction(node)` for standard button/click actions, or `sendAction(name, id, context)` for manual payloads
 - **Children**: use `<ComponentNode :id="childId" />` to render child references; use `resolveDynamicChildren` for iterating `{ path, componentId }` template lists
-- **Validation**: pass `checks` and `resolveValue` through `createVuetifyRules(checks, resolveValue)` so `{ condition, message }` rules resolve against the data model
+- **Validation**: pass `checks` and `resolveValue` through `createVuetifyRules(checks, resolveValue)` so `{ condition, message }` rules resolve against the data model; for gating (Button, IconButton) read `nodeProps.value.isValid` / `validationErrors`, which web_core's binder maintains
+- **Schemas**: keep every `ComponentApi.schema` a plain `z.object({...}).strict()`. A `.refine()` / `.transform()` root wraps it in a `ZodEffects` that web_core's binder cannot read, turning every prop static (no action closures, no `isValid`); `src/catalog/catalog.spec.ts` guards this
 
 ---
 
