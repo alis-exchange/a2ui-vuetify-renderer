@@ -138,6 +138,15 @@ describe('A2UIProvider.vue', () => {
     expect(resolver?.disposed).toBe(true);
   });
 
+  it('warns when the processor is handed over as a Vue reactive proxy', async () => {
+    const { ref } = await import('vue');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const processor = createProcessor();
+    mountProvider(ref(processor).value as MessageProcessor);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('reactive proxy'));
+    warn.mockRestore();
+  });
+
   it('renders statically without a resolver when nodeResolver is false', async () => {
     const processor = createProcessor();
     processor.processMessages([createSurface(), setData('/', { msg: 'hello' }), rootText({ path: '/msg' })]);

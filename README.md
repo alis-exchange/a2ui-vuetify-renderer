@@ -112,6 +112,8 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
 
   // createVuetifyFunctions({ locale }) gives locale-aware formatNumber / formatCurrency / pluralize
   const catalog = new Catalog(CATALOG_ID, VUETIFY_COMPONENTS, createVuetifyFunctions({ locale: navigator.language }), VUETIFY_THEME_SCHEMA)
+  // Keep web_core objects out of Vue's reactivity: a plain const, markRaw() or shallowRef(). Never ref()/reactive():
+  // calls made through the deep proxy bypass web_core's signals and the UI stops updating.
   const processor = new MessageProcessor([catalog], handleAction, { version: 'v0.9' })
   const surfaceId = 'demo-surface'
   const ready = ref(false)
@@ -175,7 +177,7 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
 
 | Prop            | Type                       | Default         | Purpose                                                                                                                         |
 | --------------- | -------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `processor`     | `MessageProcessor`         | required        | Owns the surface, component and data models                                                                                     |
+| `processor`     | `MessageProcessor`         | required        | Owns the surface, component and data models. Pass the plain instance (or `markRaw` / `shallowRef`), never a `ref()`/`reactive()` proxy |
 | `surface-id`    | `string`                   | required        | The surface to render                                                                                                           |
 | `on-action`     | `(action) => void`         | –               | Fallback handler for component actions                                                                                          |
 | `on-error`      | `(error) => void`          | `console.error` | Surface errors reported by web_core (`UNKNOWN_COMPONENT_TYPE`, `CYCLIC_REFERENCE`, expression failures)                          |

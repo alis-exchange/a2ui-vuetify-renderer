@@ -59,6 +59,18 @@
   // web_core objects must not be handed around as Vue reactive proxies (signals and identity
   // checks inside web_core would see the proxy), so everything below uses the raw instance.
   const processor = computed(() => toRaw(props.processor));
+  watch(
+    () => props.processor,
+    (value) => {
+      if (value && value !== toRaw(value)) {
+        console.warn(
+          '[A2UI] The processor passed to A2UIProvider is a Vue reactive proxy (wrapped in ref() or reactive()). ' +
+            "Calls made through the proxy bypass web_core's signals and the UI stops updating. Use a plain instance, markRaw(), or shallowRef().",
+        );
+      }
+    },
+    { immediate: true },
+  );
 
   // Bumped on surface creation/deletion so the slot remounts against the new surface object.
   const surfaceKey = shallowRef(0);

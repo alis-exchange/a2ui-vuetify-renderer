@@ -88,6 +88,13 @@ describe('NodeResolver rendering end to end', () => {
     expect(wrapper.text()).toContain('replaced greeting');
   });
 
+  it('updates a bound TextField when the server changes its value', async () => {
+    const { wrapper, processor } = createSurface();
+    processor.processMessages([{ version: 'v0.9', updateDataModel: { surfaceId: SURFACE, path: '/', value: { userName: 'Jane Doe', items: [] } } }]);
+    await nextTick();
+    expect(wrapper.findComponent({ name: 'VTextField' }).props('modelValue')).toBe('Jane Doe');
+  });
+
   it('shows a placeholder for a missing child and swaps it in when it arrives', async () => {
     const { wrapper, processor } = createSurface();
     processor.processMessages([update([{ id: 'root', component: 'Column', children: ['greeting', 'late'] }])]);

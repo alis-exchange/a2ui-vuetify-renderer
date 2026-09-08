@@ -175,7 +175,7 @@
   import type { ComponentApi } from '@a2ui/web_core/v0_9';
   import { Catalog, MessageProcessor, type A2uiClientCapabilities, type A2uiMessage } from '@a2ui/web_core/v0_9';
   import { CATALOG_ID, VUETIFY_COMPONENTS, VUETIFY_THEME_SCHEMA, createVuetifyFunctions, defaultRegistry } from '@alis-build/a2ui-vuetify-renderer';
-  import { defineAsyncComponent, defineComponent, h, onMounted, ref } from 'vue';
+  import { defineAsyncComponent, defineComponent, h, markRaw, onMounted, ref } from 'vue';
   import { z } from 'zod';
   import CustomChartWidget from './components/CustomChartWidget.vue';
 
@@ -225,11 +225,12 @@
     actionLogs.value.unshift(action);
   };
 
-  // Simulated transport message dispatcher
-  const processor = ref(new MessageProcessor([mockCatalog], handleAction, { version: 'v0.9' }));
+  // Simulated transport message dispatcher. markRaw: web_core objects must never become Vue
+  // reactive proxies, or its Preact signals stop notifying and the UI silently goes stale.
+  const processor = markRaw(new MessageProcessor([mockCatalog], handleAction, { version: 'v0.9' }));
 
   // 3. Client capabilities to send to the agent on connection (pass { version: 'v0.9.1' } to advertise v0.9.1)
-  const clientMetadata: A2uiClientCapabilities = processor.value.getClientCapabilities();
+  const clientMetadata: A2uiClientCapabilities = processor.getClientCapabilities();
 
   // web_core validates every updateComponents component against the catalog schema and throws
   // A2uiValidationError for the whole message. A real transport should catch it like this.
@@ -237,7 +238,7 @@
 
   const safeProcess = (messages: A2uiMessage[]): boolean => {
     try {
-      processor.value.processMessages(messages);
+      processor.processMessages(messages);
       return true;
     } catch (err) {
       const e = err as { code?: string; message?: string; details?: unknown };
