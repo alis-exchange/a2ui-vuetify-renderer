@@ -267,6 +267,22 @@ export function useA2UI(): UseA2UIReturn {
     return resolved;
   };
 
+  /**
+   * Resolves a template path against the current data scope, mirroring `DataContext.resolvePath`.
+   * The emitted child paths must be absolute: web_core scopes each template node to the absolute
+   * path, and `findLiveNode` matches template items on it.
+   */
+  const toAbsolutePath = (path: string): string => {
+    // `findLiveNode` compares the emitted path to the live node's `dataPath` with `===`, so an
+    // authored trailing slash must be trimmed too: web_core tolerates `//` when reading data but
+    // its node paths never contain one, and the mismatch drops the subtree to the static path.
+    const trimTrailing = (p: string) => (p.length > 1 && p.endsWith('/') ? p.slice(0, -1) : p);
+    if (path.startsWith('/')) return trimTrailing(path);
+    let base = trimTrailing(context.dataContextPath || '/');
+    if (base === '/') base = '';
+    return `${base}/${trimTrailing(path)}`;
+  };
+
   const resolveDynamicChildren = (childrenProp: any) => {
     // Static lists never go through resolveValue, so subscribe to the node here as well.
     context.nodeProps?.value;
@@ -281,10 +297,11 @@ export function useA2UI(): UseA2UIReturn {
     if (childrenProp && typeof childrenProp === 'object' && childrenProp.path && childrenProp.componentId) {
       const resolvedArray = resolveValue({ path: childrenProp.path });
       if (Array.isArray(resolvedArray)) {
+        const basePath = toAbsolutePath(childrenProp.path);
         return resolvedArray.map((_, index) => {
           return {
             id: childrenProp.componentId,
-            path: `${childrenProp.path}/${index}`,
+            path: `${basePath}/${index}`,
           };
         });
       }

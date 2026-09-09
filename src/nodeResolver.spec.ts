@@ -78,6 +78,33 @@ describe('NodeResolver rendering end to end', () => {
     expect(wrapper.text()).toContain('second item');
   });
 
+  // A template nested in a template addresses its array relatively. The child paths handed to
+  // ComponentNode must be absolute, or they never match the live node's `dataPath` and the
+  // subtree silently drops back to the static path with a nonsensical data scope.
+  it('renders a template list whose path is relative to the enclosing template item', async () => {
+    const catalog = new Catalog(CATALOG_ID, VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA);
+    const processor = new MessageProcessor([catalog], undefined, { version: 'v0.9' });
+    processor.processMessages([
+      { version: 'v0.9', createSurface: { surfaceId: SURFACE, catalogId: CATALOG_ID } },
+      { version: 'v0.9', updateDataModel: { surfaceId: SURFACE, path: '/', value: { groups: [{ subItems: [{ label: 'deep-a' }] }] } } },
+      update([
+        { id: 'root', component: 'Column', children: { path: '/groups', componentId: 'group' } },
+        { id: 'group', component: 'Column', children: { path: 'subItems', componentId: 'sub' } },
+        { id: 'sub', component: 'Text', text: { path: 'label' } },
+      ]),
+    ]);
+    const wrapper = mount(A2UIProvider, {
+      global: { plugins: [createVuetify()] },
+      props: { processor, surfaceId: SURFACE, onAction: vi.fn(), onError: vi.fn() },
+      slots: { default: () => h(ComponentNode, { id: 'root' }) },
+    });
+    expect(wrapper.text()).toContain('deep-a');
+
+    processor.model.getSurface(SURFACE)!.dataModel.set('/groups/0/subItems', [{ label: 'deep-a' }, { label: 'deep-b' }]);
+    await nextTick();
+    expect(wrapper.text()).toContain('deep-b');
+  });
+
   it('re-renders on server messages after the first paint', async () => {
     const { wrapper, processor } = createSurface();
     processor.processMessages([{ version: 'v0.9', updateDataModel: { surfaceId: SURFACE, path: '/userName', value: 'Linus' } }]);
@@ -135,6 +162,34 @@ describe('NodeResolver rendering end to end', () => {
     });
     expect(wrapper.text()).toContain('counted');
     expect(calls.count).toBe(binderOnly);
+  });
+
+  // An authored trailing slash must not leak a `//` into the emitted path: web_core reads data
+  // through it, but `findLiveNode` compares against `dataPath` with `===` and would never match.
+  it('renders a template list whose path carries a trailing slash', async () => {
+    const catalog = new Catalog(CATALOG_ID, VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA);
+    const processor = new MessageProcessor([catalog], undefined, { version: 'v0.9' });
+    processor.processMessages([
+      { version: 'v0.9', createSurface: { surfaceId: SURFACE, catalogId: CATALOG_ID } },
+      { version: 'v0.9', updateDataModel: { surfaceId: SURFACE, path: '/', value: { orders: [{ label: 'L1' }] } } },
+      update([
+        { id: 'root', component: 'Column', children: { path: '/orders/', componentId: 'order' } },
+        { id: 'order', component: 'Text', text: { path: 'label' } },
+      ]),
+    ]);
+    const surface = processor.model.getSurface(SURFACE)!;
+    const wrapper = mount(A2UIProvider, {
+      global: { plugins: [createVuetify()] },
+      props: { processor, surfaceId: SURFACE, onAction: vi.fn(), onError: vi.fn() },
+      slots: { default: () => h(ComponentNode, { id: 'root' }) },
+    });
+    await nextTick();
+    expect(wrapper.text()).toContain('L1');
+
+    // The subtree must stay live, which is what a stale non-matching path silently costs.
+    surface.dataModel.set('/orders/0/label', 'L2');
+    await nextTick();
+    expect(wrapper.text()).toContain('L2');
   });
 
   it('reports unknown component types through onError', async () => {
