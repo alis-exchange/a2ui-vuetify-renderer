@@ -68,3 +68,43 @@ describe('generate-catalog.ts', () => {
     expect(fs.existsSync(catalogPath)).toBe(true);
   });
 });
+
+/**
+ * The catalog document is consumed by agent libraries, not by this renderer (which validates
+ * with the Zod schemas directly). These guard the shape those consumers rely on.
+ */
+describe('the generated catalog document', () => {
+  let catalog: any;
+
+  beforeAll(() => {
+    execSync(`npx tsx ${scriptPath}`, { cwd: rootDir, stdio: 'inherit' });
+    catalog = JSON.parse(fs.readFileSync(catalogPath, 'utf-8'));
+  }, 30_000);
+
+  // An absent allowedCallers means rendererOnly, so without this an agent may invoke nothing.
+  it('declares allowedCallers on every function and lets an agent call openUrl', () => {
+    const undeclared = Object.entries<any>(catalog.functions)
+      .filter(([, def]) => def.allowedCallers === undefined)
+      .map(([name]) => name);
+    expect(undeclared).toEqual([]);
+
+    const legal = ['rendererOnly', 'agentOnly', 'rendererOrAgent'];
+    for (const [name, def] of Object.entries<any>(catalog.functions)) {
+      expect(legal, `${name} declares an unknown allowedCallers`).toContain(def.allowedCallers);
+    }
+    expect(catalog.functions.openUrl.allowedCallers).toBe('rendererOrAgent');
+  });
+
+  // callFunction requires catalogId, so a closed function object rejects every well-formed call.
+  it('leaves the function object open so a call can carry catalogId, while args stays closed', () => {
+    const closed = Object.entries<any>(catalog.functions)
+      .filter(([, def]) => def.unevaluatedProperties === false || def.additionalProperties === false)
+      .map(([name]) => name);
+    expect(closed).toEqual([]);
+
+    const openArgs = Object.entries<any>(catalog.functions)
+      .filter(([, def]) => def.properties.args.additionalProperties !== false && def.properties.args.unevaluatedProperties !== false)
+      .map(([name]) => name);
+    expect(openArgs).toEqual([]);
+  });
+});

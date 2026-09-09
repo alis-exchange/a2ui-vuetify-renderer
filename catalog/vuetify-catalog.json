@@ -13713,7 +13713,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "subtract": {
       "type": "object",
@@ -13745,7 +13745,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "multiply": {
       "type": "object",
@@ -13777,7 +13777,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "divide": {
       "type": "object",
@@ -13809,7 +13809,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "equals": {
       "type": "object",
@@ -13837,7 +13837,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "not_equals": {
       "type": "object",
@@ -13865,7 +13865,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "greater_than": {
       "type": "object",
@@ -13897,7 +13897,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "less_than": {
       "type": "object",
@@ -13929,7 +13929,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "and": {
       "type": "object",
@@ -13958,7 +13958,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "or": {
       "type": "object",
@@ -13987,7 +13987,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "not": {
       "type": "object",
@@ -14013,7 +14013,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "contains": {
       "type": "object",
@@ -14045,7 +14045,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "starts_with": {
       "type": "object",
@@ -14077,7 +14077,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "ends_with": {
       "type": "object",
@@ -14109,7 +14109,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "required": {
       "type": "object",
@@ -14135,7 +14135,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "regex": {
       "type": "object",
@@ -14167,7 +14167,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "length": {
       "type": "object",
@@ -14199,7 +14199,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "numeric": {
       "type": "object",
@@ -14233,7 +14233,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "email": {
       "type": "object",
@@ -14261,7 +14261,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "formatString": {
       "type": "object",
@@ -14286,7 +14286,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "formatNumber": {
       "type": "object",
@@ -14321,7 +14321,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "formatCurrency": {
       "type": "object",
@@ -14359,7 +14359,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "formatDate": {
       "type": "object",
@@ -14388,7 +14388,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "pluralize": {
       "type": "object",
@@ -14434,7 +14434,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOnly"
     },
     "openUrl": {
       "type": "object",
@@ -14462,7 +14462,7 @@
         "call",
         "args"
       ],
-      "unevaluatedProperties": false
+      "allowedCallers": "rendererOrAgent"
     }
   },
   "$defs": {

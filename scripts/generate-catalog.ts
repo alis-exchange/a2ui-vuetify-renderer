@@ -156,6 +156,21 @@ function buildComponents(): Record<string, any> {
 // Build functions dynamically from VUETIFY_FUNCTIONS Zod schemas
 // ---------------------------------------------------------------------------
 
+/**
+ * Who may invoke each function, per `catalog_definition.json`. An absent value means
+ * `rendererOnly`, so every function must be listed here or agents can invoke none of them.
+ *
+ * Everything except `openUrl` is a pure helper the renderer evaluates while resolving a binding
+ * or a check (arithmetic, comparison, validation, formatting). An agent gains nothing by asking
+ * the renderer to compute those and can do it itself, so they stay renderer-only. `openUrl` is
+ * the one side effect that only the renderer can perform, and deciding to open a URL is normally
+ * the agent's call, so it is invocable from both sides.
+ */
+const ALLOWED_CALLERS: Record<string, 'rendererOnly' | 'agentOnly' | 'rendererOrAgent'> = {
+  openUrl: 'rendererOrAgent',
+};
+const DEFAULT_ALLOWED_CALLERS = 'rendererOnly';
+
 function buildFunctions(): Record<string, any> {
   const functions: Record<string, any> = {};
 
@@ -163,6 +178,9 @@ function buildFunctions(): Record<string, any> {
     const argsSchema = zodToJsonSchema(fn.schema, { $refStrategy: 'none' }) as Record<string, any>;
     delete argsSchema.$schema;
 
+    // No `unevaluatedProperties` on the function object itself: `callFunction` requires
+    // `catalogId`, so closing it here rejects every well-formed agent call. `args` stays closed,
+    // which is where unknown properties actually matter. This mirrors the upstream basic catalog.
     const fnEntry: Record<string, any> = {
       type: 'object',
       properties: {
@@ -171,7 +189,7 @@ function buildFunctions(): Record<string, any> {
         returnType: { const: fn.returnType },
       },
       required: ['call', 'args'],
-      unevaluatedProperties: false,
+      allowedCallers: ALLOWED_CALLERS[fn.name] ?? DEFAULT_ALLOWED_CALLERS,
     };
 
     // Hoist arg-level description to the function level
