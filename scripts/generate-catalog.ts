@@ -238,6 +238,28 @@ function validateCatalog(catalogComponents: Record<string, any>): void {
 // Main
 // ---------------------------------------------------------------------------
 
+/**
+ * web_core annotates ref-carrying fields as `REF:<pointer>|<description>` and reads those markers
+ * off the Zod schemas at runtime. `zodToJsonSchema` copies the whole string through, so strip the
+ * marker here: it is an internal annotation and consumers only want the prose.
+ */
+function stripRefMarkers(node: any): void {
+  if (Array.isArray(node)) {
+    for (const item of node) stripRefMarkers(item);
+    return;
+  }
+  if (!node || typeof node !== 'object') return;
+
+  if (typeof node.description === 'string' && node.description.startsWith('REF:')) {
+    // `REF:<pointer>|<prose>` — keep the prose; a marker with no `|` carries no prose at all.
+    const separator = node.description.indexOf('|');
+    if (separator === -1) delete node.description;
+    else node.description = node.description.slice(separator + 1);
+  }
+
+  for (const value of Object.values(node)) stripRefMarkers(value);
+}
+
 function main() {
   const components = buildComponents();
   const functions = buildFunctions();
@@ -248,6 +270,10 @@ function main() {
     description: 'A call to any function this catalog declares.',
     oneOf: Object.keys(functions).map((name) => ({ $ref: `#/functions/${name}` })),
   };
+
+  stripRefMarkers(components);
+  stripRefMarkers(functions);
+  stripRefMarkers($defs);
 
   const catalog = {
     $schema: 'https://json-schema.org/draft/2020-12/schema',

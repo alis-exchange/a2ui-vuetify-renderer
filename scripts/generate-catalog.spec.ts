@@ -115,9 +115,16 @@ describe('the generated catalog document', () => {
     expect(catalog.$defs.anyFunction.oneOf.map((b: any) => b.$ref)).toEqual(names.map((n) => `#/functions/${n}`));
 
     for (const def of ['DynamicString', 'DynamicNumber', 'DynamicBoolean', 'DynamicStringList', 'DynamicValue']) {
-      const fnBranch = catalog.$defs[def].oneOf.find((b: any) => b.$ref === '#/$defs/anyFunction');
+      const branches = catalog.$defs[def].oneOf;
+      const fnBranch = branches.find((b: any) => b.$ref === '#/$defs/anyFunction');
       expect(fnBranch, `${def} still inlines a generic function branch`).toBeDefined();
     }
     expect(catalog.$defs.Action.properties.functionCall).toEqual({ $ref: '#/$defs/anyFunction' });
+  });
+
+  // The markers are web_core's internal ref annotations; they should not reach consumers.
+  it('does not leak REF: markers into descriptions', () => {
+    const leaked = JSON.stringify(catalog).match(/REF:common_types\.json/g) ?? [];
+    expect(leaked.length).toBe(0);
   });
 });
