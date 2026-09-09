@@ -99,6 +99,13 @@ describe('createVuetifyRules with protocol CheckRule shape', () => {
     expect(rules[0]('x')).toBe(true);
   });
 
+  // Custom components outside the catalog skip message validation, so a null can reach here.
+  it('ignores a null or undefined check instead of throwing', () => {
+    const rules = createVuetifyRules([null, undefined] as any, vi.fn());
+    expect(rules[0]('x')).toBe(true);
+    expect(rules[1]('x')).toBe(true);
+  });
+
   it('keeps legacy shapes working alongside protocol rules', () => {
     const rules = createVuetifyRules([{ type: 'required' }, { condition: false, message: 'x' }], vi.fn());
     expect(rules.length).toBe(2);

@@ -34,13 +34,12 @@ export type CheckValueResolver = <V = unknown>(value: any) => V | undefined;
  * @param resolveValue - Resolver for dynamic conditions, normally `useA2UI().resolveValue`.
  * @returns An array of Vuetify rule functions `(value: any) => true | string`.
  *
+ * Components should normally reach this through `useChecks`, which also exposes the binder's
+ * `isValid` / `validationErrors` in node mode; call it directly only outside a provider.
+ *
  * @example
  * ```ts
- * const { resolveValue } = useA2UI();
- * const rules = computed(() => {
- *   const checks = resolveValue<any[]>(props.node.properties.checks) ?? [];
- *   return createVuetifyRules(checks, resolveValue);
- * });
+ * const { rules } = useChecks(() => props.node);
  * ```
  */
 export function createVuetifyRules(checks: any[], resolveValue?: CheckValueResolver) {
@@ -48,7 +47,11 @@ export function createVuetifyRules(checks: any[], resolveValue?: CheckValueResol
 
   return checks.map((check) => {
     return (value: any) => {
-      if (check && typeof check === 'object' && 'condition' in check) {
+      // The branches below dereference `check` directly; a null entry reaches here from any
+      // caller whose checks were not schema-validated (custom components skip that).
+      if (check == null) return true;
+
+      if (typeof check === 'object' && 'condition' in check) {
         return evaluateCondition(check.condition, resolveValue) || check.message || 'Invalid value';
       }
 
