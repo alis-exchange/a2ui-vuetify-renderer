@@ -8,18 +8,11 @@
     node: ComponentModel;
   }>();
 
-  const { resolveValue } = useA2UI();
+  const { resolveDynamicChildren } = useA2UI();
 
-  const children = computed(() => resolveValue<any[]>(props.node.properties.children) || []);
-
-  const resolvedChildren = computed(() => {
-    return children.value.map((child: any) => {
-      if (typeof child === 'string') return { id: child };
-      if (child && typeof child === 'object' && child.id) return { id: child.id };
-      // Handling dynamic template lists if necessary would go here
-      return child;
-    });
-  });
+  // Same handling as every other container: `resolveDynamicChildren` covers both a static id list
+  // and a `{componentId, path}` template, which `resolveValue` would return as raw data rows.
+  const resolvedChildren = computed(() => resolveDynamicChildren(props.node.properties.children));
 </script>
 
 <template>

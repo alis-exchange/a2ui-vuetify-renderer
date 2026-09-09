@@ -192,6 +192,30 @@ describe('NodeResolver rendering end to end', () => {
     expect(wrapper.text()).toContain('L2');
   });
 
+  // Form resolved `children` with `resolveValue`, which returns a template's raw data rows; each
+  // row then rendered as a "Missing node" box instead of the templated component.
+  it('expands a Form template child list into one node per data row', async () => {
+    const catalog = new Catalog(CATALOG_ID, VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA);
+    const processor = new MessageProcessor([catalog], undefined, { version: 'v0.9' });
+    processor.processMessages([
+      { version: 'v0.9', createSurface: { surfaceId: SURFACE, catalogId: CATALOG_ID } },
+      { version: 'v0.9', updateDataModel: { surfaceId: SURFACE, path: '/', value: { rows: [{ name: 'alpha' }, { name: 'beta' }] } } },
+      update([
+        { id: 'root', component: 'Form', children: { path: '/rows', componentId: 'row' } },
+        { id: 'row', component: 'Text', text: { path: 'name' } },
+      ]),
+    ]);
+    const wrapper = mount(A2UIProvider, {
+      global: { plugins: [createVuetify()] },
+      props: { processor, surfaceId: SURFACE, onAction: vi.fn(), onError: vi.fn() },
+      slots: { default: () => h(ComponentNode, { id: 'root' }) },
+    });
+    await nextTick();
+    expect(wrapper.text()).toContain('alpha');
+    expect(wrapper.text()).toContain('beta');
+    expect(wrapper.text()).not.toContain('Missing node');
+  });
+
   it('reports unknown component types through onError', async () => {
     const { processor, onError } = createSurface();
     processor.processMessages([
