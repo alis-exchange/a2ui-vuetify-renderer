@@ -40,39 +40,19 @@ const $defs: Record<string, any> = {
     },
   },
   DynamicString: {
-    oneOf: [
-      { type: 'string' },
-      { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false },
-      { type: 'object', properties: { call: { type: 'string' }, args: { type: 'object' } }, required: ['call'], additionalProperties: true },
-    ],
+    oneOf: [{ type: 'string' }, { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false }, { $ref: '#/$defs/anyFunction' }],
   },
   DynamicNumber: {
-    oneOf: [
-      { type: 'number' },
-      { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false },
-      { type: 'object', properties: { call: { type: 'string' }, args: { type: 'object' } }, required: ['call'], additionalProperties: true },
-    ],
+    oneOf: [{ type: 'number' }, { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false }, { $ref: '#/$defs/anyFunction' }],
   },
   DynamicBoolean: {
-    oneOf: [
-      { type: 'boolean' },
-      { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false },
-      { type: 'object', properties: { call: { type: 'string' }, args: { type: 'object' } }, required: ['call'], additionalProperties: true },
-    ],
+    oneOf: [{ type: 'boolean' }, { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false }, { $ref: '#/$defs/anyFunction' }],
   },
   DynamicStringList: {
-    oneOf: [
-      { type: 'array', items: { type: 'string' } },
-      { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false },
-      { type: 'object', properties: { call: { type: 'string' }, args: { type: 'object' } }, required: ['call'], additionalProperties: true },
-    ],
+    oneOf: [{ type: 'array', items: { type: 'string' } }, { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false }, { $ref: '#/$defs/anyFunction' }],
   },
   DynamicValue: {
-    oneOf: [
-      { type: ['string', 'number', 'boolean', 'object', 'array', 'null'] },
-      { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false },
-      { type: 'object', properties: { call: { type: 'string' }, args: { type: 'object' } }, required: ['call'], additionalProperties: true },
-    ],
+    oneOf: [{ type: ['string', 'number', 'boolean', 'object', 'array', 'null'] }, { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false }, { $ref: '#/$defs/anyFunction' }],
   },
   ComponentId: {
     type: 'string',
@@ -106,14 +86,7 @@ const $defs: Record<string, any> = {
         },
         required: ['name'],
       },
-      functionCall: {
-        type: 'object',
-        properties: {
-          call: { type: 'string' },
-          args: { type: 'object' },
-        },
-        required: ['call'],
-      },
+      functionCall: { $ref: '#/$defs/anyFunction' },
     },
     oneOf: [{ required: ['event'] }, { required: ['functionCall'] }],
     additionalProperties: false,
@@ -268,6 +241,13 @@ function validateCatalog(catalogComponents: Record<string, any>): void {
 function main() {
   const components = buildComponents();
   const functions = buildFunctions();
+
+  // The union the dynamic-value and action branches reference, so a function name inside a
+  // component is checked against the catalog's own functions instead of being any string.
+  $defs.anyFunction = {
+    description: 'A call to any function this catalog declares.',
+    oneOf: Object.keys(functions).map((name) => ({ $ref: `#/functions/${name}` })),
+  };
 
   const catalog = {
     $schema: 'https://json-schema.org/draft/2020-12/schema',

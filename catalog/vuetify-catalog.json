@@ -14509,19 +14509,7 @@
           "additionalProperties": false
         },
         {
-          "type": "object",
-          "properties": {
-            "call": {
-              "type": "string"
-            },
-            "args": {
-              "type": "object"
-            }
-          },
-          "required": [
-            "call"
-          ],
-          "additionalProperties": true
+          "$ref": "#/$defs/anyFunction"
         }
       ]
     },
@@ -14543,19 +14531,7 @@
           "additionalProperties": false
         },
         {
-          "type": "object",
-          "properties": {
-            "call": {
-              "type": "string"
-            },
-            "args": {
-              "type": "object"
-            }
-          },
-          "required": [
-            "call"
-          ],
-          "additionalProperties": true
+          "$ref": "#/$defs/anyFunction"
         }
       ]
     },
@@ -14577,19 +14553,7 @@
           "additionalProperties": false
         },
         {
-          "type": "object",
-          "properties": {
-            "call": {
-              "type": "string"
-            },
-            "args": {
-              "type": "object"
-            }
-          },
-          "required": [
-            "call"
-          ],
-          "additionalProperties": true
+          "$ref": "#/$defs/anyFunction"
         }
       ]
     },
@@ -14614,19 +14578,7 @@
           "additionalProperties": false
         },
         {
-          "type": "object",
-          "properties": {
-            "call": {
-              "type": "string"
-            },
-            "args": {
-              "type": "object"
-            }
-          },
-          "required": [
-            "call"
-          ],
-          "additionalProperties": true
+          "$ref": "#/$defs/anyFunction"
         }
       ]
     },
@@ -14655,19 +14607,7 @@
           "additionalProperties": false
         },
         {
-          "type": "object",
-          "properties": {
-            "call": {
-              "type": "string"
-            },
-            "args": {
-              "type": "object"
-            }
-          },
-          "required": [
-            "call"
-          ],
-          "additionalProperties": true
+          "$ref": "#/$defs/anyFunction"
         }
       ]
     },
@@ -14721,18 +14661,7 @@
           ]
         },
         "functionCall": {
-          "type": "object",
-          "properties": {
-            "call": {
-              "type": "string"
-            },
-            "args": {
-              "type": "object"
-            }
-          },
-          "required": [
-            "call"
-          ]
+          "$ref": "#/$defs/anyFunction"
         }
       },
       "oneOf": [
@@ -14748,6 +14677,86 @@
         }
       ],
       "additionalProperties": false
+    },
+    "anyFunction": {
+      "description": "A call to any function this catalog declares.",
+      "oneOf": [
+        {
+          "$ref": "#/functions/add"
+        },
+        {
+          "$ref": "#/functions/subtract"
+        },
+        {
+          "$ref": "#/functions/multiply"
+        },
+        {
+          "$ref": "#/functions/divide"
+        },
+        {
+          "$ref": "#/functions/equals"
+        },
+        {
+          "$ref": "#/functions/not_equals"
+        },
+        {
+          "$ref": "#/functions/greater_than"
+        },
+        {
+          "$ref": "#/functions/less_than"
+        },
+        {
+          "$ref": "#/functions/and"
+        },
+        {
+          "$ref": "#/functions/or"
+        },
+        {
+          "$ref": "#/functions/not"
+        },
+        {
+          "$ref": "#/functions/contains"
+        },
+        {
+          "$ref": "#/functions/starts_with"
+        },
+        {
+          "$ref": "#/functions/ends_with"
+        },
+        {
+          "$ref": "#/functions/required"
+        },
+        {
+          "$ref": "#/functions/regex"
+        },
+        {
+          "$ref": "#/functions/length"
+        },
+        {
+          "$ref": "#/functions/numeric"
+        },
+        {
+          "$ref": "#/functions/email"
+        },
+        {
+          "$ref": "#/functions/formatString"
+        },
+        {
+          "$ref": "#/functions/formatNumber"
+        },
+        {
+          "$ref": "#/functions/formatCurrency"
+        },
+        {
+          "$ref": "#/functions/formatDate"
+        },
+        {
+          "$ref": "#/functions/pluralize"
+        },
+        {
+          "$ref": "#/functions/openUrl"
+        }
+      ]
     }
   }
 }

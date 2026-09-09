@@ -107,4 +107,17 @@ describe('the generated catalog document', () => {
       .map(([name]) => name);
     expect(openArgs).toEqual([]);
   });
+
+  // Flattened refs left a generic `call: {type: string}` branch, so any name validated.
+  it("validates function names in dynamic values against the catalog's own functions", () => {
+    const names = Object.keys(catalog.functions);
+    expect(catalog.$defs.anyFunction).toBeDefined();
+    expect(catalog.$defs.anyFunction.oneOf.map((b: any) => b.$ref)).toEqual(names.map((n) => `#/functions/${n}`));
+
+    for (const def of ['DynamicString', 'DynamicNumber', 'DynamicBoolean', 'DynamicStringList', 'DynamicValue']) {
+      const fnBranch = catalog.$defs[def].oneOf.find((b: any) => b.$ref === '#/$defs/anyFunction');
+      expect(fnBranch, `${def} still inlines a generic function branch`).toBeDefined();
+    }
+    expect(catalog.$defs.Action.properties.functionCall).toEqual({ $ref: '#/$defs/anyFunction' });
+  });
 });
