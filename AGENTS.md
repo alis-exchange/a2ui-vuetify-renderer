@@ -106,6 +106,8 @@ All public API is exported from this barrel. If you add a new public symbol, it 
 - Wraps a single surface. Receives `processor`, `surfaceId`, `onAction`, `onError` and `nodeResolver` (default `true`) props.
 - Provides `A2UI_CONTEXT_KEY` to descendants via `provide/inject`, handing out the **raw** processor (`toRaw`), never Vue's reactive proxy, because web_core's signals and identity checks must see the real objects.
 - Subscribes to `processor.model.onSurfaceCreated` / `onSurfaceDeleted` (the only lifecycle events web_core emits; `MessageProcessor` is not an `EventTarget`). When the surface exists it creates one `NodeResolver(surface, surface.catalog)`, exposed as `context.resolver`, and disposes it on delete/unmount.
+- Both handlers check the model rather than trusting the event. `EventEmitter.emit` awaits each listener, so a handler can run a microtask late: a `deleted` that arrives after the surface was recreated would otherwise dispose the live resolver, and a provider that mounts mid-emit would attach the same surface twice. `deleted` is ignored while `model.getSurface(id)` still returns a surface; `created` is ignored when it names the surface already attached.
+- The `NodeResolver` constructor builds the tree eagerly, so an unbindable surface throws there. That is caught and reported through `onError`, leaving the subtree on the static path — without it the throw escapes `setup()` and the provider renders nothing whenever the surface already existed at mount. Note the asymmetry that remains: the same bad binding arriving *after* mount is swallowed by web_core's emitter and never reaches `onError`.
 - Forwards `surface.onError` events to `onError` (or `console.error`).
 - Reads `surface.theme` and dynamically creates a scoped Vuetify theme (`v-theme-provider`) mapping `primaryColor`, `errorColor`, `backgroundColor`, `surfaceColor` to Vuetify color tokens. Cleans up the theme on unmount.
 
@@ -144,17 +146,19 @@ Provides the bridge between `@a2ui/web_core` state and Vue component logic. The 
 - `dispatchNodeAction(node: ComponentModel, extraContext?)` — reads `node.properties.action`, resolves with `resolveValue<Action | undefined>`, then dispatches `event` or executes `functionCall` locally
 - `setData(path, value)` — writes to the surface's `DataModel`
 - `surfaceId`, `dataContextPath`, `dataContext`
-- `nodeProps` — `ShallowRef` of the enclosing node's resolved props in node mode (`undefined` value on the legacy path). Read it for binder outputs such as `isValid` / `validationErrors`; `resolveValue` already subscribes to it.
+- `nodeProps` — `ShallowRef` of the enclosing node's resolved props in node mode (`undefined` value on the legacy path). It carries the binder outputs `isValid` / `validationErrors`, but read those through [5.7 `useChecks`](#57-usechecks-composable-composablesusechecksts) rather than directly; `resolveValue` already subscribes to it.
 
-### 5.7a useChecks composable (`composables/useChecks.ts`)
+### 5.7 useChecks composable (`composables/useChecks.ts`)
 
-`useChecks(node)` returns `rules` (via `createVuetifyRules(checks, resolveValue)`), `isValid` and `validationErrors` (from `nodeProps` in node mode; `true` / `undefined` on the legacy path) and `errorMessages(value)` (binder messages, else the rules run against `value`). Button/IconButton gate on `isValid`; Slider passes `rules` + `error-messages`; DatePicker renders `errorMessages(modelValue)`. Custom components should use it rather than reading `nodeProps` directly.
+`useChecks(node)` returns `rules` (via `createVuetifyRules(checks, resolveValue)`), `isValid` and `validationErrors` (from `nodeProps` in node mode; `true` / `undefined` on the legacy path) and `errorMessages(value)` (the binder's messages when it reports any, else the rules run against `value`). Button/IconButton gate on `isValid`; Slider shows `error-messages` and passes `rules` only while the binder reports no failures (Vuetify caches rule results until the input's own model changes, so a stale message would survive a cross-field check clearing); DatePicker renders `errorMessages(modelValue)`. Every input component goes through `useChecks` — custom components should too, rather than reading `nodeProps` or calling `createVuetifyRules` directly.
 
-### 5.7 useDynamicProps composable (`composables/useDynamicProps.ts`)
+Note that the binder and `createVuetifyRules` are two independent evaluations of the same `checks` and can disagree: web_core reads `rule.condition || rule`, so a literal `condition: false` falls back to the truthy rule object and is reported as passing. `errorMessages` therefore treats only a *non-empty* `validationErrors` as authoritative. Do not hand Vuetify both `rules` and `error-messages` for the same node.
+
+### 5.8 useDynamicProps composable (`composables/useDynamicProps.ts`)
 
 Accepts a `MaybeRefOrGetter<T>` node, returns a `computed` that runs every property through `resolveValue` (same generic function as `useA2UI`). Designed for custom components that want automatic data binding without manually wrapping each property; use `resolveValue<V>()` on individual `node.properties` fields when you need a concrete `V`.
 
-### 5.8 getCatalogSchema + catalogFilters
+### 5.9 getCatalogSchema + catalogFilters
 
 `getCatalogSchema(registry, catalogId, options?)` deep-clones the base `vuetify-catalog.json`, adds JSON Schema stubs for any registered-but-not-base components (using `ComponentApi` Zod schemas if available), and optionally filters the result via `options.filter`.
 
@@ -163,14 +167,14 @@ Accepts a `MaybeRefOrGetter<T>` node, returns a `computed` that runs every prope
 - `only(...names)` — include-list
 - `exclude(...names)` — exclude-list
 
-### 5.9 Validation (`utils/validation.ts`)
+### 5.10 Validation (`utils/validation.ts`)
 
 `createVuetifyRules(checks, resolveValue)` converts A2UI `checks` arrays into Vuetify validation rule functions.
 
 - **Protocol shape** (what agents send, enforced by web_core's `CheckRuleSchema`): `{ condition: DynamicBoolean, message }`. `condition` is a literal boolean, `{ path }` or `{ call, args }`; it is resolved with `resolveValue` (from `useA2UI()`) every time the rule runs, so it reads the live data model. Truthy passes, otherwise the rule returns `message`. A missing resolver or a resolver that throws counts as a pass: a broken rule must never lock the user out of an input.
 - **Legacy shapes** (`'required'`, `{ type: 'required' | 'regex' | 'minLength' | 'maxLength' }`, raw functions) still work for direct callers, but `MessageProcessor` (web_core ≥ 0.10.6) rejects them before they reach a component.
 
-### 5.10 Catalog functions (`catalog/vuetify-functions.ts`)
+### 5.11 Catalog functions (`catalog/vuetify-functions.ts`)
 
 `createVuetifyFunctions({ locale })` builds the `FunctionImplementation[]` from web_core's `createBasicCatalogFunctions` and swaps `openUrl` for `VuetifyOpenUrlImplementation` (allows `http:`, `https:`, `mailto:`, `tel:`; everything else throws `A2uiExpressionError` like upstream). Replace by name, never append: the generator iterates the array. `VUETIFY_FUNCTIONS` is `createVuetifyFunctions()`.
 
@@ -225,6 +229,7 @@ Every component receives a single `node` prop typed as `ComponentModel` from `@a
  import type { ComponentModel } from '@a2ui/web_core/v0_9';
  import { computed } from 'vue';
  import { useA2UI } from '../composables/useA2UI';
+ import { useChecks } from '../composables/useChecks';
 
  const props = defineProps<{
  node: ComponentModel;
@@ -244,11 +249,8 @@ Every component receives a single `node` prop typed as `ComponentModel` from `@a
     },
   });
 
-  // Validation
-  const rules = computed(() => {
-    const checks = resolveValue<any[] | undefined>(props.node.properties.checks) ?? [];
-    return createVuetifyRules(checks, resolveValue);
-  });
+  // Validation — useChecks also exposes the binder's isValid / validationErrors
+  const { rules } = useChecks(() => props.node);
 
   // Actions
   const handleClick = () => dispatchNodeAction(props.node);
@@ -264,7 +266,7 @@ Key patterns:
 - **Two-way binding**: use writable `computed` that calls `setData(path, val)` on set
 - **Actions**: use `dispatchNodeAction(node)` for standard button/click actions, or `sendAction(name, id, context)` for manual payloads
 - **Children**: use `<ComponentNode :id="childId" />` to render child references; use `resolveDynamicChildren` for iterating `{ path, componentId }` template lists
-- **Validation**: pass `checks` and `resolveValue` through `createVuetifyRules(checks, resolveValue)` so `{ condition, message }` rules resolve against the data model; for gating (Button, IconButton) read `nodeProps.value.isValid` / `validationErrors`, which web_core's binder maintains
+- **Validation**: call `useChecks(() => props.node)` (see 5.7) — it builds the `createVuetifyRules` rules so `{ condition, message }` conditions resolve against the data model, and exposes the binder's `isValid` / `validationErrors` for gating (Button, IconButton). Do not read `nodeProps` or call `createVuetifyRules` directly in a component
 - **Schemas**: keep every `ComponentApi.schema` a plain `z.object({...}).strict()`. A `.refine()` / `.transform()` root wraps it in a `ZodEffects` that web_core's binder cannot read, turning every prop static (no action closures, no `isValid`); `src/catalog/catalog.spec.ts` guards this
 
 ---
