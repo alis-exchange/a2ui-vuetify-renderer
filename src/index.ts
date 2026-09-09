@@ -47,6 +47,9 @@ export type { ComponentModel } from '@a2ui/web_core/v0_9';
 // Export catalog ID for consumers to reference the schema
 export { CATALOG_ID } from './core/constants';
 
+// The generated catalog document itself, for consumers that want it without a registry
+export { VUETIFY_CATALOG } from './core/vuetifyCatalog';
+
 // Export Vuetify catalog ComponentApi[], FunctionImplementation[], and theme schema
 export { VUETIFY_COMPONENTS } from './catalog/vuetify-components';
 export { VUETIFY_FUNCTIONS, VuetifyOpenUrlImplementation, createVuetifyFunctions } from './catalog/vuetify-functions';

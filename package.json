@@ -13,10 +13,12 @@
       "require": "./dist/a2ui-vuetify-renderer.umd.cjs",
       "types": "./dist/index.d.ts"
     },
-    "./style.css": "./dist/a2ui-vuetify-renderer.css"
+    "./style.css": "./dist/a2ui-vuetify-renderer.css",
+    "./catalog": "./catalog/vuetify-catalog.json"
   },
   "files": [
     "dist",
+    "catalog",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"

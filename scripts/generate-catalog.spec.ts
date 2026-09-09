@@ -128,3 +128,17 @@ describe('the generated catalog document', () => {
     expect(leaked.length).toBe(0);
   });
 });
+
+describe('the published package', () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf-8'));
+
+  // Consumers outside a bundler (build scripts emitting the catalog for a Go or Python agent)
+  // otherwise have to fetch it over the network from a branch that keeps moving.
+  it('ships the catalog and exposes it on a stable subpath', () => {
+    expect(pkg.files).toContain('catalog');
+
+    const subpath = pkg.exports['./catalog'];
+    expect(subpath).toBe('./catalog/vuetify-catalog.json');
+    expect(fs.existsSync(path.join(rootDir, subpath))).toBe(true);
+  });
+});

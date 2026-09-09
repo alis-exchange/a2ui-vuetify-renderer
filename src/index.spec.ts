@@ -7,6 +7,18 @@ describe('index.ts', () => {
     expect(exports.CATALOG_ID).toBe('https://raw.githubusercontent.com/alis-exchange/a2ui-vuetify-renderer/main/catalog/vuetify-catalog.json');
   });
 
+  // The catalog is already inlined in the bundle; without this export, reaching it means
+  // constructing a ComponentRegistry and calling getCatalogSchema, which exists to merge in
+  // custom components rather than to hand back the base document.
+  it('should export VUETIFY_CATALOG as the base catalog document', () => {
+    const catalog = exports.VUETIFY_CATALOG as any;
+    expect(catalog).toBeDefined();
+    expect(catalog.catalogId).toBe(exports.CATALOG_ID);
+    expect(Object.keys(catalog.components).length).toBeGreaterThan(0);
+    expect(Object.keys(catalog.functions).length).toBeGreaterThan(0);
+    expect(catalog.$defs.anyFunction).toBeDefined();
+  });
+
   it('should export getCatalogSchema', () => {
     expect(exports.getCatalogSchema).toBeDefined();
     expect(typeof exports.getCatalogSchema).toBe('function');
