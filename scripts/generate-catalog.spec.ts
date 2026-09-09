@@ -68,3 +68,63 @@ describe('generate-catalog.ts', () => {
     expect(fs.existsSync(catalogPath)).toBe(true);
   });
 });
+
+/**
+ * The catalog document is consumed by agent libraries, not by this renderer (which validates
+ * with the Zod schemas directly). These guard the shape those consumers rely on.
+ */
+describe('the generated catalog document', () => {
+  let catalog: any;
+
+  beforeAll(() => {
+    execSync(`npx tsx ${scriptPath}`, { cwd: rootDir, stdio: 'inherit' });
+    catalog = JSON.parse(fs.readFileSync(catalogPath, 'utf-8'));
+  }, 30_000);
+
+  // An absent allowedCallers means rendererOnly, so without this an agent may invoke nothing.
+  it('declares allowedCallers on every function and lets an agent call openUrl', () => {
+    const undeclared = Object.entries<any>(catalog.functions)
+      .filter(([, def]) => def.allowedCallers === undefined)
+      .map(([name]) => name);
+    expect(undeclared).toEqual([]);
+
+    const legal = ['rendererOnly', 'agentOnly', 'rendererOrAgent'];
+    for (const [name, def] of Object.entries<any>(catalog.functions)) {
+      expect(legal, `${name} declares an unknown allowedCallers`).toContain(def.allowedCallers);
+    }
+    expect(catalog.functions.openUrl.allowedCallers).toBe('rendererOrAgent');
+  });
+
+  // callFunction requires catalogId, so a closed function object rejects every well-formed call.
+  it('leaves the function object open so a call can carry catalogId, while args stays closed', () => {
+    const closed = Object.entries<any>(catalog.functions)
+      .filter(([, def]) => def.unevaluatedProperties === false || def.additionalProperties === false)
+      .map(([name]) => name);
+    expect(closed).toEqual([]);
+
+    const openArgs = Object.entries<any>(catalog.functions)
+      .filter(([, def]) => def.properties.args.additionalProperties !== false && def.properties.args.unevaluatedProperties !== false)
+      .map(([name]) => name);
+    expect(openArgs).toEqual([]);
+  });
+
+  // Flattened refs left a generic `call: {type: string}` branch, so any name validated.
+  it("validates function names in dynamic values against the catalog's own functions", () => {
+    const names = Object.keys(catalog.functions);
+    expect(catalog.$defs.anyFunction).toBeDefined();
+    expect(catalog.$defs.anyFunction.oneOf.map((b: any) => b.$ref)).toEqual(names.map((n) => `#/functions/${n}`));
+
+    for (const def of ['DynamicString', 'DynamicNumber', 'DynamicBoolean', 'DynamicStringList', 'DynamicValue']) {
+      const branches = catalog.$defs[def].oneOf;
+      const fnBranch = branches.find((b: any) => b.$ref === '#/$defs/anyFunction');
+      expect(fnBranch, `${def} still inlines a generic function branch`).toBeDefined();
+    }
+    expect(catalog.$defs.Action.properties.functionCall).toEqual({ $ref: '#/$defs/anyFunction' });
+  });
+
+  // The markers are web_core's internal ref annotations; they should not reach consumers.
+  it('does not leak REF: markers into descriptions', () => {
+    const leaked = JSON.stringify(catalog).match(/REF:common_types\.json/g) ?? [];
+    expect(leaked.length).toBe(0);
+  });
+});

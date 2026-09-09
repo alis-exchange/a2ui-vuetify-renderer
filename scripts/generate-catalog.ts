@@ -40,39 +40,19 @@ const $defs: Record<string, any> = {
     },
   },
   DynamicString: {
-    oneOf: [
-      { type: 'string' },
-      { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false },
-      { type: 'object', properties: { call: { type: 'string' }, args: { type: 'object' } }, required: ['call'], additionalProperties: true },
-    ],
+    oneOf: [{ type: 'string' }, { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false }, { $ref: '#/$defs/anyFunction' }],
   },
   DynamicNumber: {
-    oneOf: [
-      { type: 'number' },
-      { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false },
-      { type: 'object', properties: { call: { type: 'string' }, args: { type: 'object' } }, required: ['call'], additionalProperties: true },
-    ],
+    oneOf: [{ type: 'number' }, { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false }, { $ref: '#/$defs/anyFunction' }],
   },
   DynamicBoolean: {
-    oneOf: [
-      { type: 'boolean' },
-      { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false },
-      { type: 'object', properties: { call: { type: 'string' }, args: { type: 'object' } }, required: ['call'], additionalProperties: true },
-    ],
+    oneOf: [{ type: 'boolean' }, { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false }, { $ref: '#/$defs/anyFunction' }],
   },
   DynamicStringList: {
-    oneOf: [
-      { type: 'array', items: { type: 'string' } },
-      { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false },
-      { type: 'object', properties: { call: { type: 'string' }, args: { type: 'object' } }, required: ['call'], additionalProperties: true },
-    ],
+    oneOf: [{ type: 'array', items: { type: 'string' } }, { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false }, { $ref: '#/$defs/anyFunction' }],
   },
   DynamicValue: {
-    oneOf: [
-      { type: ['string', 'number', 'boolean', 'object', 'array', 'null'] },
-      { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false },
-      { type: 'object', properties: { call: { type: 'string' }, args: { type: 'object' } }, required: ['call'], additionalProperties: true },
-    ],
+    oneOf: [{ type: ['string', 'number', 'boolean', 'object', 'array', 'null'] }, { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false }, { $ref: '#/$defs/anyFunction' }],
   },
   ComponentId: {
     type: 'string',
@@ -106,14 +86,7 @@ const $defs: Record<string, any> = {
         },
         required: ['name'],
       },
-      functionCall: {
-        type: 'object',
-        properties: {
-          call: { type: 'string' },
-          args: { type: 'object' },
-        },
-        required: ['call'],
-      },
+      functionCall: { $ref: '#/$defs/anyFunction' },
     },
     oneOf: [{ required: ['event'] }, { required: ['functionCall'] }],
     additionalProperties: false,
@@ -156,6 +129,21 @@ function buildComponents(): Record<string, any> {
 // Build functions dynamically from VUETIFY_FUNCTIONS Zod schemas
 // ---------------------------------------------------------------------------
 
+/**
+ * Who may invoke each function, per `catalog_definition.json`. An absent value means
+ * `rendererOnly`, so every function must be listed here or agents can invoke none of them.
+ *
+ * Everything except `openUrl` is a pure helper the renderer evaluates while resolving a binding
+ * or a check (arithmetic, comparison, validation, formatting). An agent gains nothing by asking
+ * the renderer to compute those and can do it itself, so they stay renderer-only. `openUrl` is
+ * the one side effect that only the renderer can perform, and deciding to open a URL is normally
+ * the agent's call, so it is invocable from both sides.
+ */
+const ALLOWED_CALLERS: Record<string, 'rendererOnly' | 'agentOnly' | 'rendererOrAgent'> = {
+  openUrl: 'rendererOrAgent',
+};
+const DEFAULT_ALLOWED_CALLERS = 'rendererOnly';
+
 function buildFunctions(): Record<string, any> {
   const functions: Record<string, any> = {};
 
@@ -163,6 +151,9 @@ function buildFunctions(): Record<string, any> {
     const argsSchema = zodToJsonSchema(fn.schema, { $refStrategy: 'none' }) as Record<string, any>;
     delete argsSchema.$schema;
 
+    // No `unevaluatedProperties` on the function object itself: `callFunction` requires
+    // `catalogId`, so closing it here rejects every well-formed agent call. `args` stays closed,
+    // which is where unknown properties actually matter. This mirrors the upstream basic catalog.
     const fnEntry: Record<string, any> = {
       type: 'object',
       properties: {
@@ -171,7 +162,7 @@ function buildFunctions(): Record<string, any> {
         returnType: { const: fn.returnType },
       },
       required: ['call', 'args'],
-      unevaluatedProperties: false,
+      allowedCallers: ALLOWED_CALLERS[fn.name] ?? DEFAULT_ALLOWED_CALLERS,
     };
 
     // Hoist arg-level description to the function level
@@ -247,9 +238,42 @@ function validateCatalog(catalogComponents: Record<string, any>): void {
 // Main
 // ---------------------------------------------------------------------------
 
+/**
+ * web_core annotates ref-carrying fields as `REF:<pointer>|<description>` and reads those markers
+ * off the Zod schemas at runtime. `zodToJsonSchema` copies the whole string through, so strip the
+ * marker here: it is an internal annotation and consumers only want the prose.
+ */
+function stripRefMarkers(node: any): void {
+  if (Array.isArray(node)) {
+    for (const item of node) stripRefMarkers(item);
+    return;
+  }
+  if (!node || typeof node !== 'object') return;
+
+  if (typeof node.description === 'string' && node.description.startsWith('REF:')) {
+    // `REF:<pointer>|<prose>` — keep the prose; a marker with no `|` carries no prose at all.
+    const separator = node.description.indexOf('|');
+    if (separator === -1) delete node.description;
+    else node.description = node.description.slice(separator + 1);
+  }
+
+  for (const value of Object.values(node)) stripRefMarkers(value);
+}
+
 function main() {
   const components = buildComponents();
   const functions = buildFunctions();
+
+  // The union the dynamic-value and action branches reference, so a function name inside a
+  // component is checked against the catalog's own functions instead of being any string.
+  $defs.anyFunction = {
+    description: 'A call to any function this catalog declares.',
+    oneOf: Object.keys(functions).map((name) => ({ $ref: `#/functions/${name}` })),
+  };
+
+  stripRefMarkers(components);
+  stripRefMarkers(functions);
+  stripRefMarkers($defs);
 
   const catalog = {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
