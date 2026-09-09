@@ -1,10 +1,17 @@
-# [0.3.0](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.4.0...v0.3.0) (2026-09-09)
+# [0.4.0](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.4.1...v0.4.0) (2026-09-09)
+
+## [0.4.1](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.4.0...v0.4.1) (2026-09-09)
 
 
 ### Bug Fixes
 
 * **catalog:** let agents invoke the catalog's functions ([2edc8a9](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/2edc8a97de84b44fc952e1bbe17d2f08b294854e)), closes [#1](https://github.com/alis-exchange/a2ui-vuetify-renderer/issues/1)
 * **catalog:** validate function names inside dynamic values ([9b5c1d8](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/9b5c1d80c8ac3d820e1c7db430a612180ca9c004)), closes [#1](https://github.com/alis-exchange/a2ui-vuetify-renderer/issues/1)
+
+
+### Features
+
+* **catalog:** make the catalog document directly reachable ([e214d37](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/e214d374ba580111b3dafc13f178d16ef95e2f95))
 
 # [0.3.0](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.2.0...v0.3.0) (2026-09-09)
 
