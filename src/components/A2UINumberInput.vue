@@ -3,7 +3,7 @@
   import { computed } from 'vue';
   import { VTextField } from 'vuetify/components';
   import { useA2UI } from '../composables/useA2UI';
-  import { createVuetifyRules } from '../utils/validation';
+  import { useChecks } from '../composables/useChecks';
 
   type VTextFieldProps = InstanceType<typeof VTextField>['$props'];
   type VTextFieldVariant = VTextFieldProps['variant'];
@@ -41,10 +41,7 @@
     }
   });
 
-  const rules = computed(() => {
-    const checks = resolveValue<any[]>(props.node.properties.checks) ?? [];
-    return createVuetifyRules(checks, resolveValue);
-  });
+  const { rules } = useChecks(() => props.node);
 
   const handleBlur = () => {
     dispatchNodeAction(props.node, { value: modelValue.value });

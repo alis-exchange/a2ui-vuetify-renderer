@@ -3,7 +3,7 @@
   import { computed } from 'vue';
   import { VTextarea } from 'vuetify/components';
   import { useA2UI } from '../composables/useA2UI';
-  import { createVuetifyRules } from '../utils/validation';
+  import { useChecks } from '../composables/useChecks';
 
   type VTextareaProps = InstanceType<typeof VTextarea>['$props'];
   type VTextareaVariant = VTextareaProps['variant'];
@@ -40,10 +40,7 @@
     }
   });
 
-  const rules = computed(() => {
-    const checks = resolveValue<any[]>(props.node.properties.checks) ?? [];
-    return createVuetifyRules(checks, resolveValue);
-  });
+  const { rules } = useChecks(() => props.node);
 
   const handleBlur = () => {
     dispatchNodeAction(props.node, { value: modelValue.value });
