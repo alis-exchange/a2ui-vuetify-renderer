@@ -1,4 +1,36 @@
-## [0.1.18](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.2.0...v0.1.18) (2026-06-09)
+# [0.2.0](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.3.0...v0.2.0) (2026-09-09)
+
+# [0.3.0](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.2.0...v0.3.0) (2026-09-09)
+
+
+### Bug Fixes
+
+* **build:** externalize every web_core subpath and zod, guard the dist ([3164b6d](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/3164b6dd6592dea79b3ef52bc6d4f25e56150fd2))
+* **catalog:** drop the dead Checkable definition from the generated catalog ([721492f](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/721492f4fb825e8116c0cd2b41800751e4800570))
+* **catalog:** keep the Button schema readable by web_core's binder ([ed339f5](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/ed339f531ddfe3f468f0f9d1fcbe3ee8a4675f80))
+* **components:** expand Form template children like every other container ([a906de5](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/a906de5a0fafa594356b400bb6c404b3458bd69b))
+* **components:** give Slider one validation source per mode ([5e353a5](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/5e353a59754da5175f9739826a6cccff88390eb2))
+* **components:** read dynamic props from the node's properties bag ([7e68bac](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/7e68bacb94609de776efe58d33c71b8926c43b0d))
+* **core:** root template child paths on the enclosing data scope ([9a9748c](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/9a9748c8c629d8e9e1763b68990484bfdff60f39))
+* **provider:** reconcile surface events against the model, not the event ([7cc15fb](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/7cc15fb82779df0ef33a6e84da5bf1e7a5ce0aa9))
+* **provider:** warn when the processor is a Vue reactive proxy ([e2d6c93](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/e2d6c9390a90b444e5556a0bf02a78953becb73a))
+* **validation:** evaluate protocol check conditions in createVuetifyRules ([ffccc09](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/ffccc09bd8a01c00bd3c6308513d3f4f0d2902bb))
+* **validation:** ignore a null check entry instead of throwing ([261ddcd](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/261ddcd52a84918478603c4e4bcead03bb304f10))
+
+
+### Features
+
+* **catalog:** add createVuetifyFunctions with locale and Vuetify openUrl override ([75cf756](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/75cf756886faf6344ea4068d13a3be60b3b3df7a))
+* **components:** gate Button and IconButton on binder validity ([6d4a68e](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/6d4a68e69ff9bda248b6cd9b68d1e8d131fbd0dc))
+* **components:** show failing checks on Slider and DatePicker ([3b2d61f](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/3b2d61f0931b84b34eec890c5bc28b4ba2cb9f4d))
+* **components:** surface binder validity on Slider and DatePicker via useChecks ([44dfe26](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/44dfe26c9c7738c5e0ee59f39965258b2e2d28e4))
+* **core:** render live NodeResolver nodes in ComponentNode ([ba21cd2](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/ba21cd28745a23aad070e40af0539ccd670da0fe))
+* **provider:** drive rendering from a NodeResolver per surface ([b5c9fb5](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/b5c9fb5ae10b5be699feaa3c75cdfe8da6e78787))
+
+
+### Performance Improvements
+
+* **core:** reuse the binder's resolved values in resolveValue ([d1ff7b1](https://github.com/alis-exchange/a2ui-vuetify-renderer/commit/d1ff7b113b008fdf5657f6e7234a48de55aebad9))
 
 # [0.2.0](https://github.com/alis-exchange/a2ui-vuetify-renderer/compare/v0.1.18...v0.2.0) (2026-06-09)
 
