@@ -14,19 +14,6 @@ beforeAll(() => {
   };
 });
 
-vi.mock('../composables/useDynamicProps', async () => {
-  const vue = await import('vue');
-  return {
-    useDynamicProps: (nodeArg: any) => {
-      const node = typeof nodeArg === 'function' ? nodeArg() : nodeArg;
-      return vue.ref({
-        id: node.id || 'tabs-1',
-        tabs: node.tabs || [],
-      });
-    },
-  };
-});
-
 function createMockContext() {
   return {
     surfaceId: 'test-surface',
@@ -45,14 +32,16 @@ describe('A2UITabs.vue', () => {
     const mockNode = {
       id: 'tabs-1',
       type: 'Tabs',
-      tabs: [
-        { title: 'Tab 1', child: 'child-1' },
-        { title: 'Tab 2', child: 'child-2' },
-      ],
+      properties: {
+        tabs: [
+          { title: 'Tab 1', child: 'child-1' },
+          { title: 'Tab 2', child: 'child-2' },
+        ],
+      },
     };
 
     const wrapper = mount(A2UITabs, {
-      props: { node: mockNode },
+      props: { node: mockNode as any },
       global: {
         provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
         plugins: [vuetify],

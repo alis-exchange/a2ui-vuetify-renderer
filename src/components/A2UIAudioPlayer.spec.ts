@@ -1,36 +1,34 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import { createVuetify } from 'vuetify';
+import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
 import A2UIAudioPlayer from './A2UIAudioPlayer.vue';
 
 const vuetify = createVuetify();
 
-vi.mock('../composables/useDynamicProps', async (importOriginal) => {
-  const vue = await import('vue');
+// No `useDynamicProps` mock: the point of these tests is that the component reads the node's
+// `properties` bag, which is where a real ComponentModel keeps them.
+function createMockContext() {
   return {
-    useDynamicProps: (nodeArg: any) => {
-      const node = typeof nodeArg === 'function' ? nodeArg() : nodeArg;
-      return vue.ref({
-        id: node.id || 'audio-1',
-        url: node.url,
-        controls: node.controls !== false,
-        autoplay: node.autoplay || false,
-      });
-    },
+    surfaceId: 'test-surface',
+    onAction: vi.fn(),
+    processor: { model: { getSurface: vi.fn().mockReturnValue({}) } },
+    dataContextPath: '/',
   };
-});
+}
 
 describe('A2UIAudioPlayer.vue', () => {
   it('renders an audio element', () => {
     const mockNode = {
       id: 'audio-1',
       type: 'AudioPlayer',
-      url: 'https://example.com/audio.mp3',
+      properties: { url: 'https://example.com/audio.mp3' },
     };
 
     const wrapper = mount(A2UIAudioPlayer, {
-      props: { node: mockNode },
+      props: { node: mockNode as any },
       global: {
+        provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
         plugins: [vuetify],
       },
     });

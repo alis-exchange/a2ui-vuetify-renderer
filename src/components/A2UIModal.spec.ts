@@ -14,21 +14,6 @@ beforeAll(() => {
   };
 });
 
-vi.mock('../composables/useDynamicProps', async () => {
-  const vue = await import('vue');
-  return {
-    useDynamicProps: (nodeArg: any) => {
-      const node = typeof nodeArg === 'function' ? nodeArg() : nodeArg;
-      return vue.ref({
-        id: node.id || 'modal-1',
-        trigger: node.trigger,
-        content: node.content,
-        open: node.open || false,
-      });
-    },
-  };
-});
-
 function createMockContext() {
   return {
     surfaceId: 'test-surface',
@@ -47,12 +32,11 @@ describe('A2UIModal.vue', () => {
     const mockNode = {
       id: 'modal-1',
       type: 'Modal',
-      trigger: 'trigger-comp',
-      content: 'content-comp',
+      properties: { trigger: 'trigger-comp', content: 'content-comp' },
     };
 
     const wrapper = mount(A2UIModal, {
-      props: { node: mockNode },
+      props: { node: mockNode as any },
       global: {
         provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
         plugins: [vuetify],

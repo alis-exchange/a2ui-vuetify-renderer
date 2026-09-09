@@ -6,7 +6,7 @@
     node: ComponentModel;
   }>();
 
-  const dynamicProps = useDynamicProps(() => props.node);
+  const dynamicProps = useDynamicProps(() => props.node.properties);
 </script>
 
 <template>

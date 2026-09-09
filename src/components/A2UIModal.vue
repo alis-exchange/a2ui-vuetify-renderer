@@ -8,7 +8,7 @@
     node: ComponentModel;
   }>();
 
-  const dynamicProps = useDynamicProps(() => props.node);
+  const dynamicProps = useDynamicProps(() => props.node.properties);
   const { dispatchNodeAction } = useA2UI();
 
   const isOpen = ref(false);

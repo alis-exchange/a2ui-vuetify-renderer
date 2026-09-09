@@ -1,41 +1,37 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import { createVuetify } from 'vuetify';
+import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
 import A2UIChoicePicker from './A2UIChoicePicker.vue';
 
 const vuetify = createVuetify();
 
-vi.mock('../composables/useDynamicProps', async (importOriginal) => {
-  const vue = await import('vue');
+function createMockContext() {
   return {
-    useDynamicProps: (nodeArg: any) => {
-      const node = typeof nodeArg === 'function' ? nodeArg() : nodeArg;
-      return vue.ref({
-        id: node.id || 'choice-1',
-        variant: node.variant || 'mutuallyExclusive',
-        displayStyle: node.displayStyle || 'dropdown',
-        options: node.options || [],
-        value: node.value,
-        label: node.label,
-      });
-    },
+    surfaceId: 'test-surface',
+    onAction: vi.fn(),
+    processor: { model: { getSurface: vi.fn().mockReturnValue({}) } },
+    dataContextPath: '/',
   };
-});
+}
 
 describe('A2UIChoicePicker.vue', () => {
   it('renders a select dropdown by default', () => {
     const mockNode = {
       id: 'choice-1',
       type: 'ChoicePicker',
-      variant: 'mutuallyExclusive',
-      displayStyle: 'dropdown',
-      options: [{ label: 'Option 1', value: 'opt1' }],
-      value: 'opt1',
+      properties: {
+        variant: 'mutuallyExclusive',
+        displayStyle: 'dropdown',
+        options: [{ label: 'Option 1', value: 'opt1' }],
+        value: 'opt1',
+      },
     };
 
     const wrapper = mount(A2UIChoicePicker, {
-      props: { node: mockNode },
+      props: { node: mockNode as any },
       global: {
+        provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
         plugins: [vuetify],
         stubs: {
           A2UISelect: true,
@@ -52,13 +48,13 @@ describe('A2UIChoicePicker.vue', () => {
     const mockNode = {
       id: 'choice-1',
       type: 'ChoicePicker',
-      variant: 'mutuallyExclusive',
-      displayStyle: 'list',
+      properties: { variant: 'mutuallyExclusive', displayStyle: 'list' },
     };
 
     const wrapper = mount(A2UIChoicePicker, {
-      props: { node: mockNode },
+      props: { node: mockNode as any },
       global: {
+        provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
         plugins: [vuetify],
         stubs: {
           A2UISelect: true,
@@ -75,13 +71,13 @@ describe('A2UIChoicePicker.vue', () => {
     const mockNode = {
       id: 'choice-1',
       type: 'ChoicePicker',
-      variant: 'multipleSelection',
-      displayStyle: 'list',
+      properties: { variant: 'multipleSelection', displayStyle: 'list' },
     };
 
     const wrapper = mount(A2UIChoicePicker, {
-      props: { node: mockNode },
+      props: { node: mockNode as any },
       global: {
+        provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext() },
         plugins: [vuetify],
         stubs: {
           A2UISelect: true,

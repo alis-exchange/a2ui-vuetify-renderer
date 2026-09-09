@@ -9,7 +9,7 @@
     node: ComponentModel;
   }>();
 
-  const dynamicProps = useDynamicProps(() => props.node);
+  const dynamicProps = useDynamicProps(() => props.node.properties);
 
   // ChoicePicker is an A2UI concept that wraps the intent of a choice.
   // We map it to the underlying Vuetify component implementations we already have.
