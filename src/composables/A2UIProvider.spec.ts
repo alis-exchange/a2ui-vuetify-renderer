@@ -113,6 +113,68 @@ describe('A2UIProvider.vue', () => {
     expect(wrapper.find('.mock-text').text()).toBe('second');
   });
 
+  // web_core's EventEmitter.emit awaits each listener, so a host subscribed to onSurfaceDeleted
+  // ahead of the provider pushes the provider's delete handling into a microtask, while its
+  // create handling (where it is still the first listener) runs inline. The delete event is
+  // therefore stale by the time it arrives: acting on it disposes the freshly built resolver.
+  it('ignores a stale deleted event for a surface that has since been recreated', async () => {
+    const processor = createProcessor();
+    processor.processMessages([createSurface(), setData('/', { msg: 'first' }), rootText({ path: '/msg' })]);
+    // Subscribing first makes the provider the second listener, and only the first runs inline.
+    processor.model.onSurfaceDeleted.subscribe(() => {});
+    const wrapper = mountProvider(processor, {}, () => [h(ComponentNode, { id: 'root' }), h(ContextProbe)]);
+    expect(wrapper.find('.mock-text').text()).toBe('first');
+
+    processor.processMessages([{ version: 'v0.9', deleteSurface: { surfaceId: SURFACE } }, createSurface(), setData('/', { msg: 'second' }), rootText({ path: '/msg' })]);
+    await nextTick();
+    expect(wrapper.find('.mock-text').text()).toBe('second');
+
+    // The real cost: the recreated surface silently stops being tracked, so nothing updates again.
+    expect(seenContext?.resolver).toBeDefined();
+    processor.model.getSurface(SURFACE)!.dataModel.set('/msg', 'third');
+    await nextTick();
+    expect(wrapper.find('.mock-text').text()).toBe('third');
+  });
+
+  // A provider that mounts from inside an earlier listener finds the surface itself (the model
+  // fills its map before emitting) and is then handed the very same creation event, because
+  // emit() visits listeners added mid-loop. Re-attaching would throw away the live resolver.
+  it('ignores a created event for the surface it already attached while mounting', async () => {
+    const processor = createProcessor();
+    let wrapper: ReturnType<typeof mountProvider> | undefined;
+    let resolverAtMount: unknown;
+    processor.model.onSurfaceCreated.subscribe(() => {
+      if (wrapper) return;
+      wrapper = mountProvider(processor, {}, () => [h(ComponentNode, { id: 'root' }), h(ContextProbe)]);
+      resolverAtMount = seenContext?.resolver;
+    });
+
+    processor.processMessages([createSurface(), setData('/', { msg: 'hello' }), rootText({ path: '/msg' })]);
+    await nextTick();
+
+    expect(resolverAtMount).toBeDefined();
+    expect((resolverAtMount as { disposed?: boolean }).disposed).toBe(false);
+    expect(seenContext?.resolver).toBe(resolverAtMount);
+    expect(wrapper!.find('.mock-text').text()).toBe('hello');
+  });
+
+  // NodeResolver builds the whole tree in its constructor, so a surface web_core cannot bind
+  // throws synchronously. When the surface already exists at mount that happens inside setup(),
+  // which unmounts the provider subtree and renders nothing at all.
+  it('reports a resolver that fails to build through onError instead of failing to mount', async () => {
+    const processor = createProcessor();
+    const onError = vi.fn();
+    // A forbidden path segment passes message validation but throws when the binder resolves it.
+    processor.processMessages([createSurface(), rootText({ path: '/constructor' })]);
+
+    const wrapper = mountProvider(processor, { onError }, () => h(ContextProbe));
+
+    expect(wrapper.find('.probe').exists()).toBe(true);
+    expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining('Forbidden path segment') }));
+    // No resolver: the subtree falls back to the static path rather than taking the provider down.
+    expect(seenContext?.resolver).toBeUndefined();
+  });
+
   it('reports surface errors through onError', async () => {
     const processor = createProcessor();
     const onError = vi.fn();

@@ -75,27 +75,41 @@
   // Bumped on surface creation/deletion so the slot remounts against the new surface object.
   const surfaceKey = shallowRef(0);
   const resolver = shallowRef<NodeResolver | undefined>(undefined);
+  // The surface the resolver was built from, so a late duplicate event can be recognised.
+  let attachedSurface: any;
   let errorSubscription: Subscription | undefined;
   let createdSubscription: Subscription | undefined;
   let deletedSubscription: Subscription | undefined;
+
+  const reportError = (error: unknown) => {
+    if (props.onError) props.onError(error);
+    else console.error('[A2UI] surface error:', error);
+  };
 
   const detachSurface = () => {
     errorSubscription?.unsubscribe();
     errorSubscription = undefined;
     resolver.value?.dispose();
     resolver.value = undefined;
+    attachedSurface = undefined;
     surfaceKey.value++;
   };
 
   const attachSurface = (surface: any) => {
     detachSurface();
     if (!surface) return;
-    errorSubscription = surface.onError?.subscribe((error: unknown) => {
-      if (props.onError) props.onError(error);
-      else console.error('[A2UI] surface error:', error);
-    });
+    attachedSurface = surface;
+    errorSubscription = surface.onError?.subscribe(reportError);
     if (props.nodeResolver && surface.catalog) {
-      resolver.value = new NodeResolver(surface, surface.catalog);
+      try {
+        resolver.value = new NodeResolver(surface, surface.catalog);
+      } catch (error) {
+        // NodeResolver builds the whole tree in its constructor, so a surface web_core cannot
+        // bind throws right here. Uncaught, that aborts setup() and renders nothing when the
+        // surface already existed at mount, while the same message arriving later is only
+        // console.error'd by the emitter. Report it and fall back to the static path instead.
+        reportError(error);
+      }
     }
   };
 
@@ -110,11 +124,16 @@
   const subscribeModel = () => {
     unsubscribeModel();
     const model = processor.value?.model;
+    // web_core's EventEmitter awaits each listener, so these can arrive a microtask after the
+    // fact. The model updates its own map before emitting, so treat that state as the authority
+    // rather than the event: otherwise a stale `deleted` tears down the surface that replaced it.
     createdSubscription = model?.onSurfaceCreated?.subscribe((surface: any) => {
-      if (surface?.id === props.surfaceId) attachSurface(surface);
+      if (surface?.id !== props.surfaceId || surface === attachedSurface) return;
+      attachSurface(surface);
     });
     deletedSubscription = model?.onSurfaceDeleted?.subscribe((id: string) => {
-      if (id === props.surfaceId) detachSurface();
+      if (id !== props.surfaceId || model?.getSurface?.(id)) return;
+      detachSurface();
     });
     attachSurface(model?.getSurface?.(props.surfaceId));
   };
