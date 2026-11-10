@@ -207,6 +207,7 @@ v0.9.1 uses the v0.9 catalog and components unchanged: web_core accepts `version
 
 **What changes on a v1.0 surface**
 
+- **Component ids must be identifiers** (letters, digits and `_`, per UAX #31): `user_card` or `userCard`, not `user-card`. web_core rejects the whole message otherwise.
 - **Bindings use the `@` prefix.** web_core's v1.0 validation still accepts a v0.9 `{ "path" }` or `{ "call" }`, then treats it as a literal object, so the field shows the object or nothing. The renderer reports each such value once through `onError`, as a `VALIDATION_FAILED` error naming the component and the JSON Pointer of the value. ChildList templates (`{ "componentId", "path" }`) keep the unprefixed `path` in v1.0.
 - **Checks can return a result.** v1.0 validators return `{ valid, message, severity }`. A failed result blocks only when its severity is `error`; warnings and info never do.
 - **No theme.** v1.0 removed `theme` from `createSurface`; the provider's theme bridge applies to v0.9 surfaces only.

@@ -18,6 +18,24 @@
               <v-card-title>Data Model & Lifecycle Demo</v-card-title>
               <v-card-text>
                 <div
+                  class="d-flex align-center mb-3"
+                  style="gap: 8px"
+                >
+                  <span class="text-body-2">Send the form as</span>
+                  <v-btn-toggle
+                    v-model="protocol"
+                    mandatory
+                    density="compact"
+                    variant="outlined"
+                    color="primary"
+                    :disabled="formSurfaceActive"
+                  >
+                    <v-btn value="v0.9">v0.9</v-btn>
+                    <v-btn value="v0.9.1">v0.9.1</v-btn>
+                    <v-btn value="v1.0">v1.0</v-btn>
+                  </v-btn-toggle>
+                </div>
+                <div
                   class="d-flex gap-2 flex-wrap"
                   style="gap: 8px"
                 >
@@ -174,7 +192,7 @@
 <script setup lang="ts">
   import type { ComponentApi } from '@a2ui/web_core/v0_9';
   import { Catalog, MessageProcessor, type A2uiMessage } from '@a2ui/web_core/v0_9';
-  import { CATALOG_ID, VUETIFY_COMPONENTS, VUETIFY_THEME_SCHEMA, createVuetifyFunctions, defaultRegistry } from '@alis-build/a2ui-vuetify-renderer';
+  import { A2UI_V09, A2UI_V10, CATALOG_ID, CATALOG_ID_V1, VUETIFY_COMPONENTS, VUETIFY_COMPONENTS_V1, VUETIFY_THEME_SCHEMA, createVuetifyFunctions, defaultRegistry, type ProtocolKit } from '@alis-build/a2ui-vuetify-renderer';
   import { defineAsyncComponent, defineComponent, h, markRaw, onMounted, ref } from 'vue';
   import { z } from 'zod';
   import CustomChartWidget from './components/CustomChartWidget.vue';
@@ -193,31 +211,36 @@
     ),
   );
 
-  const CustomGraphApi: ComponentApi = {
+  // Custom component schemas are written once as builders over a protocol kit, so they can be
+  // registered for v0.9 and v1.0. The Vue component itself is registered once.
+  const buildCustomGraphApi = (kit: ProtocolKit): ComponentApi => ({
     name: 'CustomGraph',
-    schema: z.object({}).strict(),
-  };
+    schema: z.object({ ...kit.commonProps }).strict(),
+  });
 
-  defaultRegistry.register(CATALOG_ID, 'CustomGraph', AsyncGraphComponent, CustomGraphApi);
+  defaultRegistry.register(CATALOG_ID, 'CustomGraph', AsyncGraphComponent, buildCustomGraphApi(A2UI_V09));
+  defaultRegistry.registerApi(CATALOG_ID_V1, 'CustomGraph', buildCustomGraphApi(A2UI_V10));
 
   // 2. Register our static custom component with a schema
-  const CustomChartApi: ComponentApi = {
+  const buildCustomChartApi = (kit: ProtocolKit): ComponentApi => ({
     name: 'CustomChart',
     schema: z
       .object({
+        ...kit.commonProps,
         title: z.string().describe('The title of the chart').optional(),
         data: z.array(z.number()).describe('The data points to render'),
       })
       .strict(),
-  };
+  });
 
-  defaultRegistry.register(CATALOG_ID, 'CustomChart', CustomChartWidget, CustomChartApi);
+  defaultRegistry.register(CATALOG_ID, 'CustomChart', CustomChartWidget, buildCustomChartApi(A2UI_V09));
+  defaultRegistry.registerApi(CATALOG_ID_V1, 'CustomChart', buildCustomChartApi(A2UI_V10));
 
-  // Inject custom components into the mock catalog schema to bypass A2UI validation errors
-  const customComponentsSchema = [...VUETIFY_COMPONENTS, CustomGraphApi, CustomChartApi];
-
+  // One catalog per protocol family, each with the custom components added so validation accepts them.
   // Locale-aware formatNumber / formatCurrency / pluralize, plus the Vuetify openUrl (http, https, mailto, tel).
-  const mockCatalog = new Catalog(CATALOG_ID, '0.9', customComponentsSchema as any, createVuetifyFunctions({ locale: navigator.language }), VUETIFY_THEME_SCHEMA);
+  const locale = navigator.language;
+  const catalogV09 = new Catalog(CATALOG_ID, '0.9', [...VUETIFY_COMPONENTS, buildCustomGraphApi(A2UI_V09), buildCustomChartApi(A2UI_V09)], createVuetifyFunctions({ locale }), VUETIFY_THEME_SCHEMA);
+  const catalogV10 = new Catalog(CATALOG_ID_V1, '1.0', [...VUETIFY_COMPONENTS_V1, buildCustomGraphApi(A2UI_V10), buildCustomChartApi(A2UI_V10)], createVuetifyFunctions({ locale, protocol: A2UI_V10 }));
   const actionLogs = ref<any[]>([]);
 
   const handleAction = (action: any) => {
@@ -227,10 +250,33 @@
 
   // Simulated transport message dispatcher. markRaw: web_core objects must never become Vue
   // reactive proxies, or its Preact signals stop notifying and the UI silently goes stale.
-  const processor = markRaw(new MessageProcessor([mockCatalog], handleAction, { version: 'v0.9' }));
+  // One processor serves both: each surface is routed by the version its messages declare.
+  const processor = markRaw(new MessageProcessor([catalogV09, catalogV10], handleAction, { version: 'v0.9' }));
 
-  // 3. Capabilities to send to the agent on connection (getClientCapabilities is deprecated since web_core 0.15)
-  const clientMetadata = processor.getRendererCapabilities({ versions: ['v0.9'] });
+  // 3. Capabilities to send to the agent on connection. getRendererCapabilities() would list both
+  // catalogs under every version, so advertise each catalog under its own version instead.
+  const clientMetadata = {
+    'v0.9': { supportedCatalogIds: [CATALOG_ID] },
+    'v1.0': { supportedCatalogIds: [CATALOG_ID_V1] },
+  };
+
+  // Which protocol the form surface is sent in. The same component list is written once, in v0.9
+  // shape, and rewritten for v1.0 on the way out, as an agent migrating to v1.0 would.
+  type Protocol = 'v0.9' | 'v0.9.1' | 'v1.0';
+  const protocol = ref<Protocol>('v0.9');
+  const wireVersion = (p: Protocol) => (p === 'v1.0' ? '1.0' : p);
+  const catalogFor = (p: Protocol) => (p === 'v1.0' ? CATALOG_ID_V1 : CATALOG_ID);
+
+  /** v0.9 `path` / `call` keys become v1.0 `@path` / `@call`; ChildList templates keep `path`. */
+  const toV1 = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(toV1);
+    if (value === null || typeof value !== 'object') return value;
+    const rec = value as Record<string, unknown>;
+    if ('componentId' in rec) return rec;
+    return Object.fromEntries(Object.entries(rec).map(([k, v]) => [k === 'path' ? '@path' : k === 'call' ? '@call' : k, toV1(v)]));
+  };
+  const inProtocol = <T,>(components: T, p: Protocol) => (p === 'v1.0' ? (toV1(components) as T) : components);
+  const formEnvelope = (body: Record<string, unknown>) => ({ version: wireVersion(protocol.value), ...body }) as A2uiMessage;
 
   // web_core validates every updateComponents component against the catalog schema and throws
   // A2uiValidationError for the whole message. A real transport should catch it like this.
@@ -270,15 +316,13 @@
   // Lifecycle Demo Methods
   const createFormSurface = () => {
     const created = safeProcess([
-      {
-        version: 'v0.9',
+      formEnvelope({
         createSurface: {
           surfaceId: 'form-surface',
-          catalogId: CATALOG_ID,
+          catalogId: catalogFor(protocol.value),
         },
-      },
-      {
-        version: 'v0.9',
+      }),
+      formEnvelope({
         updateDataModel: {
           surfaceId: 'form-surface',
           path: '/',
@@ -288,57 +332,58 @@
             isSubscribed: false,
           },
         },
-      },
-      {
-        version: 'v0.9',
+      }),
+      formEnvelope({
         updateComponents: {
           surfaceId: 'form-surface',
-          components: [
-            {
-              id: 'root',
-              component: 'Form',
-              children: ['form-col'],
-            },
-            {
-              id: 'form-col',
-              component: 'Column',
-              children: ['title', 'name-input', 'email-input', 'subscribe-checkbox'],
-            },
-            {
-              id: 'title',
-              component: 'Text',
-              text: 'Dynamic Subscription Form',
-              variant: 'h5',
-            },
-            {
-              id: 'name-input',
-              component: 'TextField',
-              label: 'Name',
-              value: { path: '/userName' },
-            },
-            {
-              id: 'email-input',
-              component: 'TextField',
-              label: 'Email',
-              value: { path: '/userEmail' },
-            },
-            {
-              id: 'subscribe-checkbox',
-              component: 'Checkbox',
-              label: 'Subscribe',
-              value: { path: '/isSubscribed' },
-            },
-          ],
+          components: inProtocol(
+            [
+              {
+                id: 'root',
+                component: 'Form',
+                children: ['formCol'],
+              },
+              {
+                id: 'formCol',
+                component: 'Column',
+                children: ['title', 'nameInput', 'emailInput', 'subscribeCheckbox'],
+              },
+              {
+                id: 'title',
+                component: 'Text',
+                text: 'Dynamic Subscription Form',
+                variant: 'h5',
+              },
+              {
+                id: 'nameInput',
+                component: 'TextField',
+                label: 'Name',
+                value: { path: '/userName' },
+              },
+              {
+                id: 'emailInput',
+                component: 'TextField',
+                label: 'Email',
+                value: { path: '/userEmail' },
+              },
+              {
+                id: 'subscribeCheckbox',
+                component: 'Checkbox',
+                label: 'Subscribe',
+                value: { path: '/isSubscribed' },
+              },
+            ],
+            protocol.value,
+          ),
         },
-      },
+      }),
     ]);
     formSurfaceActive.value = created;
   };
 
   const updateFormModel = () => {
     safeProcess([
-      {
-        version: 'v0.9',
+      formEnvelope({
         updateDataModel: {
           surfaceId: 'form-surface',
           path: '/',
@@ -348,18 +393,17 @@
             isSubscribed: true,
           },
         },
-      },
+      }),
     ]);
   };
 
   const deleteFormSurface = () => {
     safeProcess([
-      {
-        version: 'v0.9',
+      formEnvelope({
         deleteSurface: {
           surfaceId: 'form-surface',
         },
-      },
+      }),
     ]);
     formSurfaceActive.value = false;
   };
