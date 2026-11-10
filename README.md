@@ -241,13 +241,13 @@ defaultRegistry.registerApi(CATALOG_ID_V1, 'Chart', buildChartApi(A2UI_V10));
 
 ### `A2UIProvider` props
 
-| Prop            | Type               | Default         | Purpose                                                                                                                                |
-| --------------- | ------------------ | --------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `processor`     | `MessageProcessor` | required        | Owns the surface, component and data models. Pass the plain instance (or `markRaw` / `shallowRef`), never a `ref()`/`reactive()` proxy |
-| `surface-id`    | `string`           | required        | The surface to render                                                                                                                  |
-| `on-action`     | `(action) => void` | –               | Fallback handler for component actions                                                                                                 |
-| `on-error`      | `(error) => void`  | `console.error` | Surface errors reported by web_core (`UNKNOWN_COMPONENT_TYPE`, `CYCLIC_REFERENCE`, expression failures)                                |
-| `node-resolver` | `boolean`          | `true`          | Render from web_core's live node tree. `false` is the static legacy path, which only reflects the surface as of the first paint        |
+| Prop            | Type               | Default         | Purpose                                                                                                                                                                                            |
+| --------------- | ------------------ | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `processor`     | `MessageProcessor` | required        | Owns the surface, component and data models. Pass the plain instance (or `markRaw` / `shallowRef`), never a `ref()`/`reactive()` proxy                                                             |
+| `surface-id`    | `string`           | required        | The surface to render                                                                                                                                                                              |
+| `on-action`     | `(action) => void` | –               | Fallback handler for component actions                                                                                                                                                             |
+| `on-error`      | `(error) => void`  | `console.error` | Surface errors reported by web_core (`UNKNOWN_COMPONENT_TYPE`, `CYCLIC_REFERENCE`, expression failures)                                                                                            |
+| `node-resolver` | `boolean`          | `true`          | Render from web_core's live node tree. `false` is the static legacy path, which only reflects the surface as of the first paint **Deprecated:** `false` will be removed in the next major version. |
 
 ### Core modules
 

@@ -38,6 +38,13 @@
   import { isV10Surface } from '../protocol/version';
   import { A2UI_CONTEXT_KEY } from './useA2UI';
 
+  /*
+   * Removing the legacy render path (next major) removes: the `nodeResolver` prop and the static
+   * fallback here (a surface the resolver cannot build then shows ComponentNode's error box and
+   * reports through onError); ComponentNode's static lookup and `path` prop; useBinding's
+   * raw-path write; useChecks' evaluator branch, and with it createVuetifyRules'
+   * readCheckOutcome copy of web_core's check logic.
+   */
   const props = withDefaults(
     defineProps<{
       /** The A2UI message processor that owns the surface model and data model. */
@@ -51,6 +58,10 @@
       /**
        * Render from web_core's live node tree (default). Set to `false` for the static
        * legacy path, which only reflects the surface as it was when the subtree mounted.
+       *
+       * @deprecated The legacy path (`false`) is deprecated and will be removed in the next major
+       * version. It is v0.9 only, does not update after mount, and keeps a second implementation of
+       * binding, validation and node lookup. Leave this prop out to use the node tree.
        */
       nodeResolver?: boolean;
     }>(),
@@ -105,6 +116,7 @@
     // syntax. A v1.0 surface may also have no default catalog (each component names its own),
     // which NodeResolver handles; v0.9 surfaces always have one.
     const v10 = isV10Surface(surface);
+    if (!props.nodeResolver) warnLegacyRenderPathDeprecated();
     if (v10 && !props.nodeResolver) {
       console.warn(`[A2UI] Surface '${surface.id}' is A2UI v1.0, which the legacy render path (nodeResolver: false) does not support; rendering it from the node tree instead.`);
     }
@@ -120,6 +132,15 @@
       }
     }
   };
+
+  // Once per page: a warning per provider would repeat for every surface on screen.
+  function warnLegacyRenderPathDeprecated() {
+    const key = Symbol.for('a2ui-vuetify-renderer.legacyRenderPathWarned');
+    const flags = globalThis as unknown as Record<symbol, boolean>;
+    if (flags[key]) return;
+    flags[key] = true;
+    console.warn('[A2UI] nodeResolver: false (the legacy render path) is deprecated and will be removed in the next major version. Leave the prop out to render from the live node tree.');
+  }
 
   const unsubscribeModel = () => {
     createdSubscription?.unsubscribe();

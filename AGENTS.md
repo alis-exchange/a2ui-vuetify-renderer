@@ -116,7 +116,7 @@ All public API is exported from this barrel. If you add a new public symbol, it 
 
 ### 5.3 A2UIProvider (`composables/A2UIProvider.vue`)
 
-- Wraps a single surface. Receives `processor`, `surfaceId`, `onAction`, `onError` and `nodeResolver` (default `true`) props.
+- Wraps a single surface. Receives `processor`, `surfaceId`, `onAction`, `onError` and `nodeResolver` (default `true`) props. **`nodeResolver: false` (the legacy render path) is deprecated** and warns once per page; it goes in the next major. Do not build new behaviour for it; the removal checklist is the comment above `withDefaults` in `A2UIProvider.vue`.
 - Provides `A2UI_CONTEXT_KEY` to descendants via `provide/inject`, handing out the **raw** processor (`toRaw`), never Vue's reactive proxy, because web_core's signals and identity checks must see the real objects.
 - Subscribes to `processor.model.onSurfaceCreated` / `onSurfaceDeleted` (the only lifecycle events web_core emits; `MessageProcessor` is not an `EventTarget`). When the surface exists it creates one `NodeResolver(surface, surface.defaultCatalog)` (`catalog` is a deprecated alias since web_core 0.12), exposed as `context.resolver`, and disposes it on delete/unmount.
 - Both handlers check the model rather than trusting the event. `EventEmitter.emit` awaits each listener, so a handler can run a microtask late: a `deleted` that arrives after the surface was recreated would otherwise dispose the live resolver, and a provider that mounts mid-emit would attach the same surface twice. `deleted` is ignored while `model.getSurface(id)` still returns a surface; `created` is ignored when it names the surface already attached.

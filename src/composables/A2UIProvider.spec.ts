@@ -251,3 +251,25 @@ describe('A2UIProvider.vue', () => {
     if (themeProvider.exists()) expect(themeProvider.props('theme')).toBeUndefined();
   });
 });
+
+describe('deprecated legacy render path', () => {
+  const FLAG = Symbol.for('a2ui-vuetify-renderer.legacyRenderPathWarned');
+
+  it('warns once per page when nodeResolver is false, and not otherwise', () => {
+    delete (globalThis as any)[FLAG];
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const mountWith = (nodeResolver?: boolean) => {
+      const processor = createProcessor();
+      processor.processMessages([createSurface()]);
+      mount(A2UIProvider, { global: { plugins: [createVuetify()] }, props: { processor, surfaceId: SURFACE, ...(nodeResolver === undefined ? {} : { nodeResolver }) } });
+    };
+    const deprecationWarnings = () => warn.mock.calls.filter(([m]) => String(m).includes('deprecated'));
+
+    mountWith();
+    expect(deprecationWarnings()).toHaveLength(0);
+    mountWith(false);
+    mountWith(false);
+    expect(deprecationWarnings()).toHaveLength(1);
+    warn.mockRestore();
+  });
+});
