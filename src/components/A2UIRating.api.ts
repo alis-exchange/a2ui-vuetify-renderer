@@ -2,18 +2,25 @@
  * ComponentApi schema for A2UIRating.
  * Extracted from the Vue SFC so catalog generation does not load .vue files under tsx.
  */
-import { ActionSchema, DynamicNumberSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
+import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { CommonProps } from '../catalog/common-props';
+import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
 
-export const RatingApi: ComponentApi = {
-  name: 'Rating',
-  schema: z
-    .object({
-      ...CommonProps,
-      max: z.number().default(5).optional(),
-      value: DynamicNumberSchema,
-      action: ActionSchema.optional(),
-    })
-    .strict(),
-};
+/** Builds the Rating API for one protocol family; see {@link ProtocolKit}. */
+export function buildRatingApi(kit: ProtocolKit): ComponentApi {
+  const { ActionSchema, DynamicNumberSchema } = kit;
+  return {
+    name: 'Rating',
+    schema: z
+      .object({
+        ...kit.commonProps,
+        max: z.number().default(5).optional(),
+        value: DynamicNumberSchema,
+        action: ActionSchema.optional(),
+      })
+      .strict(),
+  };
+}
+
+/** The Rating API for A2UI v0.9 / v0.9.1. */
+export const RatingApi: ComponentApi = buildRatingApi(A2UI_V09);

@@ -2,24 +2,31 @@
  * ComponentApi schema for A2UIButton.
  * Extracted from the Vue SFC so catalog generation does not load .vue files under tsx.
  */
-import { ActionSchema, CheckableSchema, DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
+import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { CommonProps } from '../catalog/common-props';
+import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
 
-export const ButtonApi: ComponentApi = {
-  name: 'Button',
-  schema: z
-    .object({
-      ...CommonProps,
-      label: DynamicStringSchema.optional(),
-      text: DynamicStringSchema.optional(),
-      icon: DynamicStringSchema.optional(),
-      variant: z.enum(['default', 'primary', 'borderless']).default('default').optional(),
-      action: ActionSchema,
-      checks: CheckableSchema.shape.checks,
-    })
-    // No refine(): a ZodEffects root hides the shape from web_core's binder (every prop would
-    // become static, losing action closures and isValid). Agents should still send at least one
-    // of label, text or icon; the JSON catalog could never express that rule anyway.
-    .strict(),
-};
+/** Builds the Button API for one protocol family; see {@link ProtocolKit}. */
+export function buildButtonApi(kit: ProtocolKit): ComponentApi {
+  const { ActionSchema, CheckableSchema, DynamicStringSchema } = kit;
+  return {
+    name: 'Button',
+    schema: z
+      .object({
+        ...kit.commonProps,
+        label: DynamicStringSchema.optional(),
+        text: DynamicStringSchema.optional(),
+        icon: DynamicStringSchema.optional(),
+        variant: z.enum(['default', 'primary', 'borderless']).default('default').optional(),
+        action: ActionSchema,
+        checks: CheckableSchema.shape.checks,
+      })
+      // No refine(): a ZodEffects root hides the shape from web_core's binder (every prop would
+      // become static, losing action closures and isValid). Agents should still send at least one
+      // of label, text or icon; the JSON catalog could never express that rule anyway.
+      .strict(),
+  };
+}
+
+/** The Button API for A2UI v0.9 / v0.9.1. */
+export const ButtonApi: ComponentApi = buildButtonApi(A2UI_V09);

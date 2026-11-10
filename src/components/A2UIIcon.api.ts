@@ -4,14 +4,20 @@
  */
 import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { CommonProps } from '../catalog/common-props';
+import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
 
-export const IconApi: ComponentApi = {
-  name: 'Icon',
-  schema: z
-    .object({
-      ...CommonProps,
-      name: z.union([z.string(), z.object({ path: z.string() })]),
-    })
-    .strict(),
-};
+/** Builds the Icon API for one protocol family; see {@link ProtocolKit}. */
+export function buildIconApi(kit: ProtocolKit): ComponentApi {
+  return {
+    name: 'Icon',
+    schema: z
+      .object({
+        ...kit.commonProps,
+        name: z.union([z.string(), kit.PathBinding]),
+      })
+      .strict(),
+  };
+}
+
+/** The Icon API for A2UI v0.9 / v0.9.1. */
+export const IconApi: ComponentApi = buildIconApi(A2UI_V09);

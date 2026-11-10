@@ -4,14 +4,20 @@
  */
 import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { CommonProps } from '../catalog/common-props';
+import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
 
-export const TreeViewApi: ComponentApi = {
-  name: 'TreeView',
-  schema: z
-    .object({
-      ...CommonProps,
-      items: z.array(z.any()),
-    })
-    .strict(),
-};
+/** Builds the TreeView API for one protocol family; see {@link ProtocolKit}. */
+export function buildTreeViewApi(kit: ProtocolKit): ComponentApi {
+  return {
+    name: 'TreeView',
+    schema: z
+      .object({
+        ...kit.commonProps,
+        items: z.array(z.any()),
+      })
+      .strict(),
+  };
+}
+
+/** The TreeView API for A2UI v0.9 / v0.9.1. */
+export const TreeViewApi: ComponentApi = buildTreeViewApi(A2UI_V09);

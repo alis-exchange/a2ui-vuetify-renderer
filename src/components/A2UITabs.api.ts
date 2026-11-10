@@ -2,26 +2,33 @@
  * ComponentApi schema for A2UITabs.
  * Extracted from the Vue SFC so catalog generation does not load .vue files under tsx.
  */
-import { ActionSchema, ComponentIdSchema, DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
+import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { CommonProps } from '../catalog/common-props';
+import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
 
-export const TabsApi: ComponentApi = {
-  name: 'Tabs',
-  schema: z
-    .object({
-      ...CommonProps,
-      tabs: z
-        .array(
-          z
-            .object({
-              title: DynamicStringSchema,
-              child: ComponentIdSchema,
-            })
-            .strict(),
-        )
-        .min(1),
-      action: ActionSchema.optional(),
-    })
-    .strict(),
-};
+/** Builds the Tabs API for one protocol family; see {@link ProtocolKit}. */
+export function buildTabsApi(kit: ProtocolKit): ComponentApi {
+  const { ActionSchema, ComponentIdSchema, DynamicStringSchema } = kit;
+  return {
+    name: 'Tabs',
+    schema: z
+      .object({
+        ...kit.commonProps,
+        tabs: z
+          .array(
+            z
+              .object({
+                title: DynamicStringSchema,
+                child: ComponentIdSchema,
+              })
+              .strict(),
+          )
+          .min(1),
+        action: ActionSchema.optional(),
+      })
+      .strict(),
+  };
+}
+
+/** The Tabs API for A2UI v0.9 / v0.9.1. */
+export const TabsApi: ComponentApi = buildTabsApi(A2UI_V09);

@@ -12,6 +12,10 @@ const catalogPath = path.join(catalogDir, 'vuetify-catalog.json');
 const scriptPath = path.join(__dirname, 'generate-catalog.ts');
 
 describe('generate-catalog.ts', () => {
+  // Read before the first test regenerates the file in place, so a schema change without a
+  // regenerated catalog fails here (in CI, on a clean checkout) instead of shipping stale JSON.
+  const committed = fs.existsSync(catalogPath) ? fs.readFileSync(catalogPath, 'utf-8') : undefined;
+
   beforeAll(() => {
     if (!fs.existsSync(catalogDir)) {
       fs.mkdirSync(catalogDir, { recursive: true });
@@ -24,6 +28,7 @@ describe('generate-catalog.ts', () => {
     expect(fs.existsSync(catalogPath)).toBe(true);
 
     const content = fs.readFileSync(catalogPath, 'utf-8');
+    expect(content, 'catalog/vuetify-catalog.json is stale: run pnpm generate:catalog and commit it').toBe(committed);
     const json = JSON.parse(content);
 
     expect(json).toBeDefined();

@@ -2,18 +2,25 @@
  * ComponentApi schema for A2UIAvatar.
  * Extracted from the Vue SFC so catalog generation does not load .vue files under tsx.
  */
-import { ComponentIdSchema, DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
+import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { CommonProps } from '../catalog/common-props';
+import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
 
-export const AvatarApi: ComponentApi = {
-  name: 'Avatar',
-  schema: z
-    .object({
-      ...CommonProps,
-      image: DynamicStringSchema.optional(),
-      text: DynamicStringSchema.optional(),
-      child: ComponentIdSchema.optional(),
-    })
-    .strict(),
-};
+/** Builds the Avatar API for one protocol family; see {@link ProtocolKit}. */
+export function buildAvatarApi(kit: ProtocolKit): ComponentApi {
+  const { ComponentIdSchema, DynamicStringSchema } = kit;
+  return {
+    name: 'Avatar',
+    schema: z
+      .object({
+        ...kit.commonProps,
+        image: DynamicStringSchema.optional(),
+        text: DynamicStringSchema.optional(),
+        child: ComponentIdSchema.optional(),
+      })
+      .strict(),
+  };
+}
+
+/** The Avatar API for A2UI v0.9 / v0.9.1. */
+export const AvatarApi: ComponentApi = buildAvatarApi(A2UI_V09);

@@ -1,7 +1,10 @@
 import { A2uiValidationError, Catalog, MessageProcessor, scrapeSchemaBehavior, type A2uiMessage } from '@a2ui/web_core/v0_9';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CATALOG_ID } from '../core/constants';
+import { CATALOG_ID, CATALOG_ID_V1 } from '../core/constants';
+import { zodToCatalogJson } from '../core/zodToCatalogJson';
+import { A2UI_V09 } from '../protocol/kits';
 import { VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA } from './index';
+import { buildVuetifyComponents, VUETIFY_COMPONENTS_V1 } from './vuetify-components';
 
 /**
  * Pins down how @a2ui/web_core (>= 0.10.6) treats the Vuetify catalog: every component in an
@@ -83,5 +86,61 @@ describe('Vuetify catalog under MessageProcessor validation', () => {
   it('advertises the Vuetify catalog id in client capabilities', () => {
     const capabilities = processor.getClientCapabilities();
     expect(capabilities['v0.9']?.supportedCatalogIds).toEqual([CATALOG_ID]);
+  });
+});
+
+describe('one schema source, built per protocol', () => {
+  it('builds exactly today’s v0.9 schemas from the v0.9 kit', () => {
+    const rebuilt = buildVuetifyComponents(A2UI_V09);
+    expect(rebuilt.map((api) => api.name)).toEqual(VUETIFY_COMPONENTS.map((api) => api.name));
+    rebuilt.forEach((api, i) => expect(zodToCatalogJson(api.schema), api.name).toEqual(zodToCatalogJson(VUETIFY_COMPONENTS[i].schema)));
+  });
+
+  it('lists the same components for v1.0', () => {
+    expect(VUETIFY_COMPONENTS_V1.map((api) => api.name)).toEqual(VUETIFY_COMPONENTS.map((api) => api.name));
+  });
+
+  it('keeps every v1.0 component schema readable by the binder', () => {
+    for (const api of VUETIFY_COMPONENTS_V1) {
+      expect(scrapeSchemaBehavior(api.schema).type, api.name).toBe('OBJECT');
+    }
+  });
+
+  describe('under a v1.0 MessageProcessor', () => {
+    const SURFACE = 'v1';
+    const process = (components: Record<string, unknown>[]) => {
+      const catalog = new Catalog(CATALOG_ID_V1, '1.0', VUETIFY_COMPONENTS_V1, []);
+      const processor = new MessageProcessor([catalog]);
+      processor.processMessages([
+        { version: '1.0', createSurface: { surfaceId: SURFACE, catalogId: CATALOG_ID_V1 } },
+        { version: '1.0', updateComponents: { surfaceId: SURFACE, components: [{ id: 'root', component: 'Column', children: components.map((c) => c.id) }, ...components] } },
+      ] as never);
+    };
+
+    beforeEach(() => vi.spyOn(console, 'error').mockImplementation(() => {}));
+    afterEach(() => vi.restoreAllMocks());
+
+    it('accepts @path bindings, @call checks and envelope keys', () => {
+      expect(() =>
+        process([
+          {
+            id: 'tf',
+            component: 'TextField',
+            label: { '@path': '/label' },
+            value: { '@path': '/name' },
+            accessibility: { label: 'Name' },
+            weight: 1,
+            checks: [{ condition: { '@call': 'required', args: { value: { '@path': '/name' } } }, message: 'Name is required' }],
+          },
+          { id: 'icon', component: 'Icon', name: { '@path': '/icon' } },
+          { id: 'range', component: 'RangeSlider', max: 10, value: { '@path': '/range' } },
+          { id: 'pick', component: 'Select', options: ['a'], value: { '@path': '/choice' } },
+        ]),
+      ).not.toThrow();
+    });
+
+    it('rejects unknown props', () => {
+      expect(() => process([{ id: 'tf', component: 'TextField', label: 'Name', bogus: true }])).toThrow(/bogus/);
+    });
   });
 });

@@ -2,18 +2,25 @@
  * ComponentApi schema for A2UIBadge.
  * Extracted from the Vue SFC so catalog generation does not load .vue files under tsx.
  */
-import { ComponentIdSchema, DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
+import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { CommonProps } from '../catalog/common-props';
+import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
 
-export const BadgeApi: ComponentApi = {
-  name: 'Badge',
-  schema: z
-    .object({
-      ...CommonProps,
-      content: DynamicStringSchema,
-      color: z.string().optional(),
-      child: ComponentIdSchema,
-    })
-    .strict(),
-};
+/** Builds the Badge API for one protocol family; see {@link ProtocolKit}. */
+export function buildBadgeApi(kit: ProtocolKit): ComponentApi {
+  const { ComponentIdSchema, DynamicStringSchema } = kit;
+  return {
+    name: 'Badge',
+    schema: z
+      .object({
+        ...kit.commonProps,
+        content: DynamicStringSchema,
+        color: z.string().optional(),
+        child: ComponentIdSchema,
+      })
+      .strict(),
+  };
+}
+
+/** The Badge API for A2UI v0.9 / v0.9.1. */
+export const BadgeApi: ComponentApi = buildBadgeApi(A2UI_V09);

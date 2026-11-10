@@ -2,21 +2,28 @@
  * ComponentApi schema for A2UISlider.
  * Extracted from the Vue SFC so catalog generation does not load .vue files under tsx.
  */
-import { ActionSchema, CheckableSchema, DynamicNumberSchema, DynamicStringSchema, type ComponentApi } from '@a2ui/web_core/v0_9';
+import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { CommonProps } from '../catalog/common-props';
+import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
 
-export const SliderApi: ComponentApi = {
-  name: 'Slider',
-  schema: z
-    .object({
-      ...CommonProps,
-      label: DynamicStringSchema.optional(),
-      min: z.number().default(0).optional(),
-      max: z.number(),
-      value: DynamicNumberSchema,
-      action: ActionSchema.optional(),
-      checks: CheckableSchema.shape.checks,
-    })
-    .strict(),
-};
+/** Builds the Slider API for one protocol family; see {@link ProtocolKit}. */
+export function buildSliderApi(kit: ProtocolKit): ComponentApi {
+  const { ActionSchema, CheckableSchema, DynamicNumberSchema, DynamicStringSchema } = kit;
+  return {
+    name: 'Slider',
+    schema: z
+      .object({
+        ...kit.commonProps,
+        label: DynamicStringSchema.optional(),
+        min: z.number().default(0).optional(),
+        max: z.number(),
+        value: DynamicNumberSchema,
+        action: ActionSchema.optional(),
+        checks: CheckableSchema.shape.checks,
+      })
+      .strict(),
+  };
+}
+
+/** The Slider API for A2UI v0.9 / v0.9.1. */
+export const SliderApi: ComponentApi = buildSliderApi(A2UI_V09);
