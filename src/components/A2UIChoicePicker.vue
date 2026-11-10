@@ -3,6 +3,7 @@
   import { computed } from 'vue';
   import { useDynamicProps } from '../composables/useDynamicProps';
   import A2UIRadioButton from './A2UIRadioButton.vue';
+  import A2UISegmentedChoice from './A2UISegmentedChoice.vue';
   import A2UISelect from './A2UISelect.vue';
 
   const props = defineProps<{
@@ -18,6 +19,10 @@
     const variant = dynamicProps.value.variant || 'mutuallyExclusive';
     const displayStyle = dynamicProps.value.displayStyle || 'dropdown';
 
+    if (displayStyle === 'segmented') {
+      return A2UISegmentedChoice;
+    }
+
     if (displayStyle === 'list') {
       if (variant === 'mutuallyExclusive') {
         return A2UIRadioButton;
@@ -28,7 +33,7 @@
       return A2UISelect;
     }
 
-    // segmented buttons not explicitly built yet, fallback to Select
+    // displayStyle 'dropdown' (the default).
     return A2UISelect;
   });
 </script>

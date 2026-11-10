@@ -8771,7 +8771,7 @@
     },
     "List": {
       "type": "object",
-      "description": "A vertical list of children, often a template repeated over a data array.",
+      "description": "A vertical or horizontal list of children, often a template repeated over a data array.",
       "allOf": [
         {
           "$ref": "#/$defs/ComponentCommon"
@@ -13456,7 +13456,7 @@
     },
     "ChoicePicker": {
       "type": "object",
-      "description": "Picks one or several options: a list of radio buttons for a single choice with displayStyle list, otherwise a dropdown.",
+      "description": "Picks one or several options, shown as a dropdown (default), a list of radio buttons (list, single choice) or a row of segmented buttons (segmented).",
       "allOf": [
         {
           "$ref": "#/$defs/ComponentCommon"

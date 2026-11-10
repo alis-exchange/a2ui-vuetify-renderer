@@ -196,3 +196,50 @@ describe('every two-way input writes back on v1.0', () => {
     expect(processor.model.getSurface('w')!.dataModel.get('/v')).toEqual(next);
   });
 });
+
+describe.each<Wire>(['v0.9', '1.0'])('ChoicePicker segmented on %s', (wire) => {
+  beforeAll(() => registerDefaultComponents());
+
+  const setup = (variant: string, value: unknown) => {
+    const processor = new MessageProcessor(bothCatalogs(), undefined, { version: 'v0.9' });
+    const v1 = wire === '1.0';
+    const picker = {
+      id: 'root',
+      component: 'ChoicePicker',
+      label: 'Size',
+      displayStyle: 'segmented',
+      variant,
+      options: [
+        { label: 'Small', value: 's' },
+        { label: 'Large', value: 'l' },
+      ],
+      value: { path: '/size' },
+    };
+    processor.processMessages([
+      { version: wire, createSurface: { surfaceId: 'seg', catalogId: v1 ? CATALOG_ID_V1 : CATALOG_ID } },
+      { version: wire, updateDataModel: { surfaceId: 'seg', path: '/', value: { size: value } } },
+      { version: wire, updateComponents: { surfaceId: 'seg', components: [v1 ? toV1(picker) : picker] } },
+    ] as never);
+    return { data: processor.model.getSurface('seg')!.dataModel, wrapper: render(processor, 'seg') };
+  };
+
+  it('renders a button per option and writes a single choice back', async () => {
+    const { wrapper, data } = setup('mutuallyExclusive', 's');
+    const buttons = wrapper.findComponent({ name: 'VBtnToggle' }).findAllComponents({ name: 'VBtn' });
+    expect(buttons.map((b) => b.text())).toEqual(['Small', 'Large']);
+    expect(wrapper.text()).toContain('Size');
+
+    await buttons[1].trigger('click');
+    await nextTick();
+    await Promise.resolve();
+    expect(data.get('/size')).toBe('l');
+  });
+
+  it('stores several choices as an array with multipleSelection', async () => {
+    const { wrapper, data } = setup('multipleSelection', ['s']);
+    const buttons = wrapper.findComponent({ name: 'VBtnToggle' }).findAllComponents({ name: 'VBtn' });
+    await buttons[1].trigger('click');
+    await nextTick();
+    expect(data.get('/size')).toEqual(['s', 'l']);
+  });
+});

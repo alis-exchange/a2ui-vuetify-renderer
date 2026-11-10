@@ -69,4 +69,19 @@ describe('Dynamic Template Lists', () => {
     expect(children[0].attributes('data-path')).toBe('/items/0');
     expect(children[1].attributes('data-path')).toBe('/items/1');
   });
+
+  it.each([
+    [{}, ['flex-column', 'align-stretch'], ['flex-row']],
+    [{ direction: 'horizontal' }, ['flex-row', 'overflow-x-auto', 'align-stretch'], ['flex-column']],
+    [{ direction: 'vertical', align: 'center' }, ['flex-column', 'align-center'], ['align-stretch']],
+    [{ direction: 'horizontal', align: 'end' }, ['flex-row', 'align-end'], ['flex-column']],
+  ])('A2UIList lays children out for %j', (layout, present, absent) => {
+    const wrapper = mount(A2UIList, {
+      global: { provide: { [A2UI_CONTEXT_KEY as symbol]: createMockContext(mockData) }, plugins: [vuetify], stubs },
+      props: { node: { id: 'list1', type: 'List', properties: { children: dynamicChildrenProp, ...layout } } as any },
+    });
+    const classes = wrapper.findComponent({ name: 'VList' }).classes();
+    for (const name of present) expect(classes).toContain(name);
+    for (const name of absent) expect(classes).not.toContain(name);
+  });
 });
