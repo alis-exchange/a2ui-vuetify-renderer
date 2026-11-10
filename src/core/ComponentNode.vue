@@ -148,14 +148,13 @@
     return componentId ? surface.value?.componentsModel?.get(componentId) : undefined;
   });
 
-  // The node's own catalog: on v1.0 a component may name one other than the surface default.
-  // (This used to read surface.catalogId, which SurfaceModel does not have, so it always fell back.)
   // v1.0 accepts a v0.9 `{ path }` / `{ call }` without complaint and then treats it as a literal
   // object, so a half-migrated agent's field shows nothing. Report it through the surface's error
-  // channel (A2UIProvider forwards that to onError) instead of failing silently.
+  // channel (A2UIProvider forwards that to onError) instead of failing silently. Watch nodeProps
+  // too: web_core updates a component of the same type in place, so `node` stays the same object.
   watch(
-    node,
-    (model) => {
+    [node, nodeProps],
+    ([model]) => {
       if (!model || checkedForLegacyBindings.has(model.properties) || !isV10Surface(surface.value)) return;
       checkedForLegacyBindings.add(model.properties);
       // Only binding slots count: elsewhere a { path } object is ordinary data in v1.0.
@@ -173,6 +172,8 @@
     { immediate: true },
   );
 
+  // The node's own catalog: on v1.0 a component may name one other than the surface default.
+  // (This used to read surface.catalogId, which SurfaceModel does not have, so it always fell back.)
   const catalogId = computed(() => node.value?.catalog?.id ?? CATALOG_ID);
 
   const componentType = computed(() => {

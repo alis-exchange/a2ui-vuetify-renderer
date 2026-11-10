@@ -287,6 +287,33 @@ describe('openUrl needs a user click', () => {
     expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringMatching(/requires user activation/) }));
   });
 
+  it.each([
+    ['v0.9', { call: 'openUrl', args: { url: 'mailto:hi@example.com' } }],
+    ['v1.0', { '@call': 'openUrl', args: { url: 'mailto:hi@example.com' } }],
+  ])('refuses a %s check condition that would open a link while the user types', async (version, condition) => {
+    // A keystroke counts as a user gesture, so only passive evaluation keeps a check from firing it.
+    setUserActivation(true);
+    const v1 = version === 'v1.0';
+    const processor = v1
+      ? new MessageProcessor([new Catalog(CATALOG_ID_V1, '1.0', VUETIFY_COMPONENTS_V1, VUETIFY_FUNCTIONS_V1)])
+      : new MessageProcessor([new Catalog(CATALOG_ID, '0.9', VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS)], undefined, { version: 'v0.9' });
+    const wire = v1 ? '1.0' : 'v0.9';
+    processor.processMessages([
+      { version: wire, createSurface: { surfaceId: 'chk', catalogId: v1 ? CATALOG_ID_V1 : CATALOG_ID } },
+      { version: wire, updateComponents: { surfaceId: 'chk', components: [{ id: 'root', component: 'TextField', label: 'L', checks: [{ condition, message: 'm' }] }] } },
+    ] as never);
+    const wrapper = mount(A2UIProvider, {
+      global: { plugins: [createVuetify()] },
+      props: { processor, surfaceId: 'chk', onAction: vi.fn(), onError: vi.fn() },
+      slots: { default: () => h(ComponentNode, { id: 'root' }) },
+    });
+    const rules = wrapper.findComponent({ name: 'VTextField' }).props('rules') as ((v: unknown) => unknown)[];
+    rules[0]('a');
+    rules[0]('ab');
+    expect(assign).not.toHaveBeenCalled();
+    expect(open).not.toHaveBeenCalled();
+  });
+
   it('refuses a binding that would open a link while rendering', async () => {
     const { onError } = mountWith([
       { id: 'root', component: 'Column', children: ['t'] },
@@ -545,7 +572,7 @@ describe('v1.0 provider behaviour', () => {
       props: { processor, surfaceId: 'p', onAction: vi.fn(), onError, nodeResolver },
       slots: { default: () => h(ComponentNode, { id: 'root' }) },
     });
-    return { wrapper, onError };
+    return { wrapper, onError, processor };
   }
 
   it('reports a v0.9-style binding once instead of rendering it silently', async () => {
@@ -559,6 +586,20 @@ describe('v1.0 provider behaviour', () => {
     const reports = onError.mock.calls.filter(([e]) => e?.code === 'VALIDATION_FAILED');
     expect(reports).toHaveLength(1);
     expect(reports[0][0]).toMatchObject({ path: '/text', details: { componentId: 'old' } });
+  });
+
+  it('reports v0.9 syntax that arrives in an update to an existing component', async () => {
+    const { onError, processor } = v1Surface({ catalogId: CATALOG_ID_V1 }, [{ id: 'root', component: 'Text', text: { '@path': '/name' } }]);
+    await nextTick();
+    expect(onError.mock.calls.filter(([e]) => e?.code === 'VALIDATION_FAILED')).toHaveLength(0);
+
+    // Same id and type: web_core updates the ComponentModel in place.
+    processor.processMessages([{ version: '1.0', updateComponents: { surfaceId: 'p', components: [{ id: 'root', component: 'Text', text: { path: '/name' } }] } }] as never);
+    await nextTick();
+    await nextTick();
+    const reports = onError.mock.calls.filter(([e]) => e?.code === 'VALIDATION_FAILED');
+    expect(reports).toHaveLength(1);
+    expect(reports[0][0]).toMatchObject({ path: '/text', details: { componentId: 'root' } });
   });
 
   it('renders from the node tree even with nodeResolver: false', () => {

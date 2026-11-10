@@ -45,13 +45,29 @@ export interface UseChecksReturn {
  * ```
  */
 export function useChecks(node: MaybeRefOrGetter<ComponentModel>): UseChecksReturn {
-  const { resolveValue, nodeProps } = useA2UI();
+  const { resolveValue, nodeProps, dataContext } = useA2UI();
+
+  // Conditions are evaluated passively, as web_core's binder evaluates them. `resolveValue` is an
+  // active evaluation, so a condition calling a function that needs a user gesture (`openUrl`)
+  // would run whenever the rules run while the user types; a passive one is refused by web_core
+  // (reported as an EXPRESSION_ERROR) instead.
+  const resolveCondition = <V = unknown>(value: any): V | undefined => {
+    nodeProps?.value; // keep the rules reactive to the node, as resolveValue does
+    const context = dataContext.value;
+    if (!context || value === null || typeof value !== 'object') return resolveValue<V>(value);
+    const subscription = context.subscribeDynamicValue<V>(value, () => {});
+    try {
+      return subscription.value;
+    } finally {
+      subscription.unsubscribe();
+    }
+  };
 
   // `checks` is CHECKABLE, never a binder-resolved dynamic value, so read the raw array off the
   // node: routing it through `resolveValue` is an identity no-op that would subscribe this
   // computed to the node's whole props signal and rebuild every rule closure on each emit.
-  // The closures still call `resolveValue` on each `condition`, so cross-field checks stay live.
-  const rules = computed(() => createVuetifyRules((toValue(node).properties.checks as any[]) ?? [], resolveValue));
+  // The closures still resolve each `condition` when they run, so cross-field checks stay live.
+  const rules = computed(() => createVuetifyRules((toValue(node).properties.checks as any[]) ?? [], resolveCondition));
 
   const isValid = computed(() => nodeProps?.value?.isValid !== false);
 
