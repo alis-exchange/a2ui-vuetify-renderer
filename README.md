@@ -29,7 +29,7 @@ The library ships ESM (`dist/a2ui-vuetify-renderer.js`), UMD (`dist/a2ui-vuetify
 | ---------------- | --------- |
 | `vue`            | `^3.5.35` |
 | `vuetify`        | `^4.1.1`  |
-| `@a2ui/web_core` | `^0.10.7` |
+| `@a2ui/web_core` | `^0.15.0` |
 
 ### Catalog ID
 
@@ -44,28 +44,28 @@ The renderer expects Vuetify to be installed as a Vue plugin. You also need `vit
 **`vite.config.ts`**
 
 ```typescript
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import vuetify from 'vite-plugin-vuetify'
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import vuetify from 'vite-plugin-vuetify';
 
 export default defineConfig({
   plugins: [vue(), vuetify({ autoImport: true })],
-})
+});
 ```
 
 **`main.ts`**
 
 ```typescript
-import { createApp } from 'vue'
-import App from './App.vue'
-import { createVuetify } from 'vuetify'
-import 'vuetify/styles'
-import '@mdi/font/css/materialdesignicons.css'
+import { createApp } from 'vue';
+import App from './App.vue';
+import { createVuetify } from 'vuetify';
+import 'vuetify/styles';
+import '@mdi/font/css/materialdesignicons.css';
 
-const vuetify = createVuetify()
-const app = createApp(App)
-app.use(vuetify)
-app.mount('#app')
+const vuetify = createVuetify();
+const app = createApp(App);
+app.use(vuetify);
+app.mount('#app');
 ```
 
 ### 2. (Optional) Install the renderer plugin
@@ -73,13 +73,13 @@ app.mount('#app')
 The `A2UiVueRenderer` plugin globally registers `<A2uiProvider>` and `<A2uiComponentNode>` and populates the default component registry. You can also pass custom component overrides.
 
 ```typescript
-import { A2UiVueRenderer } from '@alis-build/a2ui-vuetify-renderer'
+import { A2UiVueRenderer } from '@alis-build/a2ui-vuetify-renderer';
 
 app.use(A2UiVueRenderer, {
   components: {
     GoogleMap: MyCustomMapComponent, // extend the catalog
   },
-})
+});
 ```
 
 If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDefaultComponents`, then call `registerDefaultComponents()` once during app setup so `defaultRegistry` is populated (the plugin does this inside `install`).
@@ -88,35 +88,27 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
 
 ```vue
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue'
-  import { MessageProcessor, Catalog, A2uiValidationError } from '@a2ui/web_core/v0_9'
-  import type { A2uiClientAction } from '@a2ui/web_core/v0_9'
-  import {
-    A2UIProvider,
-    ComponentNode,
-    CATALOG_ID,
-    VUETIFY_COMPONENTS,
-    VUETIFY_THEME_SCHEMA,
-    createVuetifyFunctions,
-    registerDefaultComponents,
-  } from '@alis-build/a2ui-vuetify-renderer'
+  import { ref, onMounted } from 'vue';
+  import { MessageProcessor, Catalog, A2uiValidationError } from '@a2ui/web_core/v0_9';
+  import type { A2uiClientAction } from '@a2ui/web_core/v0_9';
+  import { A2UIProvider, ComponentNode, CATALOG_ID, VUETIFY_COMPONENTS, VUETIFY_THEME_SCHEMA, createVuetifyFunctions, registerDefaultComponents } from '@alis-build/a2ui-vuetify-renderer';
 
-  registerDefaultComponents()
+  registerDefaultComponents();
 
   const handleAction = (action: A2uiClientAction) => {
-    console.log('Action from A2UI:', action)
-  }
+    console.log('Action from A2UI:', action);
+  };
   const handleError = (error: unknown) => {
-    console.error('A2UI surface error:', error) // unknown component types, cyclic references, expression failures
-  }
+    console.error('A2UI surface error:', error); // unknown component types, cyclic references, expression failures
+  };
 
   // createVuetifyFunctions({ locale }) gives locale-aware formatNumber / formatCurrency / pluralize
-  const catalog = new Catalog(CATALOG_ID, VUETIFY_COMPONENTS, createVuetifyFunctions({ locale: navigator.language }), VUETIFY_THEME_SCHEMA)
+  const catalog = new Catalog(CATALOG_ID, '0.9', VUETIFY_COMPONENTS, createVuetifyFunctions({ locale: navigator.language }), VUETIFY_THEME_SCHEMA);
   // Keep web_core objects out of Vue's reactivity: a plain const, markRaw() or shallowRef(). Never ref()/reactive():
   // calls made through the deep proxy bypass web_core's signals and the UI stops updating.
-  const processor = new MessageProcessor([catalog], handleAction, { version: 'v0.9' })
-  const surfaceId = 'demo-surface'
-  const ready = ref(false)
+  const processor = new MessageProcessor([catalog], handleAction, { version: 'v0.9' });
+  const surfaceId = 'demo-surface';
+  const ready = ref(false);
 
   onMounted(() => {
     processor.processMessages([
@@ -128,7 +120,7 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
           theme: { primaryColor: '#6200EE' },
         },
       },
-    ])
+    ]);
 
     try {
       processor.processMessages([
@@ -143,15 +135,15 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
             ],
           },
         },
-      ])
+      ]);
     } catch (e) {
       // web_core rejects the whole message when any component fails the catalog schema
-      if (e instanceof A2uiValidationError) console.error(e.message, e.details)
-      throw e
+      if (e instanceof A2uiValidationError) console.error(e.message, e.details);
+      throw e;
     }
 
-    ready.value = true
-  })
+    ready.value = true;
+  });
 </script>
 
 <template>
@@ -175,33 +167,33 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
 
 ### `A2UIProvider` props
 
-| Prop            | Type                       | Default         | Purpose                                                                                                                         |
-| --------------- | -------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `processor`     | `MessageProcessor`         | required        | Owns the surface, component and data models. Pass the plain instance (or `markRaw` / `shallowRef`), never a `ref()`/`reactive()` proxy |
-| `surface-id`    | `string`                   | required        | The surface to render                                                                                                           |
-| `on-action`     | `(action) => void`         | –               | Fallback handler for component actions                                                                                          |
-| `on-error`      | `(error) => void`          | `console.error` | Surface errors reported by web_core (`UNKNOWN_COMPONENT_TYPE`, `CYCLIC_REFERENCE`, expression failures)                          |
-| `node-resolver` | `boolean`                  | `true`          | Render from web_core's live node tree. `false` is the static legacy path, which only reflects the surface as of the first paint |
+| Prop            | Type               | Default         | Purpose                                                                                                                                |
+| --------------- | ------------------ | --------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `processor`     | `MessageProcessor` | required        | Owns the surface, component and data models. Pass the plain instance (or `markRaw` / `shallowRef`), never a `ref()`/`reactive()` proxy |
+| `surface-id`    | `string`           | required        | The surface to render                                                                                                                  |
+| `on-action`     | `(action) => void` | –               | Fallback handler for component actions                                                                                                 |
+| `on-error`      | `(error) => void`  | `console.error` | Surface errors reported by web_core (`UNKNOWN_COMPONENT_TYPE`, `CYCLIC_REFERENCE`, expression failures)                                |
+| `node-resolver` | `boolean`          | `true`          | Render from web_core's live node tree. `false` is the static legacy path, which only reflects the surface as of the first paint        |
 
 ### Core modules
 
-| Module                     | Role                                                                                                                                                                                                                                                                                              |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`A2UIProvider`**         | Wraps a surface. Provides processor, surface ID, and action callback via `provide/inject`. Owns one web_core `NodeResolver` for the surface (created when the surface appears, disposed when it is deleted or the provider unmounts) and forwards surface errors to `onError`, including a resolver that fails to build, which falls back to the static path instead of taking the provider down. Surface create/delete events are reconciled against the model's own state, since web_core delivers them asynchronously and a stale one would otherwise tear down a live surface. Bridges A2UI theme colors (`primaryColor`, `errorColor`, etc.) into a dynamic Vuetify theme via `v-theme-provider`.                        |
-| **`ComponentNode`**        | Recursive renderer. `id="root"` picks the resolver's root node; any other id is looked up among the live child nodes in the parent's resolved props. Mirrors the node's props signal into the context (`nodeProps`) and scopes descendants to the node's data path, so `resolveValue` is reactive. Children that have not arrived render as `[pending: id]` and are swapped in place. Types the catalog does not know are reported through `onError` and rendered from the registry without live bindings. Supports a `path` prop for scoped data context on the legacy path. |
-| **`ComponentRegistry`**    | A `Map<string, Component>` that maps A2UI type strings (e.g. `"Button"`) to Vue components. Exposes `register()`, `registerAll()`, `get()`, and `has()`. The singleton `defaultRegistry` is pre-populated by `registerDefaultComponents()`.                                                       |
-| **`useA2UI()`**            | Composable that injects the provider context. Returns `resolveValue<V>(value)`, `resolveDynamicChildren`, `sendAction`, `dispatchNodeAction`, `setData`, `surfaceId`, `dataContext`, and `dataContextPath`. `resolveValue` accepts an A2UI `DynamicValue \| undefined` (from `@a2ui/web_core/v0_9`) and resolves via `DataContext.resolveDynamicValue<V>()`; pass a type argument (e.g. `resolveValue<string>(…)`) so callers get a typed result. `dispatchNodeAction` expects a `ComponentModel`. Uses `SurfaceModel.dispatchAction()` for schema-validated action payloads. |
-| **`useChecks()`**          | Composable bridging a node's `checks` to Vue: `rules` for Vuetify inputs, plus `isValid` / `validationErrors` as reported by web_core's binder in node mode (Button and IconButton gate on them, Slider and DatePicker display them). `errorMessages(value)` falls back to the rules whenever the binder reports no failures (the legacy path, and node-mode checks the binder evaluates as passing). |
-| **`useDynamicProps()`**    | Composable for custom catalog components: given a node (ref, getter, or plain object), returns a computed ref of properties with each value passed through `resolveValue` (same generic resolver as `useA2UI`). Resolved values are still typed as `Record<string, any>` at the top level; use `resolveValue<V>()` directly when you need strong typing per field.                                                                                                        |
-| **`getCatalogSchema()`**   | Returns a deep-cloned JSON Schema for the Vuetify catalog, merging in stub entries for any extra components registered on a `ComponentRegistry` under the same `catalogId` (useful for agents or tooling). Accepts an optional `{ filter }` predicate to narrow the returned components — see **Filtering the catalog schema** below. |
-| **`VUETIFY_CATALOG`**      | The generated catalog document itself, inlined by the bundler at no extra cost. Use it when you want the schema as published (feeding an agent library, emitting it from a build step, inspecting the declared components and functions); use `getCatalogSchema()` instead when runtime-registered components must be merged in. It is the module's shared instance, so treat it as read-only. Outside a bundler the same file ships at the `./catalog` subpath: `require('@alis-build/a2ui-vuetify-renderer/catalog')`. |
-| **`catalogFilters`**       | Pre-built filter predicates for `getCatalogSchema`: `catalogFilters.customOnly` (non-built-in components only), `catalogFilters.only(...names)` (include-list), `catalogFilters.exclude(...names)` (exclude-list). |
+| Module                   | Role                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`A2UIProvider`**       | Wraps a surface. Provides processor, surface ID, and action callback via `provide/inject`. Owns one web_core `NodeResolver` for the surface (created when the surface appears, disposed when it is deleted or the provider unmounts) and forwards surface errors to `onError`, including a resolver that fails to build, which falls back to the static path instead of taking the provider down. Surface create/delete events are reconciled against the model's own state, since web_core delivers them asynchronously and a stale one would otherwise tear down a live surface. Bridges A2UI theme colors (`primaryColor`, `errorColor`, etc.) into a dynamic Vuetify theme via `v-theme-provider`. |
+| **`ComponentNode`**      | Recursive renderer. `id="root"` picks the resolver's root node; any other id is looked up among the live child nodes in the parent's resolved props. Mirrors the node's props signal into the context (`nodeProps`) and scopes descendants to the node's data path, so `resolveValue` is reactive. Children that have not arrived render as `[pending: id]` and are swapped in place. Types the catalog does not know are reported through `onError` and rendered from the registry without live bindings. Supports a `path` prop for scoped data context on the legacy path.                                                                                                                          |
+| **`ComponentRegistry`**  | A `Map<string, Component>` that maps A2UI type strings (e.g. `"Button"`) to Vue components. Exposes `register()`, `registerAll()`, `get()`, and `has()`. The singleton `defaultRegistry` is pre-populated by `registerDefaultComponents()`.                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| **`useA2UI()`**          | Composable that injects the provider context. Returns `resolveValue<V>(value)`, `resolveDynamicChildren`, `sendAction`, `dispatchNodeAction`, `setData`, `surfaceId`, `dataContext`, and `dataContextPath`. `resolveValue` accepts an A2UI `DynamicValue \| undefined` (from `@a2ui/web_core/v0_9`) and resolves via `DataContext.resolveDynamicValue<V>()`; pass a type argument (e.g. `resolveValue<string>(…)`) so callers get a typed result. `dispatchNodeAction` expects a `ComponentModel`. Uses `SurfaceModel.dispatchAction()` for schema-validated action payloads.                                                                                                                          |
+| **`useChecks()`**        | Composable bridging a node's `checks` to Vue: `rules` for Vuetify inputs, plus `isValid` / `validationErrors` as reported by web_core's binder in node mode (Button and IconButton gate on them, Slider and DatePicker display them). `errorMessages(value)` falls back to the rules whenever the binder reports no failures (the legacy path, and node-mode checks the binder evaluates as passing).                                                                                                                                                                                                                                                                                                  |
+| **`useDynamicProps()`**  | Composable for custom catalog components: given a node (ref, getter, or plain object), returns a computed ref of properties with each value passed through `resolveValue` (same generic resolver as `useA2UI`). Resolved values are still typed as `Record<string, any>` at the top level; use `resolveValue<V>()` directly when you need strong typing per field.                                                                                                                                                                                                                                                                                                                                     |
+| **`getCatalogSchema()`** | Returns a deep-cloned JSON Schema for the Vuetify catalog, merging in stub entries for any extra components registered on a `ComponentRegistry` under the same `catalogId` (useful for agents or tooling). Accepts an optional `{ filter }` predicate to narrow the returned components — see **Filtering the catalog schema** below.                                                                                                                                                                                                                                                                                                                                                                  |
+| **`VUETIFY_CATALOG`**    | The generated catalog document itself, inlined by the bundler at no extra cost. Use it when you want the schema as published (feeding an agent library, emitting it from a build step, inspecting the declared components and functions); use `getCatalogSchema()` instead when runtime-registered components must be merged in. It is the module's shared instance, so treat it as read-only. Outside a bundler the same file ships at the `./catalog` subpath: `require('@alis-build/a2ui-vuetify-renderer/catalog')`.                                                                                                                                                                               |
+| **`catalogFilters`**     | Pre-built filter predicates for `getCatalogSchema`: `catalogFilters.customOnly` (non-built-in components only), `catalogFilters.only(...names)` (include-list), `catalogFilters.exclude(...names)` (exclude-list).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 
 Form components map A2UI `checks` (`[{ condition: DynamicBoolean, message }]`) to Vuetify validation rules via `createVuetifyRules(checks, resolveValue)` in `src/utils/validation.ts`. Each `condition` (a literal, `{ path }` or `{ call, args }`) is resolved through the surface `DataContext` every time a rule runs, so it sees the live data model.
 
 ### Data flow
 
-1. **Messages in** — `MessageProcessor.processMessages()` parses JSONL and updates `SurfaceModel` state (components, data model, theme). Since `@a2ui/web_core` 0.10.6 every component in an `updateComponents` message is validated against the catalog's Zod schema before any state changes: one invalid component throws `A2uiValidationError` (`code: 'VALIDATION_ERROR'`, `details` = Zod issues) and rejects the whole message. All Vuetify schemas are strict, so unknown properties are errors; unknown component *types* are skipped. Catch the error in your transport layer (`formatZodIssue` from web_core renders single issues).
+1. **Messages in** — `MessageProcessor.processMessages()` parses JSONL and updates `SurfaceModel` state (components, data model, theme). Since `@a2ui/web_core` 0.10.6 every component in an `updateComponents` message is validated against the catalog's Zod schema before any state changes: one invalid component throws `A2uiValidationError` (`code: 'VALIDATION_ERROR'`, `details` = Zod issues) and rejects the whole message. All Vuetify schemas are strict, so unknown properties are errors; unknown component _types_ are skipped. Catch the error in your transport layer (`formatZodIssue` from web_core renders single issues).
 2. **Reactivity bridge** — `A2UIProvider` owns a web_core `NodeResolver`; each `ComponentNode` mirrors its node's `props` signal into a `shallowRef` that `resolveValue` and `resolveDynamicChildren` read. Server messages and local `setData()` writes both re-render the affected components without remounting. The binder also evaluates `checks` and reports `isValid` / `validationErrors` on the node; read them through `useChecks()` — Button and IconButton use them to disable themselves, and Slider and DatePicker to display the failing messages.
 3. **Tree resolution** — `ComponentNode` reads the flat adjacency list from `SurfaceComponentsModel`, resolves `children`/`child`/`trigger`/`content` references, and recursively renders the tree.
 4. **Value binding** — Components call `resolveValue<V>(value)` which delegates to `DataContext.resolveDynamicValue<V>()` — handling literals, `{ path }` lookups, and `{ call }` function expressions. Prefer an explicit `V` (e.g. `string`, `number[]`) for each property.
@@ -223,11 +215,17 @@ Use the `useA2UI` composable to easily map A2UI JSON properties to your componen
 ```vue
 <!-- src/components/CustomChartWidget.vue -->
 <template>
-  <v-card variant="outlined" class="pa-4 border-info">
+  <v-card
+    variant="outlined"
+    class="pa-4 border-info"
+  >
     <div class="text-h6 mb-2">{{ title }}</div>
-    <div class="d-flex align-end" style="height: 100px; gap: 8px;">
-      <div 
-        v-for="(point, idx) in chartData" 
+    <div
+      class="d-flex align-end"
+      style="height: 100px; gap: 8px;"
+    >
+      <div
+        v-for="(point, idx) in chartData"
         :key="idx"
         class="bg-info rounded-t cursor-pointer"
         :style="{ height: `${point}%`, width: '40px', transition: 'height 0.3s' }"
@@ -238,35 +236,35 @@ Use the `useA2UI` composable to easily map A2UI JSON properties to your componen
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useA2UI, type ComponentModel } from '@alis-build/a2ui-vuetify-renderer';
+  import { computed } from 'vue';
+  import { useA2UI, type ComponentModel } from '@alis-build/a2ui-vuetify-renderer';
 
-const props = defineProps<{
-  node: ComponentModel;
-}>();
+  const props = defineProps<{
+    node: ComponentModel;
+  }>();
 
-// useA2UI automatically handles resolving dynamic data bindings (e.g. { path: '/myData' })
-const { resolveValue, dispatchNodeAction } = useA2UI();
+  // useA2UI automatically handles resolving dynamic data bindings (e.g. { path: '/myData' })
+  const { resolveValue, dispatchNodeAction } = useA2UI();
 
-// Resolve the 'title' property from the A2UI JSON node (generic = resolved type)
-const title = computed(() => resolveValue<string | undefined>(props.node.properties.title) ?? 'Default Chart');
+  // Resolve the 'title' property from the A2UI JSON node (generic = resolved type)
+  const title = computed(() => resolveValue<string | undefined>(props.node.properties.title) ?? 'Default Chart');
 
-// Resolve the 'data' property from the A2UI JSON node, defaulting to an empty array
-const chartData = computed(() => {
-  const data = resolveValue<number[] | undefined>(props.node.properties.data);
-  return Array.isArray(data) ? data : [];
-});
+  // Resolve the 'data' property from the A2UI JSON node, defaulting to an empty array
+  const chartData = computed(() => {
+    const data = resolveValue<number[] | undefined>(props.node.properties.data);
+    return Array.isArray(data) ? data : [];
+  });
 
-// Dispatch the action configured on the node (see ComponentApi below) with extra context
-const handleBarClick = (index: number, value: number) => {
-  dispatchNodeAction(props.node, { index, value });
-};
+  // Dispatch the action configured on the node (see ComponentApi below) with extra context
+  const handleBarClick = (index: number, value: number) => {
+    dispatchNodeAction(props.node, { index, value });
+  };
 </script>
 ```
 
 ### 2. Register the Component
 
-Before rendering a surface, register your new component with the `defaultRegistry` using the same `CATALOG_ID` that your surface uses. 
+Before rendering a surface, register your new component with the `defaultRegistry` using the same `CATALOG_ID` that your surface uses.
 
 You can optionally provide a `ComponentApi` definition for your component. This is highly recommended as it allows `getCatalogSchema()` to expose your custom component's properties to the LLM agent, so the agent knows exactly what data your component expects.
 
@@ -281,11 +279,13 @@ import CustomChartWidget from './components/CustomChartWidget.vue';
 // Define the ComponentApi using Zod for your custom component
 const CustomChartApi: ComponentApi = {
   name: 'CustomChart',
-  schema: z.object({
-    title: z.string().describe('The title of the chart').optional(),
-    data: z.object({ path: z.string() }).describe('Path to the data model array'),
-    action: ActionSchema.optional().describe('Fired when a bar is clicked; context includes index and value'),
-  }).strict(),
+  schema: z
+    .object({
+      title: z.string().describe('The title of the chart').optional(),
+      data: z.object({ path: z.string() }).describe('Path to the data model array'),
+      action: ActionSchema.optional().describe('Fired when a bar is clicked; context includes index and value'),
+    })
+    .strict(),
 };
 
 // Register the component under the type name "CustomChart" along with its API
@@ -307,13 +307,13 @@ In your Vue component, call `dispatchNodeAction(node, extraContext?)` on user in
 
 Both functions emit actions back to the agent (or execute client-side `functionCall` actions). `dispatchNodeAction` is a higher-level helper that reads the node's `action` property first; for server events it delegates to `sendAction`.
 
-| | `dispatchNodeAction(node, extraContext?)` | `sendAction(name, sourceComponentId, context?)` |
-| --- | --- | --- |
-| **Who sets the event name** | The agent, via `action.event.name` in JSON | Your component code (first argument) |
-| **Static context** | From `action.event.context` in JSON (literals, `{ path }`, `{ call }` resolved) plus `extraContext` you pass at runtime | Only the `context` argument you pass |
-| **`functionCall` actions** | Yes — calls `dataContext.resolveAction()` | No — server events only |
-| **Visible in catalog schema** | Yes, when `action: ActionSchema` is in `ComponentApi` | No, unless the schema also declares `action` |
-| **When nothing happens** | Silently returns if `node.properties.action` is unset | Always dispatches when called |
+|                               | `dispatchNodeAction(node, extraContext?)`                                                                               | `sendAction(name, sourceComponentId, context?)` |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| **Who sets the event name**   | The agent, via `action.event.name` in JSON                                                                              | Your component code (first argument)            |
+| **Static context**            | From `action.event.context` in JSON (literals, `{ path }`, `{ call }` resolved) plus `extraContext` you pass at runtime | Only the `context` argument you pass            |
+| **`functionCall` actions**    | Yes — calls `dataContext.resolveAction()`                                                                               | No — server events only                         |
+| **Visible in catalog schema** | Yes, when `action: ActionSchema` is in `ComponentApi`                                                                   | No, unless the schema also declares `action`    |
+| **When nothing happens**      | Silently returns if `node.properties.action` is unset                                                                   | Always dispatches when called                   |
 
 **Prefer `dispatchNodeAction`** for agent-driven UIs. The agent supplies `action` in `updateComponents` JSON; your component decides when to fire it and what runtime fields to add:
 
@@ -334,12 +334,12 @@ This works at runtime, but the agent will not see that event in `getCatalogSchem
 
 A2UI defines **one standard `action` property per component node**. `dispatchNodeAction` only reads `node.properties.action`. When a component has more than one user interaction, pick the pattern that fits:
 
-| Goal | Pattern |
-| --- | --- |
-| Several gestures, one handler (agent branches on context) | **One `action` + context discriminator** |
-| Different event names, all on the same custom node | **Multiple `ActionSchema` properties** (custom) |
-| Separate affordances (Confirm / Cancel buttons) | **Child `Button` components** (standard A2UI) |
-| Fixed event names, not agent-configured | **Multiple `sendAction` calls** |
+| Goal                                                      | Pattern                                         |
+| --------------------------------------------------------- | ----------------------------------------------- |
+| Several gestures, one handler (agent branches on context) | **One `action` + context discriminator**        |
+| Different event names, all on the same custom node        | **Multiple `ActionSchema` properties** (custom) |
+| Separate affordances (Confirm / Cancel buttons)           | **Child `Button` components** (standard A2UI)   |
+| Fixed event names, not agent-configured                   | **Multiple `sendAction` calls**                 |
 
 ##### 1. One `action`, discriminate in context (recommended)
 
@@ -349,16 +349,15 @@ Use a single `action` on the node. Your component tags which interaction fired v
 
 ```typescript
 // A2UICalendar.api.ts — one action property
-action: ActionSchema.optional(),
-
-// Agent JSON — agent picks the event name once
-{
-  "id": "my-calendar",
-  "component": "Calendar",
-  "events": [{ "name": "Team standup", "start": "2026-06-09" }],
-  "value": { "path": "/selectedDate" },
-  "action": { "event": { "name": "calendarInteraction" } }
-}
+action: (ActionSchema.optional(),
+  // Agent JSON — agent picks the event name once
+  {
+    id: 'my-calendar',
+    component: 'Calendar',
+    events: [{ name: 'Team standup', start: '2026-06-09' }],
+    value: { path: '/selectedDate' },
+    action: { event: { name: 'calendarInteraction' } },
+  });
 
 // A2UICalendar.vue — discriminate by interaction
 const handleClickDate = (_e: Event, day: any) => {
@@ -386,12 +385,14 @@ No built-in component in this catalog uses multiple `ActionSchema` properties on
 // Hypothetical extension of Calendar — not in the default catalog
 const ExtendedCalendarApi: ComponentApi = {
   name: 'ExtendedCalendar',
-  schema: z.object({
-    events: z.array(z.object({ name: z.string(), start: z.string() }).strict()),
-    value: DynamicStringSchema.optional(),
-    onDateClickAction: ActionSchema.optional().describe('Fired when a date cell is clicked'),
-    onEventClickAction: ActionSchema.optional().describe('Fired when a calendar event is clicked'),
-  }).strict(),
+  schema: z
+    .object({
+      events: z.array(z.object({ name: z.string(), start: z.string() }).strict()),
+      value: DynamicStringSchema.optional(),
+      onDateClickAction: ActionSchema.optional().describe('Fired when a date cell is clicked'),
+      onEventClickAction: ActionSchema.optional().describe('Fired when a calendar event is clicked'),
+    })
+    .strict(),
 };
 ```
 
@@ -409,10 +410,7 @@ import type { Action } from '@a2ui/web_core/v0_9';
 
 const { resolveValue, sendAction } = useA2UI();
 
-function dispatchConfiguredAction(
-  actionValue: unknown,
-  extraContext?: Record<string, unknown>,
-) {
+function dispatchConfiguredAction(actionValue: unknown, extraContext?: Record<string, unknown>) {
   const action = resolveValue<Action | undefined>(actionValue);
   if (!action || !('event' in action)) return;
 
@@ -529,11 +527,11 @@ const myFilter = getCatalogSchema(defaultRegistry, CATALOG_ID, {
 });
 ```
 
-| Helper | Description |
-| --- | --- |
-| `catalogFilters.customOnly` | Keeps only components **not** in the base Vuetify catalog |
-| `catalogFilters.only(...names)` | Keeps only the listed component names |
-| `catalogFilters.exclude(...names)` | Keeps everything except the listed component names |
+| Helper                             | Description                                               |
+| ---------------------------------- | --------------------------------------------------------- |
+| `catalogFilters.customOnly`        | Keeps only components **not** in the base Vuetify catalog |
+| `catalogFilters.only(...names)`    | Keeps only the listed component names                     |
+| `catalogFilters.exclude(...names)` | Keeps everything except the listed component names        |
 
 ## Component catalog
 
@@ -541,21 +539,21 @@ const myFilter = getCatalogSchema(defaultRegistry, CATALOG_ID, {
 
 ### Content & display
 
-| A2UI type    | Vuetify / HTML               | Notes                                                            |
-| ------------ | ---------------------------- | ---------------------------------------------------------------- |
-| `Text`       | `<div>` + typography classes | Maps `variant` (h1–h5, body, caption) to `text-h1`…`text-body-1` |
-| `Image`      | `v-img`                      | `url`, `fit`, `variant`                                          |
-| `Icon`       | `v-icon`                     | Material Design Icons                                            |
-| `Divider`    | `v-divider`                  | Horizontal/vertical axis                                         |
-| `Avatar`     | `v-avatar`                   |                                                                  |
-| `Badge`      | `v-badge`                    |                                                                  |
-| `Chip`       | `v-chip`                     |                                                                  |
-| `Alert`      | `v-alert`                    |                                                                  |
-| `Banner`     | `v-banner`                   |                                                                  |
-| `EmptyState` | `v-empty-state`              |                                                                  |
-| `Rating`     | `v-rating`                   |                                                                  |
-| `Video`      | `<video>`                    | `url`, `controls`, `autoplay`, `loop`, `muted`                  |
-| `AudioPlayer` | `<audio>`                    | Same media-style props as `Video`                               |
+| A2UI type     | Vuetify / HTML               | Notes                                                            |
+| ------------- | ---------------------------- | ---------------------------------------------------------------- |
+| `Text`        | `<div>` + typography classes | Maps `variant` (h1–h5, body, caption) to `text-h1`…`text-body-1` |
+| `Image`       | `v-img`                      | `url`, `fit`, `variant`                                          |
+| `Icon`        | `v-icon`                     | Material Design Icons                                            |
+| `Divider`     | `v-divider`                  | Horizontal/vertical axis                                         |
+| `Avatar`      | `v-avatar`                   |                                                                  |
+| `Badge`       | `v-badge`                    |                                                                  |
+| `Chip`        | `v-chip`                     |                                                                  |
+| `Alert`       | `v-alert`                    |                                                                  |
+| `Banner`      | `v-banner`                   |                                                                  |
+| `EmptyState`  | `v-empty-state`              |                                                                  |
+| `Rating`      | `v-rating`                   |                                                                  |
+| `Video`       | `<video>`                    | `url`, `controls`, `autoplay`, `loop`, `muted`                   |
+| `AudioPlayer` | `<audio>`                    | Same media-style props as `Video`                                |
 
 ### Layout & containers
 
@@ -575,23 +573,23 @@ const myFilter = getCatalogSchema(defaultRegistry, CATALOG_ID, {
 
 ### Interactive & forms
 
-| A2UI type      | Vuetify component            | Notes                                                                                               |
-| -------------- | ---------------------------- | --------------------------------------------------------------------------------------------------- |
+| A2UI type      | Vuetify component            | Notes                                                                                                                                                              |
+| -------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `Button`       | `v-btn`                      | `variant` → elevated/tonal/text; `action.event` triggers `dispatchNodeAction` → `sendAction`; `action.functionCall` runs locally; disabled while its `checks` fail |
-| `TextField`    | `v-text-field`               | Two-way binding via `value.path`; `checks` (`{ condition, message }`) → Vuetify rules               |
-| `TextArea`     | `v-textarea`                 | Same binding pattern                                                                                |
-| `NumberInput`  | `v-text-field type="number"` |                                                                                                     |
-| `Checkbox`     | `v-checkbox`                 |                                                                                                     |
-| `RadioButton`  | `v-radio-group` / `v-radio`  |                                                                                                     |
-| `Select`       | `v-select`                   | `variant: "multipleSelection"` → `multiple` prop                                                    |
-| `Autocomplete` | `v-autocomplete`             |                                                                                                     |
-| `Combobox`     | `v-combobox`                 |                                                                                                     |
-| `FileInput`    | `v-file-input`               |                                                                                                     |
-| `Slider`       | `v-slider`                   |                                                                                                     |
-| `RangeSlider`  | `v-range-slider`             |                                                                                                     |
-| `DatePicker`   | `v-date-picker`              |                                                                                                     |
-| `TimePicker`   | `v-time-picker`              |                                                                                                     |
-| `ChoicePicker` | (delegates)                  | Maps A2UI choice semantics to `Select` / `RadioButton` / `Checkbox` based on variant and display style |
+| `TextField`    | `v-text-field`               | Two-way binding via `value.path`; `checks` (`{ condition, message }`) → Vuetify rules                                                                              |
+| `TextArea`     | `v-textarea`                 | Same binding pattern                                                                                                                                               |
+| `NumberInput`  | `v-text-field type="number"` |                                                                                                                                                                    |
+| `Checkbox`     | `v-checkbox`                 |                                                                                                                                                                    |
+| `RadioButton`  | `v-radio-group` / `v-radio`  |                                                                                                                                                                    |
+| `Select`       | `v-select`                   | `variant: "multipleSelection"` → `multiple` prop                                                                                                                   |
+| `Autocomplete` | `v-autocomplete`             |                                                                                                                                                                    |
+| `Combobox`     | `v-combobox`                 |                                                                                                                                                                    |
+| `FileInput`    | `v-file-input`               |                                                                                                                                                                    |
+| `Slider`       | `v-slider`                   |                                                                                                                                                                    |
+| `RangeSlider`  | `v-range-slider`             |                                                                                                                                                                    |
+| `DatePicker`   | `v-date-picker`              |                                                                                                                                                                    |
+| `TimePicker`   | `v-time-picker`              |                                                                                                                                                                    |
+| `ChoicePicker` | (delegates)                  | Maps A2UI choice semantics to `Select` / `RadioButton` / `Checkbox` based on variant and display style                                                             |
 
 ## Theming
 
@@ -611,11 +609,11 @@ The theme is applied via `<v-theme-provider>` and automatically cleaned up when 
 To avoid collisions between disparate models, components must be registered against a specific `catalogId`. The renderer uses this ID (provided via `createSurface`) to securely sandbox standard and custom components.
 
 ```typescript
-import { CATALOG_ID, defaultRegistry } from '@alis-build/a2ui-vuetify-renderer'
-import MyMap from './components/MyMap.vue'
+import { CATALOG_ID, defaultRegistry } from '@alis-build/a2ui-vuetify-renderer';
+import MyMap from './components/MyMap.vue';
 
 // Registering a synchronous custom component under the default catalog ID
-defaultRegistry.register(CATALOG_ID, 'GoogleMap', MyMap)
+defaultRegistry.register(CATALOG_ID, 'GoogleMap', MyMap);
 ```
 
 ### Lazy Loading
@@ -623,11 +621,11 @@ defaultRegistry.register(CATALOG_ID, 'GoogleMap', MyMap)
 To optimize your initial bundle, you can register components asynchronously. Vue will load the chunk only when the A2UI server requests the component.
 
 ```typescript
-import { defineAsyncComponent } from 'vue'
+import { defineAsyncComponent } from 'vue';
 
-const AsyncMap = defineAsyncComponent(() => import('./components/MyMap.vue'))
+const AsyncMap = defineAsyncComponent(() => import('./components/MyMap.vue'));
 
-defaultRegistry.register(CATALOG_ID, 'GoogleMap', AsyncMap)
+defaultRegistry.register(CATALOG_ID, 'GoogleMap', AsyncMap);
 ```
 
 ## Transport Integration
@@ -640,12 +638,12 @@ You must explicitly announce which `catalogId`s your renderer supports to the AI
 
 ```typescript
 // The processor derives the capabilities from its catalogs
-const metadata = processor.getClientCapabilities()
+const metadata = processor.getClientCapabilities();
 // { 'v0.9': { supportedCatalogIds: [CATALOG_ID] } }
 
 // Advertise protocol v0.9.1 instead (messages with version 'v0.9.1' are accepted either way),
 // or embed the full catalog schemas for agents that cannot fetch CATALOG_ID
-const metadata091 = processor.getClientCapabilities({ version: 'v0.9.1', includeInlineCatalogs: true })
+const metadata091 = processor.getClientCapabilities({ version: 'v0.9.1', includeInlineCatalogs: true });
 // Send metadata to the server...
 ```
 
@@ -657,19 +655,19 @@ Custom components receive a `node` prop (the component node from A2UI). To resol
 
 ```vue
 <script setup lang="ts">
-  import { toRef } from 'vue'
-  import { useDynamicProps, useA2UI, type ComponentModel } from '@alis-build/a2ui-vuetify-renderer'
+  import { toRef } from 'vue';
+  import { useDynamicProps, useA2UI, type ComponentModel } from '@alis-build/a2ui-vuetify-renderer';
 
-  const props = defineProps<{ node: ComponentModel }>()
+  const props = defineProps<{ node: ComponentModel }>();
 
-  const dynamicProps = useDynamicProps(toRef(props, 'node'))
+  const dynamicProps = useDynamicProps(toRef(props, 'node'));
 
-  const { dispatchNodeAction, sendAction, setData } = useA2UI()
+  const { dispatchNodeAction, sendAction, setData } = useA2UI();
 
   function handleClick(coords: { lat: number; lng: number }) {
-    setData('/map/lastClick', coords)
+    setData('/map/lastClick', coords);
     // Prefer dispatchNodeAction when the agent sets action on the node (see Custom Components above)
-    dispatchNodeAction(props.node, coords)
+    dispatchNodeAction(props.node, coords);
     // Or sendAction for a fixed event name not configured in JSON (see CustomChartWidget):
     // sendAction('chartPointClicked', props.node.id, { index, value })
   }
@@ -677,8 +675,7 @@ Custom components receive a `node` prop (the component node from A2UI). To resol
 
 <template>
   <div class="custom-map">
-    Latitude: {{ dynamicProps.lat }}
-    Longitude: {{ dynamicProps.lng }}
+    Latitude: {{ dynamicProps.lat }} Longitude: {{ dynamicProps.lng }}
     <v-btn @click="handleClick({ lat: 0, lng: 0 })">Click Map</v-btn>
   </div>
 </template>
@@ -691,11 +688,13 @@ Custom components receive a `node` prop (the component node from A2UI). To resol
 - **Locale** — `formatNumber`, `formatCurrency` and `pluralize` use the given BCP 47 locale (e.g. `navigator.language`). Omit it for the host runtime locale.
 - **`openUrl`** — the basic catalog's `openUrl` (web_core ≥ 0.10.2) only allows `http:`/`https:`. The Vuetify override keeps that protection but also allows `mailto:` and `tel:`:
 
-| URL scheme                                       | Behaviour                                                        |
-| ------------------------------------------------ | ---------------------------------------------------------------- |
-| `http:`, `https:` (relative URLs resolve first)  | `window.open(url, '_blank', 'noopener,noreferrer')`              |
-| `mailto:`, `tel:`                                | `window.location.assign(url)` (no blank tab left behind)         |
-| anything else (`javascript:`, `data:`, `file:`…) | throws `A2uiExpressionError` (`Unsupported URL scheme: …`)       |
+| URL scheme                                       | Behaviour                                                  |
+| ------------------------------------------------ | ---------------------------------------------------------- |
+| `http:`, `https:` (relative URLs resolve first)  | `window.open(url, '_blank', 'noopener,noreferrer')`        |
+| `mailto:`, `tel:`                                | `window.location.assign(url)` (no blank tab left behind)   |
+| anything else (`javascript:`, `data:`, `file:`…) | throws `A2uiExpressionError` (`Unsupported URL scheme: …`) |
+
+`openUrl` only runs from something the user clicked, such as a Button `functionCall` action. It is `allowedCallers: 'rendererOnly'` with `requiresUserActivation: true`, as A2UI v1.0 requires: an agent's `callRendererFunction` is refused, and so is `openUrl` in a binding or a check (reported through `onError` as an `EXPRESSION_ERROR`). Otherwise a `mailto:` or `tel:` link, which bypasses the popup blocker, could start a mail app or a call with no click.
 
 Function names, schemas and return types are identical to the basic catalog, so `catalog/vuetify-catalog.json` does not change. `VUETIFY_FUNCTIONS` is `createVuetifyFunctions()` and `VuetifyOpenUrlImplementation` is exported on its own.
 
@@ -705,10 +704,10 @@ Everything is available from the package root:
 
 ```typescript
 // Components
-import { A2UIProvider, ComponentNode } from '@alis-build/a2ui-vuetify-renderer'
+import { A2UIProvider, ComponentNode } from '@alis-build/a2ui-vuetify-renderer';
 
 // Composables
-import { useA2UI, useDynamicProps, useChecks } from '@alis-build/a2ui-vuetify-renderer'
+import { useA2UI, useDynamicProps, useChecks } from '@alis-build/a2ui-vuetify-renderer';
 
 // Registry & catalog bootstrap
 import {
@@ -723,19 +722,19 @@ import {
   VuetifyOpenUrlImplementation,
   getCatalogSchema,
   catalogFilters,
-} from '@alis-build/a2ui-vuetify-renderer'
+} from '@alis-build/a2ui-vuetify-renderer';
 
 // Plugin
-import { A2UiVueRenderer } from '@alis-build/a2ui-vuetify-renderer'
+import { A2UiVueRenderer } from '@alis-build/a2ui-vuetify-renderer';
 
 // Types
-import type { A2UIContext, A2UIActionPayload, A2UiVueRendererOptions, VuetifyFunctionsOptions, UseChecksReturn, ComponentModel } from '@alis-build/a2ui-vuetify-renderer'
+import type { A2UIContext, A2UIActionPayload, A2UiVueRendererOptions, VuetifyFunctionsOptions, UseChecksReturn, ComponentModel } from '@alis-build/a2ui-vuetify-renderer';
 
 // Injection keys (for advanced provide/inject usage)
-import { A2UI_CONTEXT_KEY, A2UI_REGISTRY_KEY } from '@alis-build/a2ui-vuetify-renderer'
+import { A2UI_CONTEXT_KEY, A2UI_REGISTRY_KEY } from '@alis-build/a2ui-vuetify-renderer';
 
 // Styles (import in your app entry)
-import '@alis-build/a2ui-vuetify-renderer/style.css'
+import '@alis-build/a2ui-vuetify-renderer/style.css';
 ```
 
 ## Development

@@ -242,7 +242,8 @@ export function useA2UI(): UseA2UIReturn {
   const dataModel = surface?.dataModel;
 
   const dataContext = computed(() => {
-    if (!surface?.dataModel || !surface?.catalog) return undefined;
+    // web_core >= 0.12 resolves function calls through `defaultCatalog`; `catalog` is a deprecated alias.
+    if (!surface?.dataModel || !surface?.defaultCatalog) return undefined;
     return new DataContext(surface, context.dataContextPath || '/');
   });
 

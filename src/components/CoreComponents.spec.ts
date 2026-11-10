@@ -25,7 +25,7 @@ function createMockContext(data: any = {}) {
         getSurface: vi.fn().mockReturnValue({
           id: 'test-surface',
           dataModel: dataModel,
-          catalog: { invoker: () => undefined },
+          defaultCatalog: { invoker: () => undefined },
         }),
       },
     },

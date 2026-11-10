@@ -100,9 +100,9 @@
     if (!surface) return;
     attachedSurface = surface;
     errorSubscription = surface.onError?.subscribe(reportError);
-    if (props.nodeResolver && surface.catalog) {
+    if (props.nodeResolver && surface.defaultCatalog) {
       try {
-        resolver.value = new NodeResolver(surface, surface.catalog);
+        resolver.value = new NodeResolver(surface, surface.defaultCatalog);
       } catch (error) {
         // NodeResolver builds the whole tree in its constructor, so a surface web_core cannot
         // bind throws right here. Uncaught, that aborts setup() and renders nothing when the

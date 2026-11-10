@@ -1,9 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 import { VUETIFY_COMPONENTS } from '../src/catalog/vuetify-components';
 import { VUETIFY_FUNCTIONS } from '../src/catalog/vuetify-functions';
+import { zodToCatalogJson } from '../src/core/zodToCatalogJson';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -101,7 +101,7 @@ function buildComponents(): Record<string, any> {
   const components: Record<string, any> = {};
 
   for (const api of VUETIFY_COMPONENTS) {
-    const converted = zodToJsonSchema(api.schema, { $refStrategy: 'none' }) as Record<string, any>;
+    const converted = zodToCatalogJson(api.schema);
 
     // Strip meta-properties that conflict with allOf composition
     delete converted.$schema;
@@ -130,25 +130,20 @@ function buildComponents(): Record<string, any> {
 // ---------------------------------------------------------------------------
 
 /**
- * Who may invoke each function, per `catalog_definition.json`. An absent value means
- * `rendererOnly`, so every function must be listed here or agents can invoke none of them.
+ * Who may invoke each function, per `catalog_definition.json`. Read from the runtime
+ * implementation so the published JSON and web_core's `RpcHandler` (which enforces it on
+ * agent calls) cannot disagree. An absent value means `rendererOnly`, written out explicitly.
  *
- * Everything except `openUrl` is a pure helper the renderer evaluates while resolving a binding
- * or a check (arithmetic, comparison, validation, formatting). An agent gains nothing by asking
- * the renderer to compute those and can do it itself, so they stay renderer-only. `openUrl` is
- * the one side effect that only the renderer can perform, and deciding to open a URL is normally
- * the agent's call, so it is invocable from both sides.
+ * Every function is renderer-only today: the helpers only make sense while resolving a binding or
+ * a check, and `openUrl` needs a user click (`requiresUserActivation`, written out below).
  */
-const ALLOWED_CALLERS: Record<string, 'rendererOnly' | 'agentOnly' | 'rendererOrAgent'> = {
-  openUrl: 'rendererOrAgent',
-};
 const DEFAULT_ALLOWED_CALLERS = 'rendererOnly';
 
 function buildFunctions(): Record<string, any> {
   const functions: Record<string, any> = {};
 
   for (const fn of VUETIFY_FUNCTIONS) {
-    const argsSchema = zodToJsonSchema(fn.schema, { $refStrategy: 'none' }) as Record<string, any>;
+    const argsSchema = zodToCatalogJson(fn.schema);
     delete argsSchema.$schema;
 
     // No `unevaluatedProperties` on the function object itself: `callFunction` requires
@@ -162,8 +157,9 @@ function buildFunctions(): Record<string, any> {
         returnType: { const: fn.returnType },
       },
       required: ['call', 'args'],
-      allowedCallers: ALLOWED_CALLERS[fn.name] ?? DEFAULT_ALLOWED_CALLERS,
+      allowedCallers: fn.allowedCallers ?? DEFAULT_ALLOWED_CALLERS,
     };
+    if (fn.requiresUserActivation) fnEntry.requiresUserActivation = true;
 
     // Hoist arg-level description to the function level
     if (argsSchema.description) {

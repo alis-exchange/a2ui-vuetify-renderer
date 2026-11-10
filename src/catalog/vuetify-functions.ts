@@ -24,8 +24,14 @@ const OPEN_URL_ALLOWED_PROTOCOLS: ReadonlySet<string> = new Set(['http:', 'https
  * Same name, schema and return type as the basic catalog's `openUrl` (so the generated
  * catalog JSON is unchanged), but `mailto:` and `tel:` links keep working: web_core >= 0.10.2
  * only allows http(s). Errors mirror the upstream messages.
+ *
+ * Renderer-only and gated on a user click, as A2UI v1.0 requires of `openUrl`: an agent cannot
+ * call it (`RpcHandler` refuses), and web_core's invoker refuses it in a passive binding or a
+ * check, so it runs only from an action the user triggered. Without the gate a `mailto:` or
+ * `tel:` link, which goes through `location.assign` rather than the popup blocker, would start
+ * a mail app or a call with no click. The catalog generator reads both flags from here.
  */
-export const VuetifyOpenUrlImplementation: FunctionImplementation = createFunctionImplementation(OpenUrlApi, (args) => {
+export const VuetifyOpenUrlImplementation: FunctionImplementation = createFunctionImplementation({ ...OpenUrlApi, allowedCallers: 'rendererOnly', requiresUserActivation: true }, (args) => {
   if (!args.url || typeof window === 'undefined' || !window.open) return;
 
   const baseHref = window.location?.href || undefined;
@@ -60,7 +66,7 @@ export const VuetifyOpenUrlImplementation: FunctionImplementation = createFuncti
  *
  * @example
  * ```ts
- * const catalog = new Catalog(CATALOG_ID, VUETIFY_COMPONENTS, createVuetifyFunctions({ locale: navigator.language }), VUETIFY_THEME_SCHEMA);
+ * const catalog = new Catalog(CATALOG_ID, '0.9', VUETIFY_COMPONENTS, createVuetifyFunctions({ locale: navigator.language }), VUETIFY_THEME_SCHEMA);
  * ```
  */
 export function createVuetifyFunctions(options?: VuetifyFunctionsOptions): FunctionImplementation[] {

@@ -1,6 +1,6 @@
 import { Catalog, MessageProcessor, NodeResolver, createFunctionImplementation, getValue, type A2uiMessage } from '@a2ui/web_core/v0_9';
 import { mount } from '@vue/test-utils';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { h, nextTick } from 'vue';
 import { createVuetify } from 'vuetify';
 import { z } from 'zod';
@@ -226,5 +226,75 @@ describe('NodeResolver rendering end to end', () => {
     ]);
     await nextTick();
     expect(onError).toHaveBeenCalledWith(expect.objectContaining({ code: 'UNKNOWN_COMPONENT_TYPE' }));
+  });
+});
+
+describe('openUrl needs a user click', () => {
+  beforeAll(() => registerDefaultComponents());
+
+  const URL_SURFACE = 'open-url';
+
+  function mountWith(components: Record<string, unknown>[]) {
+    const catalog = new Catalog(CATALOG_ID, '0.9', VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA);
+    const processor = new MessageProcessor([catalog], undefined, { version: 'v0.9' });
+    processor.processMessages([{ version: 'v0.9', createSurface: { surfaceId: URL_SURFACE, catalogId: CATALOG_ID } }, { version: 'v0.9', updateComponents: { surfaceId: URL_SURFACE, components } } as A2uiMessage]);
+    const onError = vi.fn();
+    const wrapper = mount(A2UIProvider, {
+      global: { plugins: [createVuetify()] },
+      props: { processor, surfaceId: URL_SURFACE, onAction: vi.fn(), onError },
+      slots: { default: () => h(ComponentNode, { id: 'root' }) },
+    });
+    return { wrapper, onError };
+  }
+
+  const linkButton = (url: string) => [
+    { id: 'root', component: 'Column', children: ['open'] },
+    { id: 'open', component: 'Button', label: 'Open', action: { functionCall: { call: 'openUrl', args: { url } } } },
+  ];
+
+  let open: ReturnType<typeof vi.fn>;
+  let assign: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    open = vi.fn();
+    assign = vi.fn();
+    vi.stubGlobal('open', open);
+    vi.stubGlobal('location', { href: 'https://example.com/', assign });
+  });
+
+  // jsdom has no navigator.userActivation; web_core reads it to tell a click from a script call.
+  const setUserActivation = (isActive: boolean) => Object.defineProperty(navigator, 'userActivation', { value: { isActive, hasBeenActive: isActive }, configurable: true });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    delete (navigator as { userActivation?: unknown }).userActivation;
+  });
+
+  it('opens the URL when the user clicks a Button', async () => {
+    setUserActivation(true);
+    const { wrapper } = mountWith(linkButton('https://example.com/docs'));
+    await wrapper.findComponent({ name: 'VBtn' }).trigger('click');
+    await nextTick();
+    expect(open).toHaveBeenCalledWith('https://example.com/docs', '_blank', 'noopener,noreferrer');
+  });
+
+  it('does nothing when the browser reports no user gesture', async () => {
+    setUserActivation(false);
+    const { wrapper, onError } = mountWith(linkButton('tel:+27110000000'));
+    await wrapper.findComponent({ name: 'VBtn' }).trigger('click');
+    await nextTick();
+    expect(assign).not.toHaveBeenCalled();
+    expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringMatching(/requires user activation/) }));
+  });
+
+  it('refuses a binding that would open a link while rendering', async () => {
+    const { onError } = mountWith([
+      { id: 'root', component: 'Column', children: ['t'] },
+      { id: 't', component: 'Text', text: { call: 'openUrl', args: { url: 'mailto:hi@example.com' } } },
+    ]);
+    await nextTick();
+    expect(assign).not.toHaveBeenCalled();
+    expect(open).not.toHaveBeenCalled();
+    expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringMatching(/requires user activation/) }));
   });
 });

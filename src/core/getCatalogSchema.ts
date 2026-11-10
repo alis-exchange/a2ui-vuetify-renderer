@@ -1,7 +1,7 @@
-import { zodToJsonSchema } from 'zod-to-json-schema';
 import baseCatalog from '../../catalog/vuetify-catalog.json';
 import type { CatalogFilter } from './catalogFilters';
 import type { ComponentRegistry } from './ComponentRegistry';
+import { zodToCatalogJson } from './zodToCatalogJson';
 
 /**
  * Options for {@link getCatalogSchema}.
@@ -58,10 +58,7 @@ export function getCatalogSchema(registry: ComponentRegistry, catalogId: string,
 
       const customApi = registry.getApi(catalogId, key);
       if (customApi) {
-        const convertedSchema = zodToJsonSchema(customApi.schema, {
-          $refStrategy: 'none',
-        });
-        allOf.push(convertedSchema);
+        allOf.push(zodToCatalogJson(customApi.schema));
       }
 
       schema.components[key] = {

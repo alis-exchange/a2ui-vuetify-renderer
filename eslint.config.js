@@ -1,7 +1,8 @@
 import pluginVitest from '@vitest/eslint-plugin'
 import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
 import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript'
-import pluginImport from 'eslint-plugin-import'
+import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript'
+import pluginImportX, { createNodeResolver } from 'eslint-plugin-import-x'
 import pluginOxlint from 'eslint-plugin-oxlint'
 import pluginPlaywright from 'eslint-plugin-playwright'
 import pluginVue from 'eslint-plugin-vue'
@@ -38,17 +39,17 @@ export default defineConfigWithVueTs(
     rules: {
       '@typescript-eslint/no-unused-vars': 'warn',
       '@typescript-eslint/no-empty-object-type': 'warn',
+      // Raw A2UI payloads are untyped JSON; tighten file by file rather than block lint on it.
+      '@typescript-eslint/no-explicit-any': 'warn',
       'vue/multi-word-component-names': 'warn',
-      'import/no-unresolved': 'error',
+      'import-x/no-unresolved': 'error',
     },
     plugins: {
-      import: pluginImport,
+      // eslint-plugin-import has no ESLint 10 support; import-x is its maintained fork.
+      'import-x': pluginImportX,
     },
     settings: {
-      'import/resolver': {
-        typescript: true,
-        node: true,
-      },
+      'import-x/resolver-next': [createTypeScriptImportResolver(), createNodeResolver()],
     },
   },
 )

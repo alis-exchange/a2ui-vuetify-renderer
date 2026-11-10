@@ -1,3 +1,4 @@
+import { RpcHandler } from '@a2ui/web_core/rpc';
 import { A2uiExpressionError, Catalog, type FunctionImplementation } from '@a2ui/web_core/v0_9';
 import { BASIC_FUNCTIONS, OpenUrlApi, OpenUrlImplementation } from '@a2ui/web_core/v0_9/basic_catalog';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -96,5 +97,35 @@ describe('Vuetify openUrl', () => {
     vi.stubGlobal('window', undefined);
     expect(() => invoke(fns, 'openUrl', { url: 'https://example.com' })).not.toThrow();
     expect(open).not.toHaveBeenCalled();
+  });
+});
+
+describe('agent-initiated calls (callRendererFunction)', () => {
+  // RpcHandler reads allowedCallers off the runtime implementation, not the published JSON.
+  const catalog = new Catalog('test-catalog', [], createVuetifyFunctions());
+  const call = (name: string, args: Record<string, unknown>) =>
+    new RpcHandler({ catalogs: [catalog] }).handleCallRendererFunction({
+      version: 'v0.9',
+      callRendererFunction: { functionCallId: 'fc-1', callFunction: { call: name, catalogId: 'test-catalog', args } },
+    } as any);
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it.each(['https://example.com/docs', 'mailto:hi@example.com', 'tel:+27110000000'])('refuses an agent call to openUrl(%s)', async (url) => {
+    const open = vi.fn();
+    const assign = vi.fn();
+    vi.stubGlobal('open', open);
+    vi.stubGlobal('location', { href: 'https://example.com/', assign });
+    const response: any = await call('openUrl', { url });
+    expect(JSON.stringify(response)).toMatch(/cannot be called by agent \(allowedCallers is rendererOnly\)/);
+    expect(open).not.toHaveBeenCalled();
+    expect(assign).not.toHaveBeenCalled();
+  });
+
+  it('keeps the pure helpers renderer-only', async () => {
+    const response: any = await call('required', { value: 'x' });
+    expect(JSON.stringify(response)).toMatch(/cannot be called by agent \(allowedCallers is rendererOnly\)/);
   });
 });

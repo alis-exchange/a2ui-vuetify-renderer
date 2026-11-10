@@ -19,7 +19,7 @@ import baseCatalog from '../../catalog/vuetify-catalog.json';
  * import { VUETIFY_CATALOG } from '@alis-build/a2ui-vuetify-renderer'
  *
  * Object.keys(VUETIFY_CATALOG.components) // every component the catalog declares
- * VUETIFY_CATALOG.functions.openUrl.allowedCallers // 'rendererOrAgent'
+ * VUETIFY_CATALOG.functions.openUrl.requiresUserActivation // true
  * ```
  */
 export const VUETIFY_CATALOG: Readonly<Record<string, any>> = baseCatalog;

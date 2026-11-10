@@ -173,7 +173,7 @@
 
 <script setup lang="ts">
   import type { ComponentApi } from '@a2ui/web_core/v0_9';
-  import { Catalog, MessageProcessor, type A2uiClientCapabilities, type A2uiMessage } from '@a2ui/web_core/v0_9';
+  import { Catalog, MessageProcessor, type A2uiMessage } from '@a2ui/web_core/v0_9';
   import { CATALOG_ID, VUETIFY_COMPONENTS, VUETIFY_THEME_SCHEMA, createVuetifyFunctions, defaultRegistry } from '@alis-build/a2ui-vuetify-renderer';
   import { defineAsyncComponent, defineComponent, h, markRaw, onMounted, ref } from 'vue';
   import { z } from 'zod';
@@ -217,7 +217,7 @@
   const customComponentsSchema = [...VUETIFY_COMPONENTS, CustomGraphApi, CustomChartApi];
 
   // Locale-aware formatNumber / formatCurrency / pluralize, plus the Vuetify openUrl (http, https, mailto, tel).
-  const mockCatalog = new Catalog(CATALOG_ID, customComponentsSchema as any, createVuetifyFunctions({ locale: navigator.language }), VUETIFY_THEME_SCHEMA);
+  const mockCatalog = new Catalog(CATALOG_ID, '0.9', customComponentsSchema as any, createVuetifyFunctions({ locale: navigator.language }), VUETIFY_THEME_SCHEMA);
   const actionLogs = ref<any[]>([]);
 
   const handleAction = (action: any) => {
@@ -229,8 +229,8 @@
   // reactive proxies, or its Preact signals stop notifying and the UI silently goes stale.
   const processor = markRaw(new MessageProcessor([mockCatalog], handleAction, { version: 'v0.9' }));
 
-  // 3. Client capabilities to send to the agent on connection (pass { version: 'v0.9.1' } to advertise v0.9.1)
-  const clientMetadata: A2uiClientCapabilities = processor.getClientCapabilities();
+  // 3. Capabilities to send to the agent on connection (getClientCapabilities is deprecated since web_core 0.15)
+  const clientMetadata = processor.getRendererCapabilities({ versions: ['v0.9'] });
 
   // web_core validates every updateComponents component against the catalog schema and throws
   // A2uiValidationError for the whole message. A real transport should catch it like this.

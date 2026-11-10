@@ -19,7 +19,7 @@ function createMockContext(data: any = {}, invoker: (...args: any[]) => any = ()
         getSurface: vi.fn().mockReturnValue({
           id: 'test-surface',
           dataModel: dataModel,
-          catalog: { invoker },
+          defaultCatalog: { invoker },
         }),
       },
     },

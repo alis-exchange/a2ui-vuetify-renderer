@@ -18,7 +18,7 @@ function createMockContext(data: any = {}) {
         getSurface: () => ({
           id: 'test-surface',
           dataModel: new DataModel(data),
-          catalog: { invoker: () => undefined },
+          defaultCatalog: { invoker: () => undefined },
         }),
       },
     },

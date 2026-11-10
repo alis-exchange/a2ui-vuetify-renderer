@@ -81,8 +81,8 @@ describe('the generated catalog document', () => {
     catalog = JSON.parse(fs.readFileSync(catalogPath, 'utf-8'));
   }, 30_000);
 
-  // An absent allowedCallers means rendererOnly, so without this an agent may invoke nothing.
-  it('declares allowedCallers on every function and lets an agent call openUrl', () => {
+  // An absent allowedCallers means rendererOnly; write it out so consumers need not know the default.
+  it('declares allowedCallers on every function and gates openUrl on a user click', () => {
     const undeclared = Object.entries<any>(catalog.functions)
       .filter(([, def]) => def.allowedCallers === undefined)
       .map(([name]) => name);
@@ -92,7 +92,12 @@ describe('the generated catalog document', () => {
     for (const [name, def] of Object.entries<any>(catalog.functions)) {
       expect(legal, `${name} declares an unknown allowedCallers`).toContain(def.allowedCallers);
     }
-    expect(catalog.functions.openUrl.allowedCallers).toBe('rendererOrAgent');
+    expect(catalog.functions.openUrl.allowedCallers).toBe('rendererOnly');
+    expect(catalog.functions.openUrl.requiresUserActivation).toBe(true);
+    const gated = Object.entries<any>(catalog.functions)
+      .filter(([, def]) => def.requiresUserActivation)
+      .map(([name]) => name);
+    expect(gated).toEqual(['openUrl']);
   });
 
   // callFunction requires catalogId, so a closed function object rejects every well-formed call.

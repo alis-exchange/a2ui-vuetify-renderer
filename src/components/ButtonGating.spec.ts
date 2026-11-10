@@ -14,7 +14,7 @@ function mountWithNodeProps(component: any, nodeProps: Record<string, unknown> |
   const context = {
     surfaceId: 's',
     onAction: vi.fn(),
-    processor: { model: { getSurface: () => ({ id: 's', dataModel: new DataModel({}), catalog: { invoker: () => undefined } }) } },
+    processor: { model: { getSurface: () => ({ id: 's', dataModel: new DataModel({}), defaultCatalog: { invoker: () => undefined } }) } },
     dataContextPath: '/',
     nodeProps: shallowRef(nodeProps),
   };

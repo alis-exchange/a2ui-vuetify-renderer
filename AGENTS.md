@@ -65,13 +65,13 @@ renderer/
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | Vue 3 (`^3.5.35`) with `<script setup>` + TypeScript |
+| Framework | Vue 3 (`^3.5.35`) with `<script setup>` + TypeScript 6 (TS 7 has no JS API, so `vue-tsc` cannot run on it yet) |
 | Component library | Vuetify 4 (`^4.1.1`) |
-| Protocol core | `@a2ui/web_core` (`^0.10.7`) — message processing, state, data binding, validation |
+| Protocol core | `@a2ui/web_core` (`^0.15.0`) — message processing, state, data binding, validation |
 | Schema | Zod (`^3.25`) + `zod-to-json-schema` for catalog generation |
 | Build | Vite 8 library mode, `vite-plugin-vuetify` (auto-import), `vite-plugin-dts` |
-| Tests | Vitest 4 + `@vue/test-utils` + jsdom |
-| Linting | ESLint 9 flat config + `@vue/eslint-config-typescript` + oxlint + Prettier |
+| Tests | Vitest 5 + `@vue/test-utils` + jsdom |
+| Linting | ESLint 10 flat config + `@vue/eslint-config-typescript` + oxlint + Prettier |
 | Icons | `@mdi/font` (Material Design Icons) |
 
 ---
@@ -105,7 +105,7 @@ All public API is exported from this barrel. If you add a new public symbol, it 
 
 - Wraps a single surface. Receives `processor`, `surfaceId`, `onAction`, `onError` and `nodeResolver` (default `true`) props.
 - Provides `A2UI_CONTEXT_KEY` to descendants via `provide/inject`, handing out the **raw** processor (`toRaw`), never Vue's reactive proxy, because web_core's signals and identity checks must see the real objects.
-- Subscribes to `processor.model.onSurfaceCreated` / `onSurfaceDeleted` (the only lifecycle events web_core emits; `MessageProcessor` is not an `EventTarget`). When the surface exists it creates one `NodeResolver(surface, surface.catalog)`, exposed as `context.resolver`, and disposes it on delete/unmount.
+- Subscribes to `processor.model.onSurfaceCreated` / `onSurfaceDeleted` (the only lifecycle events web_core emits; `MessageProcessor` is not an `EventTarget`). When the surface exists it creates one `NodeResolver(surface, surface.defaultCatalog)` (`catalog` is a deprecated alias since web_core 0.12), exposed as `context.resolver`, and disposes it on delete/unmount.
 - Both handlers check the model rather than trusting the event. `EventEmitter.emit` awaits each listener, so a handler can run a microtask late: a `deleted` that arrives after the surface was recreated would otherwise dispose the live resolver, and a provider that mounts mid-emit would attach the same surface twice. `deleted` is ignored while `model.getSurface(id)` still returns a surface; `created` is ignored when it names the surface already attached.
 - The `NodeResolver` constructor builds the tree eagerly, so an unbindable surface throws there. That is caught and reported through `onError`, leaving the subtree on the static path — without it the throw escapes `setup()` and the provider renders nothing whenever the surface already existed at mount. Note the asymmetry that remains: the same bad binding arriving *after* mount is swallowed by web_core's emitter and never reaches `onError`.
 - Forwards `surface.onError` events to `onError` (or `console.error`).
@@ -152,7 +152,7 @@ Provides the bridge between `@a2ui/web_core` state and Vue component logic. The 
 
 `useChecks(node)` returns `rules` (via `createVuetifyRules(checks, resolveValue)`), `isValid` and `validationErrors` (from `nodeProps` in node mode; `true` / `undefined` on the legacy path) and `errorMessages(value)` (the binder's messages when it reports any, else the rules run against `value`). Button/IconButton gate on `isValid`; Slider shows `error-messages` and passes `rules` only while the binder reports no failures (Vuetify caches rule results until the input's own model changes, so a stale message would survive a cross-field check clearing); DatePicker renders `errorMessages(modelValue)`. Every input component goes through `useChecks` — custom components should too, rather than reading `nodeProps` or calling `createVuetifyRules` directly.
 
-Note that the binder and `createVuetifyRules` are two independent evaluations of the same `checks` and can disagree: web_core reads `rule.condition || rule`, so a literal `condition: false` falls back to the truthy rule object and is reported as passing. `errorMessages` therefore treats only a *non-empty* `validationErrors` as authoritative. Do not hand Vuetify both `rules` and `error-messages` for the same node.
+Note that the binder and `createVuetifyRules` are two independent evaluations of the same `checks` and can disagree: before web_core 0.15 the binder read `rule.condition || rule`, so a literal `condition: false` fell back to the truthy rule object and was reported as passing (fixed upstream in 0.15; the guard stays as defence in depth). `errorMessages` therefore treats only a *non-empty* `validationErrors` as authoritative. Do not hand Vuetify both `rules` and `error-messages` for the same node.
 
 ### 5.8 useDynamicProps composable (`composables/useDynamicProps.ts`)
 
@@ -176,7 +176,7 @@ Accepts a `MaybeRefOrGetter<T>` node, returns a `computed` that runs every prope
 
 ### 5.11 Catalog functions (`catalog/vuetify-functions.ts`)
 
-`createVuetifyFunctions({ locale })` builds the `FunctionImplementation[]` from web_core's `createBasicCatalogFunctions` and swaps `openUrl` for `VuetifyOpenUrlImplementation` (allows `http:`, `https:`, `mailto:`, `tel:`; everything else throws `A2uiExpressionError` like upstream). Replace by name, never append: the generator iterates the array. `VUETIFY_FUNCTIONS` is `createVuetifyFunctions()`.
+`createVuetifyFunctions({ locale })` builds the `FunctionImplementation[]` from web_core's `createBasicCatalogFunctions` and swaps `openUrl` for `VuetifyOpenUrlImplementation` (allows `http:`, `https:`, `mailto:`, `tel:`; everything else throws `A2uiExpressionError` like upstream). It is `allowedCallers: 'rendererOnly'` + `requiresUserActivation: true`: agents cannot call it and bindings/checks cannot evaluate it, only user-triggered actions; `src/nodeResolver.spec.ts` covers the click path. The generator reads both flags off the implementation, so never set them only in the JSON. Replace by name, never append: the generator iterates the array. `VUETIFY_FUNCTIONS` is `createVuetifyFunctions()`.
 
 ---
 

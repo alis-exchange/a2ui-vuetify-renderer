@@ -34,7 +34,7 @@ describe('useA2UI composable', () => {
           getSurface: vi.fn().mockReturnValue({
             id: 'test-surface',
             dataModel: dataModel,
-            catalog: { invoker: () => undefined },
+            defaultCatalog: { invoker: () => undefined },
           }),
         },
       },
@@ -102,7 +102,7 @@ describe('useA2UI composable', () => {
           getSurface: vi.fn().mockReturnValue({
             id: 'test-surface',
             dataModel,
-            catalog: { invoker },
+            defaultCatalog: { invoker },
           }),
         },
       },
@@ -157,7 +157,7 @@ describe('useA2UI in node mode', () => {
     const mockContext = {
       surfaceId: 'test-surface',
       onAction: vi.fn(),
-      processor: { model: { getSurface: () => ({ id: 'test-surface', dataModel, catalog: { invoker: () => undefined } }) } },
+      processor: { model: { getSurface: () => ({ id: 'test-surface', dataModel, defaultCatalog: { invoker: () => undefined } }) } },
       nodeProps,
     };
     let seen: string | undefined;

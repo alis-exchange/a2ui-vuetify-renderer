@@ -14,7 +14,7 @@ function mountWith(component: any, properties: Record<string, unknown>, data: Re
   const context = {
     surfaceId: 's',
     onAction: vi.fn(),
-    processor: { model: { getSurface: () => ({ id: 's', dataModel: new DataModel(data), catalog: { invoker: () => undefined } }) } },
+    processor: { model: { getSurface: () => ({ id: 's', dataModel: new DataModel(data), defaultCatalog: { invoker: () => undefined } }) } },
     dataContextPath: '/',
     nodeProps: shallowRef(nodeProps),
   };
