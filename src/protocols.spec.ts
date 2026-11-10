@@ -260,3 +260,30 @@ describe.each<Wire>(['v0.9', '1.0'])('ChoicePicker segmented on %s', (wire) => {
     expect(data.get('/size')).toEqual(['s', 'l']);
   });
 });
+
+describe.each<Wire>(['v0.9', '1.0'])('dropdown choice inputs on %s', (wire) => {
+  beforeAll(() => registerDefaultComponents());
+
+  it.each([
+    ['Select', 'VSelect'],
+    ['Autocomplete', 'VAutocomplete'],
+    ['Combobox', 'VCombobox'],
+  ])('%s accepts checks and shows the failing message', (type, vuetifyName) => {
+    const v1 = wire === '1.0';
+    const input = {
+      id: 'root',
+      component: type,
+      options: ['a', 'b'],
+      value: { path: '/choice' },
+      checks: [{ condition: { call: 'required', args: { value: { path: '/choice' } } }, message: 'Pick one' }],
+    };
+    const processor = new MessageProcessor(bothCatalogs(), undefined, { version: 'v0.9' });
+    processor.processMessages([
+      { version: wire, createSurface: { surfaceId: 'dd', catalogId: v1 ? CATALOG_ID_V1 : CATALOG_ID } },
+      { version: wire, updateDataModel: { surfaceId: 'dd', path: '/', value: { choice: '' } } },
+      { version: wire, updateComponents: { surfaceId: 'dd', components: [v1 ? toV1(input) : input] } },
+    ] as never);
+    const rules = render(processor, 'dd').findComponent({ name: vuetifyName }).props('rules') as ((v: unknown) => unknown)[];
+    expect(rules[0]('')).toBe('Pick one');
+  });
+});

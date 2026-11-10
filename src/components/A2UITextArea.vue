@@ -1,13 +1,10 @@
 <script setup lang="ts">
   import type { ComponentModel } from '@a2ui/web_core/v0_9';
   import { computed } from 'vue';
-  import { VTextarea } from 'vuetify/components';
   import { useA2UI } from '../composables/useA2UI';
   import { useBinding } from '../composables/useBinding';
   import { useChecks } from '../composables/useChecks';
-
-  type VTextareaProps = InstanceType<typeof VTextarea>['$props'];
-  type VTextareaVariant = VTextareaProps['variant'];
+  import { useInputVariant } from '../composables/useInputVariant';
 
   const props = defineProps<{
     node: ComponentModel;
@@ -28,17 +25,7 @@
     },
   });
 
-  const vuetifyVariant = computed<VTextareaVariant>(() => {
-    const variant = resolveValue<string | undefined>(props.node.properties.variant);
-    switch (variant) {
-      case 'filled':
-        return 'filled';
-      case 'outlined':
-        return 'outlined';
-      default:
-        return 'underlined';
-    }
-  });
+  const vuetifyVariant = useInputVariant(() => props.node);
 
   const { rules } = useChecks(() => props.node);
 

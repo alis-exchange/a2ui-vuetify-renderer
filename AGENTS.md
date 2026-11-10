@@ -43,6 +43,8 @@ renderer/
 │   │   ├── useA2UI.ts                 # Core composable: resolveValue<V>, sendAction, setData, etc.
 │   │   ├── useBinding.ts              # Two-way binding through web_core's WritableBinding (any protocol version)
 │   │   ├── useChecks.ts               # checks → Vuetify rules + binder isValid / validationErrors
+│   │   ├── useChoiceInput.ts          # Shared by Select / Autocomplete / Combobox (internal)
+│   │   ├── useInputVariant.ts         # Shared by TextField / TextArea / NumberInput (internal)
 │   │   └── useDynamicProps.ts         # Resolves all node properties through resolveValue
 │   ├── core/
 │   │   ├── ComponentNode.vue          # Recursive renderer (<component :is="...">)

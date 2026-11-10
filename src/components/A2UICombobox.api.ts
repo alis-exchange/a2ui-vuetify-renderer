@@ -8,7 +8,7 @@ import type { ProtocolKit } from '../protocol/kits';
 
 /** Builds the Combobox API for one protocol family; see {@link ProtocolKit}. */
 export function buildComboboxApi(kit: ProtocolKit): ComponentApi {
-  const { ActionSchema, DynamicStringSchema, DynamicValueSchema } = kit;
+  const { ActionSchema, CheckableSchema, DynamicStringSchema, DynamicValueSchema } = kit;
   return {
     name: 'Combobox',
     schema: z
@@ -20,6 +20,8 @@ export function buildComboboxApi(kit: ProtocolKit): ComponentApi {
         value: DynamicValueSchema,
         variant: z.enum(['multipleSelection', 'mutuallyExclusive']).default('mutuallyExclusive').optional(),
         action: ActionSchema.optional(),
+        // Last of the own props: Express passes props by position, so adding it earlier would shift them.
+        checks: CheckableSchema.shape.checks,
         // Shared props last: Express maps positional arguments in declaration order.
         ...kit.commonProps,
       })
