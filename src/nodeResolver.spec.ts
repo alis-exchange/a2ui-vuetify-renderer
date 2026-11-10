@@ -529,3 +529,51 @@ describe('v1.0 surface with the Vuetify v1.0 functions', () => {
     expect(open).toHaveBeenCalledWith('https://example.com/docs', '_blank', 'noopener,noreferrer');
   });
 });
+
+describe('v1.0 provider behaviour', () => {
+  beforeAll(() => registerDefaultComponents());
+
+  function v1Surface(create: Record<string, unknown>, components: Record<string, unknown>[], nodeResolver = true) {
+    const processor = new MessageProcessor([new Catalog(CATALOG_ID_V1, '1.0', VUETIFY_COMPONENTS_V1, VUETIFY_FUNCTIONS_V1)]);
+    processor.processMessages([
+      { version: '1.0', createSurface: { surfaceId: 'p', dataModel: { name: 'Ada' }, ...create } },
+      { version: '1.0', updateComponents: { surfaceId: 'p', components } },
+    ] as never);
+    const onError = vi.fn();
+    const wrapper = mount(A2UIProvider, {
+      global: { plugins: [createVuetify()] },
+      props: { processor, surfaceId: 'p', onAction: vi.fn(), onError, nodeResolver },
+      slots: { default: () => h(ComponentNode, { id: 'root' }) },
+    });
+    return { wrapper, onError };
+  }
+
+  it('reports a v0.9-style binding once instead of rendering it silently', async () => {
+    const { wrapper, onError } = v1Surface({ catalogId: CATALOG_ID_V1 }, [
+      { id: 'root', component: 'Column', children: ['old'] },
+      { id: 'old', component: 'Text', text: { path: '/name' } },
+    ]);
+    await nextTick();
+    wrapper.vm.$forceUpdate();
+    await nextTick();
+    const reports = onError.mock.calls.filter(([e]) => e?.code === 'VALIDATION_FAILED');
+    expect(reports).toHaveLength(1);
+    expect(reports[0][0]).toMatchObject({ path: '/text', details: { componentId: 'old' } });
+  });
+
+  it('renders from the node tree even with nodeResolver: false', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { wrapper } = v1Surface({ catalogId: CATALOG_ID_V1 }, [{ id: 'root', component: 'Text', text: { '@path': '/name' } }], false);
+    expect(wrapper.text()).toContain('Ada');
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('legacy render path'));
+    warn.mockRestore();
+  });
+
+  it('renders a surface with no default catalog, where each component names its own', () => {
+    const { wrapper } = v1Surface({}, [
+      { id: 'root', component: 'Column', catalogId: CATALOG_ID_V1, children: ['t'] },
+      { id: 't', component: 'Text', catalogId: CATALOG_ID_V1, text: { '@path': '/name' } },
+    ]);
+    expect(wrapper.text()).toContain('Ada');
+  });
+});

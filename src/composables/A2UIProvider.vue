@@ -35,6 +35,7 @@
   import { computed, onUnmounted, provide, shallowRef, toRaw, watch, watchEffect } from 'vue';
   import { useTheme } from 'vuetify';
   import { VThemeProvider } from 'vuetify/components';
+  import { isV10Surface } from '../protocol/version';
   import { A2UI_CONTEXT_KEY } from './useA2UI';
 
   const props = withDefaults(
@@ -100,7 +101,14 @@
     if (!surface) return;
     attachedSurface = surface;
     errorSubscription = surface.onError?.subscribe(reportError);
-    if (props.nodeResolver && surface.defaultCatalog) {
+    // v1.0 surfaces always use the node tree: the legacy static path only understands v0.9
+    // syntax. A v1.0 surface may also have no default catalog (each component names its own),
+    // which NodeResolver handles; v0.9 surfaces always have one.
+    const v10 = isV10Surface(surface);
+    if (v10 && !props.nodeResolver) {
+      console.warn(`[A2UI] Surface '${surface.id}' is A2UI v1.0, which the legacy render path (nodeResolver: false) does not support; rendering it from the node tree instead.`);
+    }
+    if ((props.nodeResolver || v10) && (surface.defaultCatalog || v10)) {
       try {
         resolver.value = new NodeResolver(surface, surface.defaultCatalog);
       } catch (error) {

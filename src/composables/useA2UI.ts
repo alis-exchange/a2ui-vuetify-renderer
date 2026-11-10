@@ -1,5 +1,6 @@
 import { DataContext, type A2uiClientAction, type Action, type ComponentModel, type DynamicValue, type NodeProps, type NodeResolver } from '@a2ui/web_core/v0_9';
 import { computed, inject, type ComputedRef, type InjectionKey, type ShallowRef } from 'vue';
+import { isV10Surface } from '../protocol/version';
 
 export type A2UIActionPayload = A2uiClientAction;
 
@@ -243,7 +244,8 @@ export function useA2UI(): UseA2UIReturn {
 
   const dataContext = computed(() => {
     // web_core >= 0.12 resolves function calls through `defaultCatalog`; `catalog` is a deprecated alias.
-    if (!surface?.dataModel || !surface?.defaultCatalog) return undefined;
+    // A v1.0 surface may have none: each component and call names its own catalog.
+    if (!surface?.dataModel || (!surface.defaultCatalog && !isV10Surface(surface))) return undefined;
     return new DataContext(surface, context.dataContextPath || '/');
   });
 

@@ -30,9 +30,14 @@
   import { ResolvedBinding, effect, getValue, type ComponentNode as A2uiNode, type NodeProps } from '@a2ui/web_core/v0_9';
   import { computed, inject, onUnmounted, provide, shallowRef, watch } from 'vue';
   import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
+  import { findLegacyBindings } from '../protocol/legacyBindings';
+  import { isV10Surface } from '../protocol/version';
   import { A2UI_REGISTRY_KEY, ComponentRegistry, defaultRegistry } from './ComponentRegistry';
   import { CATALOG_ID } from './constants';
   import { findLiveNode } from './liveNodes';
+
+  // Component versions already checked for v0.9 binding syntax, so each is reported once.
+  const checkedForLegacyBindings = new WeakSet<object>();
 
   const props = defineProps<{
     /** The component ID as defined in the surface's component model. */
@@ -145,6 +150,27 @@
 
   // The node's own catalog: on v1.0 a component may name one other than the surface default.
   // (This used to read surface.catalogId, which SurfaceModel does not have, so it always fell back.)
+  // v1.0 accepts a v0.9 `{ path }` / `{ call }` without complaint and then treats it as a literal
+  // object, so a half-migrated agent's field shows nothing. Report it through the surface's error
+  // channel (A2UIProvider forwards that to onError) instead of failing silently.
+  watch(
+    node,
+    (model) => {
+      if (!model || checkedForLegacyBindings.has(model.properties) || !isV10Surface(surface.value)) return;
+      checkedForLegacyBindings.add(model.properties);
+      const pointers = findLegacyBindings(model.properties);
+      if (pointers.length === 0) return;
+      void surface.value.dispatchError?.({
+        code: 'VALIDATION_FAILED',
+        surfaceId: surface.value.id,
+        path: pointers[0],
+        message: `Component '${model.id}' uses v0.9 binding syntax at ${pointers.join(', ')} on a v1.0 surface, so the value is used as a literal object. Write { "@path": ... } and { "@call": ... }.`,
+        details: { componentId: model.id, pointers },
+      });
+    },
+    { immediate: true },
+  );
+
   const catalogId = computed(() => node.value?.catalog?.id ?? CATALOG_ID);
 
   const componentType = computed(() => {
