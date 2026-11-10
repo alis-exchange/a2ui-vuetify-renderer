@@ -200,27 +200,29 @@ describe('every two-way input writes back on v1.0', () => {
 describe.each<Wire>(['v0.9', '1.0'])('ChoicePicker segmented on %s', (wire) => {
   beforeAll(() => registerDefaultComponents());
 
-  const setup = (variant: string, value: unknown) => {
-    const processor = new MessageProcessor(bothCatalogs(), undefined, { version: 'v0.9' });
+  const setup = (variant: string, value: unknown, displayStyle = 'segmented') => {
+    const actions: Record<string, any>[] = [];
+    const processor = new MessageProcessor(bothCatalogs(), (action: any) => void actions.push(action), { version: 'v0.9' });
     const v1 = wire === '1.0';
     const picker = {
       id: 'root',
       component: 'ChoicePicker',
       label: 'Size',
-      displayStyle: 'segmented',
+      displayStyle,
       variant,
       options: [
         { label: 'Small', value: 's' },
         { label: 'Large', value: 'l' },
       ],
       value: { path: '/size' },
+      action: { event: { name: 'sized', context: { source: 'picker' } } },
     };
     processor.processMessages([
       { version: wire, createSurface: { surfaceId: 'seg', catalogId: v1 ? CATALOG_ID_V1 : CATALOG_ID } },
       { version: wire, updateDataModel: { surfaceId: 'seg', path: '/', value: { size: value } } },
       { version: wire, updateComponents: { surfaceId: 'seg', components: [v1 ? toV1(picker) : picker] } },
     ] as never);
-    return { data: processor.model.getSurface('seg')!.dataModel, wrapper: render(processor, 'seg') };
+    return { actions, data: processor.model.getSurface('seg')!.dataModel, wrapper: render(processor, 'seg') };
   };
 
   it('renders a button per option and writes a single choice back', async () => {
@@ -233,6 +235,21 @@ describe.each<Wire>(['v0.9', '1.0'])('ChoicePicker segmented on %s', (wire) => {
     await nextTick();
     await Promise.resolve();
     expect(data.get('/size')).toBe('l');
+  });
+
+  it.each([
+    ['segmented', 'VBtnToggle'],
+    ['dropdown', 'VSelect'],
+    ['list', 'VRadioGroup'],
+  ])('sends its action with the new value (%s)', async (displayStyle, vuetifyName) => {
+    const { wrapper, actions } = setup('mutuallyExclusive', 's', displayStyle);
+    await wrapper.findComponent({ name: vuetifyName }).vm.$emit('update:modelValue', 'l');
+    await nextTick();
+    await Promise.resolve();
+    const sent = JSON.stringify(actions.at(-1));
+    expect(sent).toContain('"sized"');
+    expect(sent).toMatch(/"value":"l"/);
+    expect(sent).toMatch(/"source":"picker"/);
   });
 
   it('stores several choices as an array with multipleSelection', async () => {

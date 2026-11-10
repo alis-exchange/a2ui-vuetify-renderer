@@ -13685,6 +13685,145 @@
               },
               "description": "A list of checks to perform. These are function calls that must return a boolean indicating validity."
             },
+            "action": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "event": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "The name of the action to be dispatched to the server."
+                        },
+                        "context": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "array"
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "path": {
+                                    "type": "string",
+                                    "description": "A JSON Pointer path to a value in the data model."
+                                  }
+                                },
+                                "required": [
+                                  "path"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "call": {
+                                    "type": "string",
+                                    "description": "The name of the function to call."
+                                  },
+                                  "args": {
+                                    "type": "object",
+                                    "additionalProperties": {},
+                                    "description": "Arguments passed to the function."
+                                  },
+                                  "returnType": {
+                                    "type": "string",
+                                    "enum": [
+                                      "string",
+                                      "number",
+                                      "boolean",
+                                      "array",
+                                      "object",
+                                      "any",
+                                      "void"
+                                    ],
+                                    "description": "The expected return type of the function call.",
+                                    "default": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "call"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Invokes a named function on the client."
+                              }
+                            ],
+                            "description": "A value that can be a literal, a path, or a function call returning any type."
+                          },
+                          "description": "A JSON object containing the key-value pairs for the action context. Values can be literals or paths. Use literal values unless the value must be dynamically bound to the data model. Do NOT use paths for static IDs."
+                        }
+                      },
+                      "required": [
+                        "name"
+                      ],
+                      "additionalProperties": false,
+                      "description": "The event to dispatch to the server."
+                    }
+                  },
+                  "required": [
+                    "event"
+                  ],
+                  "additionalProperties": false,
+                  "description": "Triggers a server-side event."
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "functionCall": {
+                      "type": "object",
+                      "properties": {
+                        "call": {
+                          "type": "string",
+                          "description": "The name of the function to call."
+                        },
+                        "args": {
+                          "type": "object",
+                          "additionalProperties": {},
+                          "description": "Arguments passed to the function."
+                        },
+                        "returnType": {
+                          "type": "string",
+                          "enum": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "object",
+                            "any",
+                            "void"
+                          ],
+                          "description": "The expected return type of the function call.",
+                          "default": "boolean"
+                        }
+                      },
+                      "required": [
+                        "call"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Invokes a named function on the client."
+                    }
+                  },
+                  "required": [
+                    "functionCall"
+                  ],
+                  "additionalProperties": false,
+                  "description": "Executes a local client-side function."
+                }
+              ],
+              "description": "Defines an interaction handler that can either trigger a server-side event or execute a local client-side function."
+            },
             "accessibility": {
               "type": "object",
               "properties": {

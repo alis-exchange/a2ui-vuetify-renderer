@@ -8,7 +8,7 @@ import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
 
 /** Builds the ChoicePicker API for one protocol family; see {@link ProtocolKit}. */
 export function buildChoicePickerApi(kit: ProtocolKit): ComponentApi {
-  const { CheckableSchema, DynamicStringSchema, DynamicValueSchema } = kit;
+  const { ActionSchema, CheckableSchema, DynamicStringSchema, DynamicValueSchema } = kit;
   return {
     name: 'ChoicePicker',
     schema: z
@@ -21,6 +21,9 @@ export function buildChoicePickerApi(kit: ProtocolKit): ComponentApi {
         variant: z.enum(['multipleSelection', 'mutuallyExclusive']).default('mutuallyExclusive').optional(),
         displayStyle: z.enum(['list', 'dropdown', 'segmented']).default('dropdown').optional(),
         checks: CheckableSchema.shape.checks,
+        // Sent with { value } whenever the choice changes. Added after checks rather than beside
+        // Select's: Express passes props by position, so inserting it earlier would shift checks.
+        action: ActionSchema.optional(),
         // Shared props last: Express maps positional arguments in declaration order.
         ...kit.commonProps,
       })

@@ -1594,6 +1594,10 @@
           },
           "description": "A list of validation check rules to perform on the component."
         },
+        "action": {
+          "$ref": "common_types.json#/$defs/Action",
+          "description": "Defines an interaction handler that can either trigger an agent-side event or execute a local renderer-side function."
+        },
         "weight": {
           "type": "number",
           "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
