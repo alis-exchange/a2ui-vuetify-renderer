@@ -214,7 +214,7 @@ Since `@a2ui/web_core` 0.10.6, `MessageProcessor.processMessages` validates ever
 ### 6.1 The JSON Schemas (`catalog/vuetify-catalog.json`, `catalog/vuetify-catalog.v1.json`)
 
 Generated files — **never edit manually**. The v1.0 document is written by web_core (`Catalog.toJson()` via `buildCatalogDocumentV1`) and references `common_types.json`, so it is a fraction of the size; the v0.9 document below is hand-assembled and must stay byte-stable (`generate-catalog.spec.ts` fails on either being stale). The v0.9 one contains:
-- `$defs` for shared types (`DynamicString`, `ChildList`, `Action`, `ComponentCommon`, `CatalogComponentCommon`, etc.). `checks` is inlined per component from web_core's `CheckRuleSchema` (`{ condition, message }`).
+- `$defs`: only `ComponentCommon`, `CatalogComponentCommon` and `anyFunction` (the union of the catalog's functions). Every function call in a component's props, checks and actions is `$ref: '#/$defs/anyFunction'`, so validators reject unknown function names; calls nested inside a function's own arguments stay inline, because referencing `anyFunction` there makes the document recursive and web_core's `Catalog.fromJson` overflows its stack. `checks` is inlined per component from web_core's `CheckRuleSchema` (`{ condition, message }`).
 - `components` map with a JSON Schema entry per A2UI type
 - `functions` array with function schemas
 - Metadata: `$schema`, `$id`, `catalogId`, `title`, `description`

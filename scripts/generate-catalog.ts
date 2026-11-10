@@ -15,7 +15,10 @@ const catalogPath = path.join(catalogDir, 'vuetify-catalog.json');
 const catalogPathV1 = path.join(catalogDir, 'vuetify-catalog.v1.json');
 
 // ---------------------------------------------------------------------------
-// Static $defs — A2UI protocol primitives shared across all components
+// Static $defs. Components inline their own schemas, so only what they reference lives here:
+// the two mixins below, and `anyFunction` (added in main()), which every function call in a
+// bindable property, action or check points at. Unreferenced protocol definitions used to sit
+// here too and hid that the function-name check was not wired up; do not add them back.
 // ---------------------------------------------------------------------------
 
 const $defs: Record<string, any> = {
@@ -41,58 +44,6 @@ const $defs: Record<string, any> = {
         description: "The relative weight of this component within a Row or Column. This is similar to the CSS 'flex-grow' property. Note: this may ONLY be set when the component is a direct descendant of a Row or Column.",
       },
     },
-  },
-  DynamicString: {
-    oneOf: [{ type: 'string' }, { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false }, { $ref: '#/$defs/anyFunction' }],
-  },
-  DynamicNumber: {
-    oneOf: [{ type: 'number' }, { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false }, { $ref: '#/$defs/anyFunction' }],
-  },
-  DynamicBoolean: {
-    oneOf: [{ type: 'boolean' }, { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false }, { $ref: '#/$defs/anyFunction' }],
-  },
-  DynamicStringList: {
-    oneOf: [{ type: 'array', items: { type: 'string' } }, { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false }, { $ref: '#/$defs/anyFunction' }],
-  },
-  DynamicValue: {
-    oneOf: [{ type: ['string', 'number', 'boolean', 'object', 'array', 'null'] }, { type: 'object', properties: { path: { type: 'string' } }, required: ['path'], additionalProperties: false }, { $ref: '#/$defs/anyFunction' }],
-  },
-  ComponentId: {
-    type: 'string',
-    description: 'A reference to the ID of another component in the components block.',
-  },
-  ChildList: {
-    oneOf: [
-      {
-        type: 'array',
-        items: { $ref: '#/$defs/ComponentId' },
-      },
-      {
-        type: 'object',
-        properties: {
-          path: { type: 'string', description: 'JSON Pointer path to an array in the data model.' },
-          componentId: { type: 'string', description: 'The ID of the template component to render for each item.' },
-        },
-        required: ['path', 'componentId'],
-        additionalProperties: false,
-      },
-    ],
-  },
-  Action: {
-    type: 'object',
-    properties: {
-      event: {
-        type: 'object',
-        properties: {
-          name: { type: 'string' },
-          context: { type: 'object' },
-        },
-        required: ['name'],
-      },
-      functionCall: { $ref: '#/$defs/anyFunction' },
-    },
-    oneOf: [{ required: ['event'] }, { required: ['functionCall'] }],
-    additionalProperties: false,
   },
 };
 
@@ -153,7 +104,8 @@ function buildFunctions(): Record<string, any> {
   const functions: Record<string, any> = {};
 
   for (const fn of VUETIFY_FUNCTIONS) {
-    const argsSchema = zodToCatalogJson(fn.schema);
+    // Inline calls inside arguments: a reference to anyFunction here would make the document recursive.
+    const argsSchema = zodToCatalogJson(fn.schema, 'inline');
     delete argsSchema.$schema;
 
     // No `unevaluatedProperties` on the function object itself: `callFunction` requires

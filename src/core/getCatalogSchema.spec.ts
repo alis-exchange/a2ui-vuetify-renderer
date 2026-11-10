@@ -32,16 +32,16 @@ describe('getCatalogSchema', () => {
     expect(schema.components['CustomComponent'].type).toBe('object');
   });
 
-  it('writes a custom bindable prop compactly, without expanding function-call args', () => {
+  it('writes a custom bindable prop with function calls checked against the catalog', () => {
     const registry = new ComponentRegistry();
     registry.register(CATALOG_ID, 'Greeting', {} as any, { name: 'Greeting', schema: z.object({ text: DynamicStringSchema }).strict() } as any);
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const schema = getCatalogSchema(registry, CATALOG_ID);
     const text = schema.components.Greeting.allOf.find((entry: any) => entry.properties?.text).properties.text;
-    const call = text.anyOf.find((branch: any) => branch.properties?.call);
 
-    expect(call.properties.args).toEqual({ type: 'object', additionalProperties: {}, description: 'Arguments passed to the function.' });
+    expect(text.anyOf).toContainEqual({ $ref: '#/$defs/anyFunction' });
+    expect(schema.$defs.anyFunction).toBeDefined();
     expect(warn).not.toHaveBeenCalled();
     warn.mockRestore();
   });

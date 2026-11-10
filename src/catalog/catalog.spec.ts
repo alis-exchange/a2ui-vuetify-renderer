@@ -1,5 +1,6 @@
 import { A2uiValidationError, Catalog, MessageProcessor, scrapeSchemaBehavior, type A2uiMessage } from '@a2ui/web_core/v0_9';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import publishedV09 from '../../catalog/vuetify-catalog.json';
 import { CATALOG_ID, CATALOG_ID_V1 } from '../core/constants';
 import { zodToCatalogJson } from '../core/zodToCatalogJson';
 import { A2UI_V09, A2UI_V10 } from '../protocol/kits';
@@ -149,5 +150,42 @@ describe('one schema source, built per protocol', () => {
     it('rejects unknown props', () => {
       expect(() => process([{ id: 'tf', component: 'TextField', label: 'Name', bogus: true }])).toThrow(/bogus/);
     });
+  });
+});
+
+describe('the published v0.9 catalog document', () => {
+  // Loaded the way agent SDKs load it, so this is the validation an agent gets from the file.
+  const processorFor = () => {
+    const doc = structuredClone(publishedV09) as never;
+    const processor = new MessageProcessor([Catalog.fromJson(doc, '0.9')], undefined, { version: 'v0.9' });
+    processor.processMessages([{ version: 'v0.9', createSurface: { surfaceId: 'pub', catalogId: CATALOG_ID } }]);
+    return (components: Record<string, unknown>[]) => processor.processMessages([{ version: 'v0.9', updateComponents: { surfaceId: 'pub', components } } as A2uiMessage]);
+  };
+
+  beforeEach(() => vi.spyOn(console, 'error').mockImplementation(() => {}));
+  afterEach(() => vi.restoreAllMocks());
+
+  it('accepts calls to the functions it declares, in props, checks and actions', () => {
+    const send = processorFor();
+    expect(() =>
+      send([
+        {
+          id: 'root',
+          component: 'Column',
+          children: ['t', 'tf', 'b'],
+        },
+        { id: 't', component: 'Text', text: { call: 'formatString', args: { value: 'Hi ${/name}' }, returnType: 'string' } },
+        { id: 'tf', component: 'TextField', label: 'Name', value: { path: '/name' }, checks: [{ condition: { call: 'required', args: { value: { path: '/name' } } }, message: 'Required' }] },
+        { id: 'b', component: 'Button', label: 'Docs', action: { functionCall: { call: 'openUrl', args: { url: 'https://example.com' } } } },
+      ]),
+    ).not.toThrow();
+  });
+
+  it.each([
+    ['a binding', { id: 'root', component: 'Text', text: { call: 'formatStrng', args: { value: 'x' } } }],
+    ['a check', { id: 'root', component: 'TextField', label: 'L', checks: [{ condition: { call: 'requird', args: { value: 'x' } }, message: 'm' }] }],
+    ['an action', { id: 'root', component: 'Button', label: 'Go', action: { functionCall: { call: 'openURL', args: { url: 'https://example.com' } } } }],
+  ])('rejects an unknown function name in %s', (_, component) => {
+    expect(() => processorFor()([component])).toThrow();
   });
 });

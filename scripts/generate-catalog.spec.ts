@@ -42,7 +42,7 @@ describe('generate-catalog.ts', () => {
     const defsKeys = Object.keys(json.$defs);
     expect(defsKeys).toContain('ComponentCommon');
     expect(defsKeys).toContain('CatalogComponentCommon');
-    expect(defsKeys).toContain('DynamicString');
+    expect(defsKeys).toContain('anyFunction');
 
     const componentsKeys = Object.keys(json.components);
     expect(componentsKeys.length).toBeGreaterThan(0);
@@ -121,18 +121,28 @@ describe('the generated catalog document', () => {
     expect(openArgs).toEqual([]);
   });
 
-  // Flattened refs left a generic `call: {type: string}` branch, so any name validated.
-  it("validates function names in dynamic values against the catalog's own functions", () => {
+  // An inlined generic `call: {type: string}` shape accepts any function name. This used to be
+  // checked on $defs that no component referenced, so the components were never covered.
+  it("validates function names in components against the catalog's own functions", () => {
     const names = Object.keys(catalog.functions);
-    expect(catalog.$defs.anyFunction).toBeDefined();
     expect(catalog.$defs.anyFunction.oneOf.map((b: any) => b.$ref)).toEqual(names.map((n) => `#/functions/${n}`));
 
-    for (const def of ['DynamicString', 'DynamicNumber', 'DynamicBoolean', 'DynamicStringList', 'DynamicValue']) {
-      const branches = catalog.$defs[def].oneOf;
-      const fnBranch = branches.find((b: any) => b.$ref === '#/$defs/anyFunction');
-      expect(fnBranch, `${def} still inlines a generic function branch`).toBeDefined();
+    const components = JSON.stringify(catalog.components);
+    expect(components.match(/"call":\{"type":"string"/g) ?? [], 'a component inlines a call that accepts any name').toEqual([]);
+    expect((components.match(/"\$ref":"#\/\$defs\/anyFunction"/g) ?? []).length).toBeGreaterThan(100);
+  });
+
+  // Inside a function's own arguments calls stay inline: a reference to anyFunction there makes
+  // the document recursive, and web_core's Catalog.fromJson overflows its stack loading it.
+  it('stays loadable by web_core (no recursive references)', () => {
+    expect(JSON.stringify(catalog.functions)).not.toContain('#/$defs/anyFunction');
+  });
+
+  it('keeps only the $defs something references', () => {
+    const text = JSON.stringify({ ...catalog, $defs: undefined });
+    for (const name of Object.keys(catalog.$defs)) {
+      expect(text, `$defs.${name} is never referenced`).toContain(`"#/$defs/${name}"`);
     }
-    expect(catalog.$defs.Action.properties.functionCall).toEqual({ $ref: '#/$defs/anyFunction' });
   });
 
   // The markers are web_core's internal ref annotations; they should not reach consumers.
