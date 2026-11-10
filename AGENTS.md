@@ -229,25 +229,20 @@ Every component receives a single `node` prop typed as `ComponentModel` from `@a
  import type { ComponentModel } from '@a2ui/web_core/v0_9';
  import { computed } from 'vue';
  import { useA2UI } from '../composables/useA2UI';
+ import { useBinding } from '../composables/useBinding';
  import { useChecks } from '../composables/useChecks';
 
  const props = defineProps<{
  node: ComponentModel;
  }>();
 
-  const { resolveValue, setData, dispatchNodeAction } = useA2UI();
+  const { resolveValue, dispatchNodeAction } = useA2UI();
 
   // Read properties through resolveValue<V> (handles literals, paths, and function calls)
   const label = computed(() => resolveValue<string | undefined>(props.node.properties.label));
 
-  // Two-way binding for input components
-  const valuePath = computed(() => props.node.properties.value?.path);
-  const modelValue = computed({
-    get() { return resolveValue<string>(props.node.properties.value) ?? ''; },
-    set(val: string) {
-      if (valuePath.value) setData(valuePath.value, val);
-    },
-  });
+  // Two-way binding for input components: never read `.path` yourself (v1.0 spells it `@path`)
+  const modelValue = useBinding<string>(() => props.node, 'value', '');
 
   // Validation — useChecks also exposes the binder's isValid / validationErrors
   const { rules } = useChecks(() => props.node);
@@ -263,7 +258,7 @@ Every component receives a single `node` prop typed as `ComponentModel` from `@a
 
 Key patterns:
 - **Always** use `resolveValue<V>()` to read node properties — handles `{ path }` and `{ call }` bindings; choose `V` to match the resolved runtime type
-- **Two-way binding**: use writable `computed` that calls `setData(path, val)` on set
+- **Two-way binding**: `useBinding<T>(() => props.node, 'value', fallback)` returns a writable computed. It writes through the setter web_core's binder generates (`setValue`), so the same code handles v0.9 `{ path }`, v1.0 `{ "@path" }` and relative paths in template rows. Never read `properties.value.path` and call `setData` yourself: that breaks on v1.0 and wrote template rows to the root on v0.9. Wrap it in your own `computed` when a write needs extra work (coercion, an action)
 - **Actions**: use `dispatchNodeAction(node)` for standard button/click actions, or `sendAction(name, id, context)` for manual payloads
 - **Children**: use `<ComponentNode :id="childId" />` to render child references; use `resolveDynamicChildren` for iterating `{ path, componentId }` template lists
 - **Validation**: call `useChecks(() => props.node)` (see 5.7) — it builds the `createVuetifyRules` rules so `{ condition, message }` conditions resolve against the data model, and exposes the binder's `isValid` / `validationErrors` for gating (Button, IconButton). Do not read `nodeProps` or call `createVuetifyRules` directly in a component

@@ -3,6 +3,7 @@
   import { computed } from 'vue';
   import { VDatePicker } from 'vuetify/components';
   import { useA2UI } from '../composables/useA2UI';
+  import { useBinding } from '../composables/useBinding';
   import { useChecks } from '../composables/useChecks';
 
   type VDatePickerProps = InstanceType<typeof VDatePicker>['$props'];
@@ -11,10 +12,11 @@
     node: ComponentModel;
   }>();
 
-  const { resolveValue, setData, dispatchNodeAction } = useA2UI();
+  const { resolveValue, dispatchNodeAction } = useA2UI();
+  // Writes through web_core's binder, so { path } (v0.9) and { "@path" } (v1.0) both work.
+  const boundValue = useBinding<unknown>(() => props.node, 'value');
 
   const label = computed(() => resolveValue<string | undefined>(props.node.properties.label));
-  const valuePath = computed(() => props.node.properties.value?.path);
   const min = computed(() => resolveValue<VDatePickerProps['min']>(props.node.properties.min));
   const max = computed(() => resolveValue<VDatePickerProps['max']>(props.node.properties.max));
   const color = computed(() => resolveValue<VDatePickerProps['color']>(props.node.properties.color));
@@ -29,9 +31,7 @@
       return resolveValue<any>(props.node.properties.value);
     },
     set(val: any) {
-      if (valuePath.value) {
-        setData(valuePath.value, val);
-      }
+      boundValue.value = val;
     },
   });
 

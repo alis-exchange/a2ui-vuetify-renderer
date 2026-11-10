@@ -53,4 +53,8 @@ describe('index.ts', () => {
     expect(exports.VUETIFY_COMPONENTS_V1.map((api) => api.name)).toEqual(exports.VUETIFY_COMPONENTS.map((api) => api.name));
     expect(exports.buildVuetifyComponents(exports.A2UI_V10).length).toBe(exports.VUETIFY_COMPONENTS_V1.length);
   });
+
+  it('should export useBinding', () => {
+    expect(typeof exports.useBinding).toBe('function');
+  });
 });

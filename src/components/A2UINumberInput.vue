@@ -3,6 +3,7 @@
   import { computed } from 'vue';
   import { VTextField } from 'vuetify/components';
   import { useA2UI } from '../composables/useA2UI';
+  import { useBinding } from '../composables/useBinding';
   import { useChecks } from '../composables/useChecks';
 
   type VTextFieldProps = InstanceType<typeof VTextField>['$props'];
@@ -12,20 +13,19 @@
     node: ComponentModel;
   }>();
 
-  const { resolveValue, setData, dispatchNodeAction } = useA2UI();
+  const { resolveValue, dispatchNodeAction } = useA2UI();
+  // Writes through web_core's binder, so { path } (v0.9) and { "@path" } (v1.0) both work.
+  const boundValue = useBinding<unknown>(() => props.node, 'value');
 
   const label = computed(() => resolveValue<string | undefined>(props.node.properties.label));
-  const valuePath = computed(() => props.node.properties.value?.path);
 
   const modelValue = computed({
     get() {
       return resolveValue<string | number>(props.node.properties.value) ?? 0;
     },
     set(val: string | number) {
-      if (valuePath.value) {
-        const numVal = typeof val === 'string' ? Number(val) : val;
-        setData(valuePath.value, isNaN(numVal) ? 0 : numVal);
-      }
+      const numVal = typeof val === 'string' ? Number(val) : val;
+      boundValue.value = isNaN(numVal) ? 0 : numVal;
     },
   });
 

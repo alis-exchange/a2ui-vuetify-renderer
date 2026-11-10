@@ -3,6 +3,7 @@
   import { computed } from 'vue';
   import { VCalendar } from 'vuetify/components';
   import { useA2UI } from '../composables/useA2UI';
+  import { useBinding } from '../composables/useBinding';
 
   type VCalendarProps = InstanceType<typeof VCalendar>['$props'];
   type VCalendarViewType = NonNullable<VCalendarProps['type']>;
@@ -18,22 +19,21 @@
     node: ComponentModel;
   }>();
 
-  const { resolveValue, setData, dispatchNodeAction } = useA2UI();
+  const { resolveValue, dispatchNodeAction } = useA2UI();
+  // Writes through web_core's binder, so { path } (v0.9) and { "@path" } (v1.0) both work.
+  const boundValue = useBinding<unknown>(() => props.node, 'value');
 
   const calendarType = computed<VCalendarProps['type']>(() => toCalendarViewType(resolveValue<string | undefined>(props.node.properties.type)));
   const events = computed(() => resolveValue<any[]>(props.node.properties.events) || []);
   const weekdays = computed(() => resolveValue<number[]>(props.node.properties.weekdays) ?? [0, 1, 2, 3, 4, 5, 6]);
   const eventColor = computed(() => resolveValue<string | undefined>(props.node.properties.eventColor) ?? resolveValue<string | undefined>(props.node.properties.color) ?? 'primary');
-  const valuePath = computed(() => props.node.properties.value?.path);
 
   const modelValue = computed({
     get() {
       return resolveValue<any>(props.node.properties.value) ?? '';
     },
     set(val: any) {
-      if (valuePath.value) {
-        setData(valuePath.value, val);
-      }
+      boundValue.value = val;
     },
   });
 

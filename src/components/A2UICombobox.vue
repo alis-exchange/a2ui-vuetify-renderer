@@ -2,25 +2,25 @@
   import type { ComponentModel } from '@a2ui/web_core/v0_9';
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
+  import { useBinding } from '../composables/useBinding';
 
   const props = defineProps<{
     node: ComponentModel;
   }>();
 
-  const { resolveValue, setData, dispatchNodeAction } = useA2UI();
+  const { resolveValue, dispatchNodeAction } = useA2UI();
+  // Writes through web_core's binder, so { path } (v0.9) and { "@path" } (v1.0) both work.
+  const boundValue = useBinding<unknown>(() => props.node, 'value');
 
   const label = computed(() => resolveValue<string | undefined>(props.node.properties.label));
   const options = computed(() => resolveValue<readonly any[]>(props.node.properties.options) || []);
-  const valuePath = computed(() => props.node.properties.value?.path);
 
   const modelValue = computed({
     get() {
       return resolveValue<any>(props.node.properties.value);
     },
     set(val: any) {
-      if (valuePath.value) {
-        setData(valuePath.value, val);
-      }
+      boundValue.value = val;
       dispatchNodeAction(props.node, { value: val });
     },
   });

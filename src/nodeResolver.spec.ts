@@ -388,3 +388,64 @@ describe('component lookup by catalog', () => {
     expect(render(processor, 'own').text()).toContain('hello');
   });
 });
+
+describe('two-way binding through useBinding', () => {
+  beforeAll(() => registerDefaultComponents());
+
+  type Version = 'v0.9' | 'v1.0';
+  const bind = (version: Version, path: string) => (version === 'v1.0' ? { '@path': path } : { path });
+
+  function surfaceWith(version: Version, components: Record<string, unknown>[], nodeResolver = true) {
+    const v1 = version === 'v1.0';
+    const catalog = v1 ? new Catalog(CATALOG_ID_V1, '1.0', VUETIFY_COMPONENTS_V1, []) : new Catalog(CATALOG_ID, '0.9', VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS);
+    const processor = v1 ? new MessageProcessor([catalog]) : new MessageProcessor([catalog], undefined, { version: 'v0.9' });
+    const wire = v1 ? '1.0' : 'v0.9';
+    const catalogId = v1 ? CATALOG_ID_V1 : CATALOG_ID;
+    processor.processMessages([
+      { version: wire, createSurface: { surfaceId: 'b', catalogId } },
+      { version: wire, updateDataModel: { surfaceId: 'b', path: '/', value: { name: 'Ada', rows: [{ name: 'first' }, { name: 'second' }] } } },
+      { version: wire, updateComponents: { surfaceId: 'b', components } },
+    ] as never);
+    const wrapper = mount(A2UIProvider, {
+      global: { plugins: [createVuetify()] },
+      props: { processor, surfaceId: 'b', onAction: vi.fn(), onError: vi.fn(), nodeResolver },
+      slots: { default: () => h(ComponentNode, { id: 'root' }) },
+    });
+    return { wrapper, data: processor.model.getSurface('b')!.dataModel };
+  }
+
+  it.each<Version>(['v0.9', 'v1.0'])('%s: a top-level TextField writes to its absolute path', async (version) => {
+    const { wrapper, data } = surfaceWith(version, [
+      { id: 'root', component: 'Column', children: ['tf'] },
+      { id: 'tf', component: 'TextField', label: 'Name', value: bind(version, '/name') },
+    ]);
+    await wrapper.findComponent({ name: 'VTextField' }).vm.$emit('update:modelValue', 'Grace');
+    expect(data.get('/name')).toBe('Grace');
+  });
+
+  it.each<Version>(['v0.9', 'v1.0'])('%s: a TextField in a template row writes to that row', async (version) => {
+    const { wrapper, data } = surfaceWith(version, [
+      { id: 'root', component: 'Column', children: { componentId: 'row', path: '/rows' } },
+      { id: 'row', component: 'TextField', label: 'Row', value: bind(version, 'name') },
+    ]);
+    const fields = wrapper.findAllComponents({ name: 'VTextField' });
+    expect(fields.map((f) => f.props('modelValue'))).toEqual(['first', 'second']);
+    await fields[1].vm.$emit('update:modelValue', 'changed');
+    expect(data.get('/rows/1/name')).toBe('changed');
+    expect(data.get('/rows/0/name')).toBe('first');
+    expect(data.get('/name')).toBe('Ada');
+  });
+
+  it('v0.9 legacy render path still writes', async () => {
+    const { wrapper, data } = surfaceWith(
+      'v0.9',
+      [
+        { id: 'root', component: 'Column', children: ['tf'] },
+        { id: 'tf', component: 'TextField', label: 'Name', value: { path: '/name' } },
+      ],
+      false,
+    );
+    await wrapper.findComponent({ name: 'VTextField' }).vm.$emit('update:modelValue', 'Legacy');
+    expect(data.get('/name')).toBe('Legacy');
+  });
+});
