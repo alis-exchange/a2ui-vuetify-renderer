@@ -17,7 +17,7 @@ export function buildTreeViewApi(kit: ProtocolKit): ComponentApi {
         ...kit.commonProps,
       })
       .strict()
-      .describe('An expandable tree of nested items.'),
+      .describe('A flat list of item titles (top-level items only; nested children are not shown).'),
   };
 }
 

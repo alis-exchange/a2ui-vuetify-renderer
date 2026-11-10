@@ -18,7 +18,7 @@ export function buildFormApi(kit: ProtocolKit): ComponentApi {
         ...kit.commonProps,
       })
       .strict()
-      .describe('Wraps input components so they validate together as one form.'),
+      .describe('A container that groups related input components into one form.'),
   };
 }
 

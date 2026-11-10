@@ -25,7 +25,7 @@ export function buildChoicePickerApi(kit: ProtocolKit): ComponentApi {
         ...kit.commonProps,
       })
       .strict()
-      .describe('Picks one or several options; displayStyle chooses a dropdown, a visible list or segmented buttons.'),
+      .describe('Picks one or several options: a list of radio buttons for a single choice with displayStyle list, otherwise a dropdown.'),
   };
 }
 

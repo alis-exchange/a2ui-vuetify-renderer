@@ -20,7 +20,7 @@ export function buildBannerApi(kit: ProtocolKit): ComponentApi {
         ...kit.commonProps,
       })
       .strict()
-      .describe('A full-width notice with text and an optional icon, shown above other content.'),
+      .describe('A full-width notice with text and an optional icon.'),
   };
 }
 

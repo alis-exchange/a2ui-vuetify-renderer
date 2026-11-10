@@ -954,7 +954,7 @@
     },
     "Form": {
       "type": "object",
-      "description": "Wraps input components so they validate together as one form.",
+      "description": "A container that groups related input components into one form.",
       "properties": {
         "component": {
           "const": "Form"
@@ -975,7 +975,7 @@
     },
     "List": {
       "type": "object",
-      "description": "A vertical or horizontal list of children, often a template repeated over a data array.",
+      "description": "A vertical list of children, often a template repeated over a data array.",
       "properties": {
         "component": {
           "const": "List"
@@ -1051,7 +1051,7 @@
     },
     "TreeView": {
       "type": "object",
-      "description": "An expandable tree of nested items.",
+      "description": "A flat list of item titles (top-level items only; nested children are not shown).",
       "properties": {
         "component": {
           "const": "TreeView"
@@ -1220,7 +1220,7 @@
     },
     "Banner": {
       "type": "object",
-      "description": "A full-width notice with text and an optional icon, shown above other content.",
+      "description": "A full-width notice with text and an optional icon.",
       "properties": {
         "component": {
           "const": "Banner"
@@ -1553,7 +1553,7 @@
     },
     "ChoicePicker": {
       "type": "object",
-      "description": "Picks one or several options; displayStyle chooses a dropdown, a visible list or segmented buttons.",
+      "description": "Picks one or several options: a list of radio buttons for a single choice with displayStyle list, otherwise a dropdown.",
       "properties": {
         "component": {
           "const": "ChoicePicker"

@@ -20,7 +20,7 @@ export function buildListApi(kit: ProtocolKit): ComponentApi {
         ...kit.commonProps,
       })
       .strict()
-      .describe('A vertical or horizontal list of children, often a template repeated over a data array.'),
+      .describe('A vertical list of children, often a template repeated over a data array.'),
   };
 }
 
