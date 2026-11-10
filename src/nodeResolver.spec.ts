@@ -618,3 +618,30 @@ describe('v1.0 provider behaviour', () => {
     expect(wrapper.text()).toContain('Ada');
   });
 });
+
+describe('checks come from the binder in node mode', () => {
+  beforeAll(() => registerDefaultComponents());
+
+  // Before web_core 0.15 the binder read `rule.condition || rule`, so a literal `condition: false`
+  // passed and the components had to re-evaluate checks themselves. These pin that 0.15 reports it.
+  it.each([
+    ['DatePicker', { value: { path: '/when' } }],
+    ['Slider', { value: { path: '/vol' }, min: 0, max: 10 }],
+    ['TextField', { label: 'L', value: { path: '/name' } }],
+  ])('%s shows a literal condition: false', async (type, props) => {
+    const processor = new MessageProcessor([new Catalog(CATALOG_ID, '0.9', VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS)], undefined, { version: 'v0.9' });
+    processor.processMessages([
+      { version: 'v0.9', createSurface: { surfaceId: 'f', catalogId: CATALOG_ID } },
+      { version: 'v0.9', updateComponents: { surfaceId: 'f', components: [{ id: 'root', component: type, ...props, checks: [{ condition: false, message: 'Not allowed' }] }] } } as A2uiMessage,
+    ]);
+    const wrapper = mount(A2UIProvider, {
+      global: { plugins: [createVuetify()] },
+      props: { processor, surfaceId: 'f', onAction: vi.fn(), onError: vi.fn() },
+      slots: { default: () => h(ComponentNode, { id: 'root' }) },
+    });
+    await nextTick();
+    if (type === 'DatePicker') expect(wrapper.find('.a2ui-date-picker-errors').text()).toBe('Not allowed');
+    else if (type === 'Slider') expect(wrapper.findComponent({ name: 'VSlider' }).props('errorMessages')).toEqual(['Not allowed']);
+    else expect((wrapper.findComponent({ name: 'VTextField' }).props('rules') as ((v: unknown) => unknown)[])[0]('x')).toBe('Not allowed');
+  });
+});

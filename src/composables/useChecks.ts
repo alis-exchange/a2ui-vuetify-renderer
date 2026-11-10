@@ -17,12 +17,8 @@ export interface UseChecksReturn {
   /**
    * The failing check messages the binder reports in node mode, or `undefined` on the legacy
    * path. Pass to `error-messages` on inputs that should show them immediately, or use
-   * {@link UseChecksReturn.errorMessages} for a value-based fallback.
-   *
-   * An empty array means "the binder found nothing", which is not the same as "there is
-   * nothing to find": a literal `condition: false` is reported as passing by web_core's
-   * binder (it falls back to the rule object, which is truthy), so callers that need the
-   * failure surfaced should use {@link UseChecksReturn.errorMessages} instead.
+   * {@link UseChecksReturn.errorMessages} for a value-based fallback. An empty array means
+   * every check passes.
    */
   validationErrors: ComputedRef<string[] | undefined>;
   /** The messages to show for `value`: the binder's when it reports any, otherwise the rules run against it. */
@@ -47,7 +43,19 @@ export interface UseChecksReturn {
 export function useChecks(node: MaybeRefOrGetter<ComponentModel>): UseChecksReturn {
   const { resolveValue, nodeProps, dataContext } = useA2UI();
 
-  // Conditions are evaluated passively, as web_core's binder evaluates them. `resolveValue` is an
+  const validationErrors = computed(() => {
+    const errors = nodeProps?.value?.validationErrors;
+    return Array.isArray(errors) ? (errors as string[]) : undefined;
+  });
+
+  // In node mode web_core's binder has already evaluated every check and reports the failures,
+  // so the Vuetify rule just reads that verdict: no second evaluation, nothing to keep in step
+  // with the binder. A boolean computed, so `rules` is rebuilt only if the mode flips.
+  const hasBinderVerdict = computed(() => validationErrors.value !== undefined);
+  const binderRule = (): true | string => validationErrors.value?.[0] ?? true;
+
+  // Elsewhere (the legacy render path, or a schema without CheckableSchema) the conditions are
+  // evaluated here, passively, as web_core's binder evaluates them. `resolveValue` is an
   // active evaluation, so a condition calling a function that needs a user gesture (`openUrl`)
   // would run whenever the rules run while the user types; a passive one is refused by web_core
   // (reported as an EXPRESSION_ERROR) instead.
@@ -66,19 +74,19 @@ export function useChecks(node: MaybeRefOrGetter<ComponentModel>): UseChecksRetu
   // `checks` is CHECKABLE, never a binder-resolved dynamic value, so read the raw array off the
   // node: routing it through `resolveValue` is an identity no-op that would subscribe this
   // computed to the node's whole props signal and rebuild every rule closure on each emit.
-  // The closures still resolve each `condition` when they run, so cross-field checks stay live.
-  const rules = computed(() => createVuetifyRules((toValue(node).properties.checks as any[]) ?? [], resolveCondition));
+  // Rules read the live verdict (or resolve each `condition`) when they run, so cross-field
+  // checks stay live. One rule in node mode: Vuetify shows one message at a time anyway.
+  const rules = computed(() => {
+    const checks = (toValue(node).properties.checks as any[]) ?? [];
+    if (checks.length === 0) return [];
+    return hasBinderVerdict.value ? [binderRule] : createVuetifyRules(checks, resolveCondition);
+  });
 
   const isValid = computed(() => nodeProps?.value?.isValid !== false);
 
-  const validationErrors = computed(() => {
-    const errors = nodeProps?.value?.validationErrors;
-    return Array.isArray(errors) ? (errors as string[]) : undefined;
-  });
-
-  // Only a non-empty binder result wins: an empty array is "no failure found", and the binder
-  // misses a literal `condition: false`, so fall through to the rules rather than hiding it.
-  const errorMessages = (value: unknown): string[] => (validationErrors.value?.length ? validationErrors.value : rules.value.map((rule) => rule(value)).filter((result): result is string => typeof result === 'string'));
+  // The binder's verdict when there is one (web_core >= 0.15 reports a literal `condition: false`
+  // correctly, so an empty list really means "passing"); otherwise the rules run against `value`.
+  const errorMessages = (value: unknown): string[] => validationErrors.value ?? rules.value.map((rule) => rule(value)).filter((result): result is string => typeof result === 'string');
 
   return { rules, isValid, validationErrors, errorMessages };
 }

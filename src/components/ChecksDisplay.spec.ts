@@ -54,13 +54,6 @@ describe('checks on the remaining input components', () => {
     expect(wrapper.find('.a2ui-date-picker-errors').text()).toBe('Pick a weekday');
   });
 
-  // web_core's binder reads `rule.condition || rule`, so a literal `condition: false` falls back to
-  // the truthy rule object and is reported as passing. An empty binder result must not hide it.
-  it('DatePicker falls back to the rules when the binder reports no failures', () => {
-    const wrapper = mountWith(A2UIDatePicker, { value: { path: '/when' }, checks: failing }, { when: null }, { isValid: true, validationErrors: [] });
-    expect(wrapper.find('.a2ui-date-picker-errors').text()).toBe('Not allowed');
-  });
-
   it('Slider leaves validation to the binder in node mode instead of also passing rules', () => {
     const wrapper = mountWith(A2UISlider, { value: { path: '/vol' }, checks: failing }, { vol: 5 }, { isValid: false, validationErrors: ['Too low'] });
     const slider = wrapper.findComponent({ name: 'VSlider' });
@@ -69,13 +62,6 @@ describe('checks on the remaining input components', () => {
     // message after a cross-field check clears; while the binder reports failures it is the only
     // source.
     expect(slider.props('rules')).toEqual([]);
-  });
-
-  it('Slider falls back to the rules when the binder reports no failures', () => {
-    const wrapper = mountWith(A2UISlider, { value: { path: '/vol' }, checks: failing }, { vol: 5 }, { isValid: true, validationErrors: [] });
-    const rules = wrapper.findComponent({ name: 'VSlider' }).props('rules') as any[];
-    expect(rules).toHaveLength(1);
-    expect(rules[0](5)).toBe('Not allowed');
   });
 
   it('ChoicePicker hands its checks to the delegate input', () => {
