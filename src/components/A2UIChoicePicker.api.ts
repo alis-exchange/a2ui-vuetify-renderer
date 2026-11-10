@@ -13,7 +13,6 @@ export function buildChoicePickerApi(kit: ProtocolKit): ComponentApi {
     name: 'ChoicePicker',
     schema: z
       .object({
-        ...kit.commonProps,
         label: DynamicStringSchema.optional(),
         options: z.array(z.any()),
         // DynamicValue, not a plain union: it carries the DynamicValue ref web_core's binder needs to
@@ -22,8 +21,11 @@ export function buildChoicePickerApi(kit: ProtocolKit): ComponentApi {
         variant: z.enum(['multipleSelection', 'mutuallyExclusive']).default('mutuallyExclusive').optional(),
         displayStyle: z.enum(['list', 'dropdown', 'segmented']).default('dropdown').optional(),
         checks: CheckableSchema.shape.checks,
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('Picks one or several options; displayStyle chooses a dropdown, a visible list or segmented buttons.'),
   };
 }
 

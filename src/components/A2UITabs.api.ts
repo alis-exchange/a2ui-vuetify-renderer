@@ -13,7 +13,6 @@ export function buildTabsApi(kit: ProtocolKit): ComponentApi {
     name: 'Tabs',
     schema: z
       .object({
-        ...kit.commonProps,
         tabs: z
           .array(
             z
@@ -25,8 +24,11 @@ export function buildTabsApi(kit: ProtocolKit): ComponentApi {
           )
           .min(1),
         action: ActionSchema.optional(),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('Tabbed sections: each tab has a title and one child shown when selected.'),
   };
 }
 

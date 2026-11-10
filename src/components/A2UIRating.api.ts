@@ -13,12 +13,14 @@ export function buildRatingApi(kit: ProtocolKit): ComponentApi {
     name: 'Rating',
     schema: z
       .object({
-        ...kit.commonProps,
         max: z.number().default(5).optional(),
         value: DynamicNumberSchema,
         action: ActionSchema.optional(),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A row of stars for picking a rating up to max.'),
   };
 }
 

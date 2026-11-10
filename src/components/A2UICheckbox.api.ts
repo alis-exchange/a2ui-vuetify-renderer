@@ -13,13 +13,15 @@ export function buildCheckboxApi(kit: ProtocolKit): ComponentApi {
     name: 'Checkbox',
     schema: z
       .object({
-        ...kit.commonProps,
         label: DynamicStringSchema,
         value: DynamicBooleanSchema,
         action: ActionSchema.optional(),
         checks: CheckableSchema.shape.checks,
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A single on/off checkbox bound to a boolean.'),
   };
 }
 

@@ -13,10 +13,12 @@ export function buildCardApi(kit: ProtocolKit): ComponentApi {
     name: 'Card',
     schema: z
       .object({
-        ...kit.commonProps,
         child: ComponentIdSchema,
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A raised container for one child, used to group related content.'),
   };
 }
 

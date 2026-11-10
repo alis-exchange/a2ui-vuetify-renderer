@@ -7,12 +7,10 @@
   "components": {
     "Text": {
       "type": "object",
+      "description": "A run of text: headings (h1-h5), body copy or a caption.",
       "allOf": [
         {
           "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
         },
         {
           "type": "object",
@@ -28,125 +26,6 @@
         {
           "type": "object",
           "properties": {
-            "accessibility": {
-              "type": "object",
-              "properties": {
-                "label": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "path": {
-                          "type": "string",
-                          "description": "A JSON Pointer path to a value in the data model."
-                        }
-                      },
-                      "required": [
-                        "path"
-                      ],
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "call": {
-                          "type": "string",
-                          "description": "The name of the function to call."
-                        },
-                        "args": {
-                          "type": "object",
-                          "additionalProperties": {},
-                          "description": "Arguments passed to the function."
-                        },
-                        "returnType": {
-                          "type": "string",
-                          "enum": [
-                            "string",
-                            "number",
-                            "boolean",
-                            "array",
-                            "object",
-                            "any",
-                            "void"
-                          ],
-                          "description": "The expected return type of the function call.",
-                          "default": "boolean"
-                        }
-                      },
-                      "required": [
-                        "call"
-                      ],
-                      "additionalProperties": false,
-                      "description": "Invokes a named function on the client."
-                    }
-                  ],
-                  "description": "Represents a string"
-                },
-                "description": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "path": {
-                          "type": "string",
-                          "description": "A JSON Pointer path to a value in the data model."
-                        }
-                      },
-                      "required": [
-                        "path"
-                      ],
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "call": {
-                          "type": "string",
-                          "description": "The name of the function to call."
-                        },
-                        "args": {
-                          "type": "object",
-                          "additionalProperties": {},
-                          "description": "Arguments passed to the function."
-                        },
-                        "returnType": {
-                          "type": "string",
-                          "enum": [
-                            "string",
-                            "number",
-                            "boolean",
-                            "array",
-                            "object",
-                            "any",
-                            "void"
-                          ],
-                          "description": "The expected return type of the function call.",
-                          "default": "boolean"
-                        }
-                      },
-                      "required": [
-                        "call"
-                      ],
-                      "additionalProperties": false,
-                      "description": "Invokes a named function on the client."
-                    }
-                  ],
-                  "description": "Represents a string"
-                }
-              },
-              "additionalProperties": false,
-              "description": "Attributes to enhance accessibility when using assistive technologies like screen readers."
-            },
-            "weight": {
-              "type": "number",
-              "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
             "text": {
               "anyOf": [
                 {
@@ -213,37 +92,7 @@
                 "body"
               ],
               "default": "body"
-            }
-          },
-          "required": [
-            "text"
-          ]
-        }
-      ]
-    },
-    "Image": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "Image"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -362,7 +211,38 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "text"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "Image": {
+      "type": "object",
+      "description": "An image loaded from a URL, sized by variant (icon, avatar, feature, header).",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "Image"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "url": {
               "anyOf": [
                 {
@@ -493,37 +373,7 @@
                 "header"
               ],
               "default": "mediumFeature"
-            }
-          },
-          "required": [
-            "url"
-          ]
-        }
-      ]
-    },
-    "Icon": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "Icon"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -642,7 +492,38 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "url"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "Icon": {
+      "type": "object",
+      "description": "A Material Design icon, by name.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "Icon"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "name": {
               "anyOf": [
                 {
@@ -661,22 +542,142 @@
                   "additionalProperties": false
                 }
               ]
+            },
+            "accessibility": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "A JSON Pointer path to a value in the data model."
+                        }
+                      },
+                      "required": [
+                        "path"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "call": {
+                          "type": "string",
+                          "description": "The name of the function to call."
+                        },
+                        "args": {
+                          "type": "object",
+                          "additionalProperties": {},
+                          "description": "Arguments passed to the function."
+                        },
+                        "returnType": {
+                          "type": "string",
+                          "enum": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "object",
+                            "any",
+                            "void"
+                          ],
+                          "description": "The expected return type of the function call.",
+                          "default": "boolean"
+                        }
+                      },
+                      "required": [
+                        "call"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Invokes a named function on the client."
+                    }
+                  ],
+                  "description": "Represents a string"
+                },
+                "description": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "A JSON Pointer path to a value in the data model."
+                        }
+                      },
+                      "required": [
+                        "path"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "call": {
+                          "type": "string",
+                          "description": "The name of the function to call."
+                        },
+                        "args": {
+                          "type": "object",
+                          "additionalProperties": {},
+                          "description": "Arguments passed to the function."
+                        },
+                        "returnType": {
+                          "type": "string",
+                          "enum": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "object",
+                            "any",
+                            "void"
+                          ],
+                          "description": "The expected return type of the function call.",
+                          "default": "boolean"
+                        }
+                      },
+                      "required": [
+                        "call"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Invokes a named function on the client."
+                    }
+                  ],
+                  "description": "Represents a string"
+                }
+              },
+              "additionalProperties": false,
+              "description": "Attributes to enhance accessibility when using assistive technologies like screen readers."
+            },
+            "weight": {
+              "type": "number",
+              "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
             }
           },
           "required": [
             "name"
           ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
         }
       ]
     },
     "Divider": {
       "type": "object",
+      "description": "A thin line separating content, horizontal or vertical.",
       "allOf": [
         {
           "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
         },
         {
           "type": "object",
@@ -692,6 +693,14 @@
         {
           "type": "object",
           "properties": {
+            "axis": {
+              "type": "string",
+              "enum": [
+                "horizontal",
+                "vertical"
+              ],
+              "default": "horizontal"
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -810,27 +819,20 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
-            "axis": {
-              "type": "string",
-              "enum": [
-                "horizontal",
-                "vertical"
-              ],
-              "default": "horizontal"
             }
           }
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
         }
       ]
     },
     "Row": {
       "type": "object",
+      "description": "Lays children out horizontally; use weight on a child to share free space.",
       "allOf": [
         {
           "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
         },
         {
           "type": "object",
@@ -846,6 +848,60 @@
         {
           "type": "object",
           "properties": {
+            "children": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "description": "The unique identifier for a component, used for both definitions and references within the same surface."
+                  },
+                  "description": "A static list of child component IDs."
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "componentId": {
+                      "type": "string",
+                      "description": "The unique identifier for a component, used for both definitions and references within the same surface."
+                    },
+                    "path": {
+                      "type": "string",
+                      "description": "The path to the list of component property objects in the data model."
+                    }
+                  },
+                  "required": [
+                    "componentId",
+                    "path"
+                  ],
+                  "additionalProperties": false,
+                  "description": "A template for generating a dynamic list of children from a data model list. The `componentId` is the component to use as a template."
+                }
+              ]
+            },
+            "justify": {
+              "type": "string",
+              "enum": [
+                "center",
+                "end",
+                "spaceAround",
+                "spaceBetween",
+                "spaceEvenly",
+                "start",
+                "stretch"
+              ],
+              "default": "start"
+            },
+            "align": {
+              "type": "string",
+              "enum": [
+                "start",
+                "center",
+                "end",
+                "stretch"
+              ],
+              "default": "stretch"
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -964,76 +1020,23 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
-            "children": {
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "description": "The unique identifier for a component, used for both definitions and references within the same surface."
-                  },
-                  "description": "A static list of child component IDs."
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "componentId": {
-                      "type": "string",
-                      "description": "The unique identifier for a component, used for both definitions and references within the same surface."
-                    },
-                    "path": {
-                      "type": "string",
-                      "description": "The path to the list of component property objects in the data model."
-                    }
-                  },
-                  "required": [
-                    "componentId",
-                    "path"
-                  ],
-                  "additionalProperties": false,
-                  "description": "A template for generating a dynamic list of children from a data model list. The `componentId` is the component to use as a template."
-                }
-              ]
-            },
-            "justify": {
-              "type": "string",
-              "enum": [
-                "center",
-                "end",
-                "spaceAround",
-                "spaceBetween",
-                "spaceEvenly",
-                "start",
-                "stretch"
-              ],
-              "default": "start"
-            },
-            "align": {
-              "type": "string",
-              "enum": [
-                "start",
-                "center",
-                "end",
-                "stretch"
-              ],
-              "default": "stretch"
             }
           },
           "required": [
             "children"
           ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
         }
       ]
     },
     "Column": {
       "type": "object",
+      "description": "Stacks children vertically; use weight on a child to share free space.",
       "allOf": [
         {
           "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
         },
         {
           "type": "object",
@@ -1049,125 +1052,6 @@
         {
           "type": "object",
           "properties": {
-            "accessibility": {
-              "type": "object",
-              "properties": {
-                "label": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "path": {
-                          "type": "string",
-                          "description": "A JSON Pointer path to a value in the data model."
-                        }
-                      },
-                      "required": [
-                        "path"
-                      ],
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "call": {
-                          "type": "string",
-                          "description": "The name of the function to call."
-                        },
-                        "args": {
-                          "type": "object",
-                          "additionalProperties": {},
-                          "description": "Arguments passed to the function."
-                        },
-                        "returnType": {
-                          "type": "string",
-                          "enum": [
-                            "string",
-                            "number",
-                            "boolean",
-                            "array",
-                            "object",
-                            "any",
-                            "void"
-                          ],
-                          "description": "The expected return type of the function call.",
-                          "default": "boolean"
-                        }
-                      },
-                      "required": [
-                        "call"
-                      ],
-                      "additionalProperties": false,
-                      "description": "Invokes a named function on the client."
-                    }
-                  ],
-                  "description": "Represents a string"
-                },
-                "description": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "path": {
-                          "type": "string",
-                          "description": "A JSON Pointer path to a value in the data model."
-                        }
-                      },
-                      "required": [
-                        "path"
-                      ],
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "call": {
-                          "type": "string",
-                          "description": "The name of the function to call."
-                        },
-                        "args": {
-                          "type": "object",
-                          "additionalProperties": {},
-                          "description": "Arguments passed to the function."
-                        },
-                        "returnType": {
-                          "type": "string",
-                          "enum": [
-                            "string",
-                            "number",
-                            "boolean",
-                            "array",
-                            "object",
-                            "any",
-                            "void"
-                          ],
-                          "description": "The expected return type of the function call.",
-                          "default": "boolean"
-                        }
-                      },
-                      "required": [
-                        "call"
-                      ],
-                      "additionalProperties": false,
-                      "description": "Invokes a named function on the client."
-                    }
-                  ],
-                  "description": "Represents a string"
-                }
-              },
-              "additionalProperties": false,
-              "description": "Attributes to enhance accessibility when using assistive technologies like screen readers."
-            },
-            "weight": {
-              "type": "number",
-              "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
             "children": {
               "anyOf": [
                 {
@@ -1221,22 +1105,142 @@
                 "stretch"
               ],
               "default": "stretch"
+            },
+            "accessibility": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "A JSON Pointer path to a value in the data model."
+                        }
+                      },
+                      "required": [
+                        "path"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "call": {
+                          "type": "string",
+                          "description": "The name of the function to call."
+                        },
+                        "args": {
+                          "type": "object",
+                          "additionalProperties": {},
+                          "description": "Arguments passed to the function."
+                        },
+                        "returnType": {
+                          "type": "string",
+                          "enum": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "object",
+                            "any",
+                            "void"
+                          ],
+                          "description": "The expected return type of the function call.",
+                          "default": "boolean"
+                        }
+                      },
+                      "required": [
+                        "call"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Invokes a named function on the client."
+                    }
+                  ],
+                  "description": "Represents a string"
+                },
+                "description": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "A JSON Pointer path to a value in the data model."
+                        }
+                      },
+                      "required": [
+                        "path"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "call": {
+                          "type": "string",
+                          "description": "The name of the function to call."
+                        },
+                        "args": {
+                          "type": "object",
+                          "additionalProperties": {},
+                          "description": "Arguments passed to the function."
+                        },
+                        "returnType": {
+                          "type": "string",
+                          "enum": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "object",
+                            "any",
+                            "void"
+                          ],
+                          "description": "The expected return type of the function call.",
+                          "default": "boolean"
+                        }
+                      },
+                      "required": [
+                        "call"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Invokes a named function on the client."
+                    }
+                  ],
+                  "description": "Represents a string"
+                }
+              },
+              "additionalProperties": false,
+              "description": "Attributes to enhance accessibility when using assistive technologies like screen readers."
+            },
+            "weight": {
+              "type": "number",
+              "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
             }
           },
           "required": [
             "children"
           ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
         }
       ]
     },
     "Card": {
       "type": "object",
+      "description": "A raised container for one child, used to group related content.",
       "allOf": [
         {
           "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
         },
         {
           "type": "object",
@@ -1252,6 +1256,10 @@
         {
           "type": "object",
           "properties": {
+            "child": {
+              "type": "string",
+              "description": "The unique identifier for a component, used for both definitions and references within the same surface."
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -1370,26 +1378,23 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
-            "child": {
-              "type": "string",
-              "description": "The unique identifier for a component, used for both definitions and references within the same surface."
             }
           },
           "required": [
             "child"
           ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
         }
       ]
     },
     "Button": {
       "type": "object",
+      "description": "A clickable button with a label, text and/or icon that runs an action; disabled while its checks fail.",
       "allOf": [
         {
           "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
         },
         {
           "type": "object",
@@ -1405,125 +1410,6 @@
         {
           "type": "object",
           "properties": {
-            "accessibility": {
-              "type": "object",
-              "properties": {
-                "label": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "path": {
-                          "type": "string",
-                          "description": "A JSON Pointer path to a value in the data model."
-                        }
-                      },
-                      "required": [
-                        "path"
-                      ],
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "call": {
-                          "type": "string",
-                          "description": "The name of the function to call."
-                        },
-                        "args": {
-                          "type": "object",
-                          "additionalProperties": {},
-                          "description": "Arguments passed to the function."
-                        },
-                        "returnType": {
-                          "type": "string",
-                          "enum": [
-                            "string",
-                            "number",
-                            "boolean",
-                            "array",
-                            "object",
-                            "any",
-                            "void"
-                          ],
-                          "description": "The expected return type of the function call.",
-                          "default": "boolean"
-                        }
-                      },
-                      "required": [
-                        "call"
-                      ],
-                      "additionalProperties": false,
-                      "description": "Invokes a named function on the client."
-                    }
-                  ],
-                  "description": "Represents a string"
-                },
-                "description": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "path": {
-                          "type": "string",
-                          "description": "A JSON Pointer path to a value in the data model."
-                        }
-                      },
-                      "required": [
-                        "path"
-                      ],
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "call": {
-                          "type": "string",
-                          "description": "The name of the function to call."
-                        },
-                        "args": {
-                          "type": "object",
-                          "additionalProperties": {},
-                          "description": "Arguments passed to the function."
-                        },
-                        "returnType": {
-                          "type": "string",
-                          "enum": [
-                            "string",
-                            "number",
-                            "boolean",
-                            "array",
-                            "object",
-                            "any",
-                            "void"
-                          ],
-                          "description": "The expected return type of the function call.",
-                          "default": "boolean"
-                        }
-                      },
-                      "required": [
-                        "call"
-                      ],
-                      "additionalProperties": false,
-                      "description": "Invokes a named function on the client."
-                    }
-                  ],
-                  "description": "Represents a string"
-                }
-              },
-              "additionalProperties": false,
-              "description": "Attributes to enhance accessibility when using assistive technologies like screen readers."
-            },
-            "weight": {
-              "type": "number",
-              "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
             "label": {
               "anyOf": [
                 {
@@ -1906,37 +1792,7 @@
                 "description": "A single validation rule applied to an input component."
               },
               "description": "A list of checks to perform. These are function calls that must return a boolean indicating validity."
-            }
-          },
-          "required": [
-            "action"
-          ]
-        }
-      ]
-    },
-    "IconButton": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "IconButton"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -2055,7 +1911,38 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "action"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "IconButton": {
+      "type": "object",
+      "description": "A compact button showing only an icon that runs an action.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "IconButton"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "icon": {
               "anyOf": [
                 {
@@ -2330,23 +2217,143 @@
                 "description": "A single validation rule applied to an input component."
               },
               "description": "A list of checks to perform. These are function calls that must return a boolean indicating validity."
+            },
+            "accessibility": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "A JSON Pointer path to a value in the data model."
+                        }
+                      },
+                      "required": [
+                        "path"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "call": {
+                          "type": "string",
+                          "description": "The name of the function to call."
+                        },
+                        "args": {
+                          "type": "object",
+                          "additionalProperties": {},
+                          "description": "Arguments passed to the function."
+                        },
+                        "returnType": {
+                          "type": "string",
+                          "enum": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "object",
+                            "any",
+                            "void"
+                          ],
+                          "description": "The expected return type of the function call.",
+                          "default": "boolean"
+                        }
+                      },
+                      "required": [
+                        "call"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Invokes a named function on the client."
+                    }
+                  ],
+                  "description": "Represents a string"
+                },
+                "description": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "A JSON Pointer path to a value in the data model."
+                        }
+                      },
+                      "required": [
+                        "path"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "call": {
+                          "type": "string",
+                          "description": "The name of the function to call."
+                        },
+                        "args": {
+                          "type": "object",
+                          "additionalProperties": {},
+                          "description": "Arguments passed to the function."
+                        },
+                        "returnType": {
+                          "type": "string",
+                          "enum": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "object",
+                            "any",
+                            "void"
+                          ],
+                          "description": "The expected return type of the function call.",
+                          "default": "boolean"
+                        }
+                      },
+                      "required": [
+                        "call"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Invokes a named function on the client."
+                    }
+                  ],
+                  "description": "Represents a string"
+                }
+              },
+              "additionalProperties": false,
+              "description": "Attributes to enhance accessibility when using assistive technologies like screen readers."
+            },
+            "weight": {
+              "type": "number",
+              "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
             }
           },
           "required": [
             "icon",
             "action"
           ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
         }
       ]
     },
     "TextField": {
       "type": "object",
+      "description": "A single-line text input bound to the data model.",
       "allOf": [
         {
           "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
         },
         {
           "type": "object",
@@ -2362,125 +2369,6 @@
         {
           "type": "object",
           "properties": {
-            "accessibility": {
-              "type": "object",
-              "properties": {
-                "label": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "path": {
-                          "type": "string",
-                          "description": "A JSON Pointer path to a value in the data model."
-                        }
-                      },
-                      "required": [
-                        "path"
-                      ],
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "call": {
-                          "type": "string",
-                          "description": "The name of the function to call."
-                        },
-                        "args": {
-                          "type": "object",
-                          "additionalProperties": {},
-                          "description": "Arguments passed to the function."
-                        },
-                        "returnType": {
-                          "type": "string",
-                          "enum": [
-                            "string",
-                            "number",
-                            "boolean",
-                            "array",
-                            "object",
-                            "any",
-                            "void"
-                          ],
-                          "description": "The expected return type of the function call.",
-                          "default": "boolean"
-                        }
-                      },
-                      "required": [
-                        "call"
-                      ],
-                      "additionalProperties": false,
-                      "description": "Invokes a named function on the client."
-                    }
-                  ],
-                  "description": "Represents a string"
-                },
-                "description": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "path": {
-                          "type": "string",
-                          "description": "A JSON Pointer path to a value in the data model."
-                        }
-                      },
-                      "required": [
-                        "path"
-                      ],
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "call": {
-                          "type": "string",
-                          "description": "The name of the function to call."
-                        },
-                        "args": {
-                          "type": "object",
-                          "additionalProperties": {},
-                          "description": "Arguments passed to the function."
-                        },
-                        "returnType": {
-                          "type": "string",
-                          "enum": [
-                            "string",
-                            "number",
-                            "boolean",
-                            "array",
-                            "object",
-                            "any",
-                            "void"
-                          ],
-                          "description": "The expected return type of the function call.",
-                          "default": "boolean"
-                        }
-                      },
-                      "required": [
-                        "call"
-                      ],
-                      "additionalProperties": false,
-                      "description": "Invokes a named function on the client."
-                    }
-                  ],
-                  "description": "Represents a string"
-                }
-              },
-              "additionalProperties": false,
-              "description": "Attributes to enhance accessibility when using assistive technologies like screen readers."
-            },
-            "weight": {
-              "type": "number",
-              "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
             "label": {
               "anyOf": [
                 {
@@ -2809,22 +2697,142 @@
                 "description": "A single validation rule applied to an input component."
               },
               "description": "A list of checks to perform. These are function calls that must return a boolean indicating validity."
+            },
+            "accessibility": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "A JSON Pointer path to a value in the data model."
+                        }
+                      },
+                      "required": [
+                        "path"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "call": {
+                          "type": "string",
+                          "description": "The name of the function to call."
+                        },
+                        "args": {
+                          "type": "object",
+                          "additionalProperties": {},
+                          "description": "Arguments passed to the function."
+                        },
+                        "returnType": {
+                          "type": "string",
+                          "enum": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "object",
+                            "any",
+                            "void"
+                          ],
+                          "description": "The expected return type of the function call.",
+                          "default": "boolean"
+                        }
+                      },
+                      "required": [
+                        "call"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Invokes a named function on the client."
+                    }
+                  ],
+                  "description": "Represents a string"
+                },
+                "description": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "A JSON Pointer path to a value in the data model."
+                        }
+                      },
+                      "required": [
+                        "path"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "call": {
+                          "type": "string",
+                          "description": "The name of the function to call."
+                        },
+                        "args": {
+                          "type": "object",
+                          "additionalProperties": {},
+                          "description": "Arguments passed to the function."
+                        },
+                        "returnType": {
+                          "type": "string",
+                          "enum": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "object",
+                            "any",
+                            "void"
+                          ],
+                          "description": "The expected return type of the function call.",
+                          "default": "boolean"
+                        }
+                      },
+                      "required": [
+                        "call"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Invokes a named function on the client."
+                    }
+                  ],
+                  "description": "Represents a string"
+                }
+              },
+              "additionalProperties": false,
+              "description": "Attributes to enhance accessibility when using assistive technologies like screen readers."
+            },
+            "weight": {
+              "type": "number",
+              "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
             }
           },
           "required": [
             "label"
           ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
         }
       ]
     },
     "TextArea": {
       "type": "object",
+      "description": "A multi-line text input bound to the data model.",
       "allOf": [
         {
           "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
         },
         {
           "type": "object",
@@ -2840,125 +2848,6 @@
         {
           "type": "object",
           "properties": {
-            "accessibility": {
-              "type": "object",
-              "properties": {
-                "label": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "path": {
-                          "type": "string",
-                          "description": "A JSON Pointer path to a value in the data model."
-                        }
-                      },
-                      "required": [
-                        "path"
-                      ],
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "call": {
-                          "type": "string",
-                          "description": "The name of the function to call."
-                        },
-                        "args": {
-                          "type": "object",
-                          "additionalProperties": {},
-                          "description": "Arguments passed to the function."
-                        },
-                        "returnType": {
-                          "type": "string",
-                          "enum": [
-                            "string",
-                            "number",
-                            "boolean",
-                            "array",
-                            "object",
-                            "any",
-                            "void"
-                          ],
-                          "description": "The expected return type of the function call.",
-                          "default": "boolean"
-                        }
-                      },
-                      "required": [
-                        "call"
-                      ],
-                      "additionalProperties": false,
-                      "description": "Invokes a named function on the client."
-                    }
-                  ],
-                  "description": "Represents a string"
-                },
-                "description": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "path": {
-                          "type": "string",
-                          "description": "A JSON Pointer path to a value in the data model."
-                        }
-                      },
-                      "required": [
-                        "path"
-                      ],
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "call": {
-                          "type": "string",
-                          "description": "The name of the function to call."
-                        },
-                        "args": {
-                          "type": "object",
-                          "additionalProperties": {},
-                          "description": "Arguments passed to the function."
-                        },
-                        "returnType": {
-                          "type": "string",
-                          "enum": [
-                            "string",
-                            "number",
-                            "boolean",
-                            "array",
-                            "object",
-                            "any",
-                            "void"
-                          ],
-                          "description": "The expected return type of the function call.",
-                          "default": "boolean"
-                        }
-                      },
-                      "required": [
-                        "call"
-                      ],
-                      "additionalProperties": false,
-                      "description": "Invokes a named function on the client."
-                    }
-                  ],
-                  "description": "Represents a string"
-                }
-              },
-              "additionalProperties": false,
-              "description": "Attributes to enhance accessibility when using assistive technologies like screen readers."
-            },
-            "weight": {
-              "type": "number",
-              "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
             "label": {
               "anyOf": [
                 {
@@ -3287,37 +3176,7 @@
                 "description": "A single validation rule applied to an input component."
               },
               "description": "A list of checks to perform. These are function calls that must return a boolean indicating validity."
-            }
-          },
-          "required": [
-            "label"
-          ]
-        }
-      ]
-    },
-    "NumberInput": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "NumberInput"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -3436,7 +3295,38 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "label"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "NumberInput": {
+      "type": "object",
+      "description": "A numeric input bound to the data model.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "NumberInput"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "label": {
               "anyOf": [
                 {
@@ -3765,37 +3655,7 @@
                 "description": "A single validation rule applied to an input component."
               },
               "description": "A list of checks to perform. These are function calls that must return a boolean indicating validity."
-            }
-          },
-          "required": [
-            "label"
-          ]
-        }
-      ]
-    },
-    "Checkbox": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "Checkbox"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -3914,7 +3774,38 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "label"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "Checkbox": {
+      "type": "object",
+      "description": "A single on/off checkbox bound to a boolean.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "Checkbox"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "label": {
               "anyOf": [
                 {
@@ -4234,38 +4125,7 @@
                 "description": "A single validation rule applied to an input component."
               },
               "description": "A list of checks to perform. These are function calls that must return a boolean indicating validity."
-            }
-          },
-          "required": [
-            "label",
-            "value"
-          ]
-        }
-      ]
-    },
-    "RadioButton": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "RadioButton"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -4384,7 +4244,39 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "label",
+            "value"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "RadioButton": {
+      "type": "object",
+      "description": "A group of radio buttons for picking exactly one option, all options visible.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "RadioButton"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "label": {
               "anyOf": [
                 {
@@ -4774,38 +4666,7 @@
                 "description": "A single validation rule applied to an input component."
               },
               "description": "A list of checks to perform. These are function calls that must return a boolean indicating validity."
-            }
-          },
-          "required": [
-            "options",
-            "value"
-          ]
-        }
-      ]
-    },
-    "Select": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "Select"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -4924,7 +4785,39 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "options",
+            "value"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "Select": {
+      "type": "object",
+      "description": "A dropdown for picking one option, or several with variant multipleSelection, from a fixed list.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "Select"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "label": {
               "anyOf": [
                 {
@@ -5264,23 +5157,143 @@
                 "description": "A single validation rule applied to an input component."
               },
               "description": "A list of checks to perform. These are function calls that must return a boolean indicating validity."
+            },
+            "accessibility": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "A JSON Pointer path to a value in the data model."
+                        }
+                      },
+                      "required": [
+                        "path"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "call": {
+                          "type": "string",
+                          "description": "The name of the function to call."
+                        },
+                        "args": {
+                          "type": "object",
+                          "additionalProperties": {},
+                          "description": "Arguments passed to the function."
+                        },
+                        "returnType": {
+                          "type": "string",
+                          "enum": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "object",
+                            "any",
+                            "void"
+                          ],
+                          "description": "The expected return type of the function call.",
+                          "default": "boolean"
+                        }
+                      },
+                      "required": [
+                        "call"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Invokes a named function on the client."
+                    }
+                  ],
+                  "description": "Represents a string"
+                },
+                "description": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "A JSON Pointer path to a value in the data model."
+                        }
+                      },
+                      "required": [
+                        "path"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "call": {
+                          "type": "string",
+                          "description": "The name of the function to call."
+                        },
+                        "args": {
+                          "type": "object",
+                          "additionalProperties": {},
+                          "description": "Arguments passed to the function."
+                        },
+                        "returnType": {
+                          "type": "string",
+                          "enum": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "object",
+                            "any",
+                            "void"
+                          ],
+                          "description": "The expected return type of the function call.",
+                          "default": "boolean"
+                        }
+                      },
+                      "required": [
+                        "call"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Invokes a named function on the client."
+                    }
+                  ],
+                  "description": "Represents a string"
+                }
+              },
+              "additionalProperties": false,
+              "description": "Attributes to enhance accessibility when using assistive technologies like screen readers."
+            },
+            "weight": {
+              "type": "number",
+              "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
             }
           },
           "required": [
             "options",
             "value"
           ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
         }
       ]
     },
     "Autocomplete": {
       "type": "object",
+      "description": "A dropdown with type-to-filter for picking from a long fixed list of options.",
       "allOf": [
         {
           "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
         },
         {
           "type": "object",
@@ -5296,125 +5309,6 @@
         {
           "type": "object",
           "properties": {
-            "accessibility": {
-              "type": "object",
-              "properties": {
-                "label": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "path": {
-                          "type": "string",
-                          "description": "A JSON Pointer path to a value in the data model."
-                        }
-                      },
-                      "required": [
-                        "path"
-                      ],
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "call": {
-                          "type": "string",
-                          "description": "The name of the function to call."
-                        },
-                        "args": {
-                          "type": "object",
-                          "additionalProperties": {},
-                          "description": "Arguments passed to the function."
-                        },
-                        "returnType": {
-                          "type": "string",
-                          "enum": [
-                            "string",
-                            "number",
-                            "boolean",
-                            "array",
-                            "object",
-                            "any",
-                            "void"
-                          ],
-                          "description": "The expected return type of the function call.",
-                          "default": "boolean"
-                        }
-                      },
-                      "required": [
-                        "call"
-                      ],
-                      "additionalProperties": false,
-                      "description": "Invokes a named function on the client."
-                    }
-                  ],
-                  "description": "Represents a string"
-                },
-                "description": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "path": {
-                          "type": "string",
-                          "description": "A JSON Pointer path to a value in the data model."
-                        }
-                      },
-                      "required": [
-                        "path"
-                      ],
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "call": {
-                          "type": "string",
-                          "description": "The name of the function to call."
-                        },
-                        "args": {
-                          "type": "object",
-                          "additionalProperties": {},
-                          "description": "Arguments passed to the function."
-                        },
-                        "returnType": {
-                          "type": "string",
-                          "enum": [
-                            "string",
-                            "number",
-                            "boolean",
-                            "array",
-                            "object",
-                            "any",
-                            "void"
-                          ],
-                          "description": "The expected return type of the function call.",
-                          "default": "boolean"
-                        }
-                      },
-                      "required": [
-                        "call"
-                      ],
-                      "additionalProperties": false,
-                      "description": "Invokes a named function on the client."
-                    }
-                  ],
-                  "description": "Represents a string"
-                }
-              },
-              "additionalProperties": false,
-              "description": "Attributes to enhance accessibility when using assistive technologies like screen readers."
-            },
-            "weight": {
-              "type": "number",
-              "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
             "label": {
               "anyOf": [
                 {
@@ -5681,23 +5575,143 @@
                 }
               ],
               "description": "Defines an interaction handler that can either trigger a server-side event or execute a local client-side function."
+            },
+            "accessibility": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "A JSON Pointer path to a value in the data model."
+                        }
+                      },
+                      "required": [
+                        "path"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "call": {
+                          "type": "string",
+                          "description": "The name of the function to call."
+                        },
+                        "args": {
+                          "type": "object",
+                          "additionalProperties": {},
+                          "description": "Arguments passed to the function."
+                        },
+                        "returnType": {
+                          "type": "string",
+                          "enum": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "object",
+                            "any",
+                            "void"
+                          ],
+                          "description": "The expected return type of the function call.",
+                          "default": "boolean"
+                        }
+                      },
+                      "required": [
+                        "call"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Invokes a named function on the client."
+                    }
+                  ],
+                  "description": "Represents a string"
+                },
+                "description": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "A JSON Pointer path to a value in the data model."
+                        }
+                      },
+                      "required": [
+                        "path"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "call": {
+                          "type": "string",
+                          "description": "The name of the function to call."
+                        },
+                        "args": {
+                          "type": "object",
+                          "additionalProperties": {},
+                          "description": "Arguments passed to the function."
+                        },
+                        "returnType": {
+                          "type": "string",
+                          "enum": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "object",
+                            "any",
+                            "void"
+                          ],
+                          "description": "The expected return type of the function call.",
+                          "default": "boolean"
+                        }
+                      },
+                      "required": [
+                        "call"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Invokes a named function on the client."
+                    }
+                  ],
+                  "description": "Represents a string"
+                }
+              },
+              "additionalProperties": false,
+              "description": "Attributes to enhance accessibility when using assistive technologies like screen readers."
+            },
+            "weight": {
+              "type": "number",
+              "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
             }
           },
           "required": [
             "options",
             "value"
           ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
         }
       ]
     },
     "Combobox": {
       "type": "object",
+      "description": "A dropdown that suggests options but also accepts free text the user types.",
       "allOf": [
         {
           "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
         },
         {
           "type": "object",
@@ -5713,125 +5727,6 @@
         {
           "type": "object",
           "properties": {
-            "accessibility": {
-              "type": "object",
-              "properties": {
-                "label": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "path": {
-                          "type": "string",
-                          "description": "A JSON Pointer path to a value in the data model."
-                        }
-                      },
-                      "required": [
-                        "path"
-                      ],
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "call": {
-                          "type": "string",
-                          "description": "The name of the function to call."
-                        },
-                        "args": {
-                          "type": "object",
-                          "additionalProperties": {},
-                          "description": "Arguments passed to the function."
-                        },
-                        "returnType": {
-                          "type": "string",
-                          "enum": [
-                            "string",
-                            "number",
-                            "boolean",
-                            "array",
-                            "object",
-                            "any",
-                            "void"
-                          ],
-                          "description": "The expected return type of the function call.",
-                          "default": "boolean"
-                        }
-                      },
-                      "required": [
-                        "call"
-                      ],
-                      "additionalProperties": false,
-                      "description": "Invokes a named function on the client."
-                    }
-                  ],
-                  "description": "Represents a string"
-                },
-                "description": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "path": {
-                          "type": "string",
-                          "description": "A JSON Pointer path to a value in the data model."
-                        }
-                      },
-                      "required": [
-                        "path"
-                      ],
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "call": {
-                          "type": "string",
-                          "description": "The name of the function to call."
-                        },
-                        "args": {
-                          "type": "object",
-                          "additionalProperties": {},
-                          "description": "Arguments passed to the function."
-                        },
-                        "returnType": {
-                          "type": "string",
-                          "enum": [
-                            "string",
-                            "number",
-                            "boolean",
-                            "array",
-                            "object",
-                            "any",
-                            "void"
-                          ],
-                          "description": "The expected return type of the function call.",
-                          "default": "boolean"
-                        }
-                      },
-                      "required": [
-                        "call"
-                      ],
-                      "additionalProperties": false,
-                      "description": "Invokes a named function on the client."
-                    }
-                  ],
-                  "description": "Represents a string"
-                }
-              },
-              "additionalProperties": false,
-              "description": "Attributes to enhance accessibility when using assistive technologies like screen readers."
-            },
-            "weight": {
-              "type": "number",
-              "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
             "label": {
               "anyOf": [
                 {
@@ -6098,38 +5993,7 @@
                 }
               ],
               "description": "Defines an interaction handler that can either trigger a server-side event or execute a local client-side function."
-            }
-          },
-          "required": [
-            "options",
-            "value"
-          ]
-        }
-      ]
-    },
-    "Slider": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "Slider"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -6248,7 +6112,39 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "options",
+            "value"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "Slider": {
+      "type": "object",
+      "description": "A slider for picking one number between min and max.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "Slider"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "label": {
               "anyOf": [
                 {
@@ -6575,38 +6471,7 @@
                 "description": "A single validation rule applied to an input component."
               },
               "description": "A list of checks to perform. These are function calls that must return a boolean indicating validity."
-            }
-          },
-          "required": [
-            "max",
-            "value"
-          ]
-        }
-      ]
-    },
-    "RangeSlider": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "RangeSlider"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -6725,7 +6590,39 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "max",
+            "value"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "RangeSlider": {
+      "type": "object",
+      "description": "A slider with two handles for picking a [low, high] number range.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "RangeSlider"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "label": {
               "anyOf": [
                 {
@@ -6949,38 +6846,7 @@
                 }
               ],
               "description": "Defines an interaction handler that can either trigger a server-side event or execute a local client-side function."
-            }
-          },
-          "required": [
-            "max",
-            "value"
-          ]
-        }
-      ]
-    },
-    "DatePicker": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "DatePicker"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -7099,7 +6965,39 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "max",
+            "value"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "DatePicker": {
+      "type": "object",
+      "description": "A calendar-style date picker bound to an ISO date (or dates with multiple).",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "DatePicker"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "label": {
               "anyOf": [
                 {
@@ -7757,37 +7655,7 @@
                 "description": "A single validation rule applied to an input component."
               },
               "description": "A list of checks to perform. These are function calls that must return a boolean indicating validity."
-            }
-          },
-          "required": [
-            "value"
-          ]
-        }
-      ]
-    },
-    "TimePicker": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "TimePicker"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -7906,7 +7774,38 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "value"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "TimePicker": {
+      "type": "object",
+      "description": "A time input bound to a HH:MM value.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "TimePicker"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "label": {
               "anyOf": [
                 {
@@ -8153,37 +8052,7 @@
                 }
               ],
               "description": "Defines an interaction handler that can either trigger a server-side event or execute a local client-side function."
-            }
-          },
-          "required": [
-            "value"
-          ]
-        }
-      ]
-    },
-    "FileInput": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "FileInput"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -8302,7 +8171,38 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "value"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "FileInput": {
+      "type": "object",
+      "description": "A file chooser that stores the selected files.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "FileInput"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "label": {
               "anyOf": [
                 {
@@ -8558,37 +8458,7 @@
                 }
               ],
               "description": "Defines an interaction handler that can either trigger a server-side event or execute a local client-side function."
-            }
-          },
-          "required": [
-            "label"
-          ]
-        }
-      ]
-    },
-    "Form": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "Form"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -8707,7 +8577,38 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "label"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "Form": {
+      "type": "object",
+      "description": "Wraps input components so they validate together as one form.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "Form"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "children": {
               "anyOf": [
                 {
@@ -8738,37 +8639,7 @@
                   "description": "A template for generating a dynamic list of children from a data model list. The `componentId` is the component to use as a template."
                 }
               ]
-            }
-          },
-          "required": [
-            "children"
-          ]
-        }
-      ]
-    },
-    "List": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "List"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -8887,7 +8758,38 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "children"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "List": {
+      "type": "object",
+      "description": "A vertical or horizontal list of children, often a template repeated over a data array.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "List"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "children": {
               "anyOf": [
                 {
@@ -8936,37 +8838,7 @@
                 "stretch"
               ],
               "default": "stretch"
-            }
-          },
-          "required": [
-            "children"
-          ]
-        }
-      ]
-    },
-    "Table": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "Table"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -9085,7 +8957,38 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "children"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "Table": {
+      "type": "object",
+      "description": "A data table: columns name the fields, items are the rows.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "Table"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "items": {
               "type": "array"
             },
@@ -9103,23 +9006,143 @@
                 },
                 "additionalProperties": false
               }
+            },
+            "accessibility": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "A JSON Pointer path to a value in the data model."
+                        }
+                      },
+                      "required": [
+                        "path"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "call": {
+                          "type": "string",
+                          "description": "The name of the function to call."
+                        },
+                        "args": {
+                          "type": "object",
+                          "additionalProperties": {},
+                          "description": "Arguments passed to the function."
+                        },
+                        "returnType": {
+                          "type": "string",
+                          "enum": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "object",
+                            "any",
+                            "void"
+                          ],
+                          "description": "The expected return type of the function call.",
+                          "default": "boolean"
+                        }
+                      },
+                      "required": [
+                        "call"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Invokes a named function on the client."
+                    }
+                  ],
+                  "description": "Represents a string"
+                },
+                "description": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "A JSON Pointer path to a value in the data model."
+                        }
+                      },
+                      "required": [
+                        "path"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "call": {
+                          "type": "string",
+                          "description": "The name of the function to call."
+                        },
+                        "args": {
+                          "type": "object",
+                          "additionalProperties": {},
+                          "description": "Arguments passed to the function."
+                        },
+                        "returnType": {
+                          "type": "string",
+                          "enum": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "object",
+                            "any",
+                            "void"
+                          ],
+                          "description": "The expected return type of the function call.",
+                          "default": "boolean"
+                        }
+                      },
+                      "required": [
+                        "call"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Invokes a named function on the client."
+                    }
+                  ],
+                  "description": "Represents a string"
+                }
+              },
+              "additionalProperties": false,
+              "description": "Attributes to enhance accessibility when using assistive technologies like screen readers."
+            },
+            "weight": {
+              "type": "number",
+              "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
             }
           },
           "required": [
             "items",
             "columns"
           ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
         }
       ]
     },
     "TreeView": {
       "type": "object",
+      "description": "An expandable tree of nested items.",
       "allOf": [
         {
           "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
         },
         {
           "type": "object",
@@ -9135,6 +9158,9 @@
         {
           "type": "object",
           "properties": {
+            "items": {
+              "type": "array"
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -9253,25 +9279,23 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
-            "items": {
-              "type": "array"
             }
           },
           "required": [
             "items"
           ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
         }
       ]
     },
     "Calendar": {
       "type": "object",
+      "description": "A month, week or day calendar showing events; clicking a date selects it.",
       "allOf": [
         {
           "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
         },
         {
           "type": "object",
@@ -9287,125 +9311,6 @@
         {
           "type": "object",
           "properties": {
-            "accessibility": {
-              "type": "object",
-              "properties": {
-                "label": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "path": {
-                          "type": "string",
-                          "description": "A JSON Pointer path to a value in the data model."
-                        }
-                      },
-                      "required": [
-                        "path"
-                      ],
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "call": {
-                          "type": "string",
-                          "description": "The name of the function to call."
-                        },
-                        "args": {
-                          "type": "object",
-                          "additionalProperties": {},
-                          "description": "Arguments passed to the function."
-                        },
-                        "returnType": {
-                          "type": "string",
-                          "enum": [
-                            "string",
-                            "number",
-                            "boolean",
-                            "array",
-                            "object",
-                            "any",
-                            "void"
-                          ],
-                          "description": "The expected return type of the function call.",
-                          "default": "boolean"
-                        }
-                      },
-                      "required": [
-                        "call"
-                      ],
-                      "additionalProperties": false,
-                      "description": "Invokes a named function on the client."
-                    }
-                  ],
-                  "description": "Represents a string"
-                },
-                "description": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "path": {
-                          "type": "string",
-                          "description": "A JSON Pointer path to a value in the data model."
-                        }
-                      },
-                      "required": [
-                        "path"
-                      ],
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "call": {
-                          "type": "string",
-                          "description": "The name of the function to call."
-                        },
-                        "args": {
-                          "type": "object",
-                          "additionalProperties": {},
-                          "description": "Arguments passed to the function."
-                        },
-                        "returnType": {
-                          "type": "string",
-                          "enum": [
-                            "string",
-                            "number",
-                            "boolean",
-                            "array",
-                            "object",
-                            "any",
-                            "void"
-                          ],
-                          "description": "The expected return type of the function call.",
-                          "default": "boolean"
-                        }
-                      },
-                      "required": [
-                        "call"
-                      ],
-                      "additionalProperties": false,
-                      "description": "Invokes a named function on the client."
-                    }
-                  ],
-                  "description": "Represents a string"
-                }
-              },
-              "additionalProperties": false,
-              "description": "Attributes to enhance accessibility when using assistive technologies like screen readers."
-            },
-            "weight": {
-              "type": "number",
-              "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
             "events": {
               "type": "array",
               "items": {
@@ -9651,37 +9556,7 @@
                 }
               ],
               "description": "Defines an interaction handler that can either trigger a server-side event or execute a local client-side function."
-            }
-          },
-          "required": [
-            "events"
-          ]
-        }
-      ]
-    },
-    "Alert": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "Alert"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -9800,7 +9675,38 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "events"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "Alert": {
+      "type": "object",
+      "description": "A coloured message box for success, info, warning or error notices.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "Alert"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "title": {
               "anyOf": [
                 {
@@ -9922,34 +9828,7 @@
             "child": {
               "type": "string",
               "description": "The unique identifier for a component, used for both definitions and references within the same surface."
-            }
-          }
-        }
-      ]
-    },
-    "Badge": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "Badge"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -10068,7 +9947,35 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "Badge": {
+      "type": "object",
+      "description": "A small count or label overlaid on its child.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "Badge"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "content": {
               "anyOf": [
                 {
@@ -10129,38 +10036,7 @@
             "child": {
               "type": "string",
               "description": "The unique identifier for a component, used for both definitions and references within the same surface."
-            }
-          },
-          "required": [
-            "content",
-            "child"
-          ]
-        }
-      ]
-    },
-    "Banner": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "Banner"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -10279,7 +10155,39 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "content",
+            "child"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "Banner": {
+      "type": "object",
+      "description": "A full-width notice with text and an optional icon, shown above other content.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "Banner"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "text": {
               "anyOf": [
                 {
@@ -10391,37 +10299,7 @@
             "child": {
               "type": "string",
               "description": "The unique identifier for a component, used for both definitions and references within the same surface."
-            }
-          },
-          "required": [
-            "text"
-          ]
-        }
-      ]
-    },
-    "Rating": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "Rating"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -10540,7 +10418,38 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "text"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "Rating": {
+      "type": "object",
+      "description": "A row of stars for picking a rating up to max.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "Rating"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "max": {
               "type": "number",
               "default": 5
@@ -10737,37 +10646,7 @@
                 }
               ],
               "description": "Defines an interaction handler that can either trigger a server-side event or execute a local client-side function."
-            }
-          },
-          "required": [
-            "value"
-          ]
-        }
-      ]
-    },
-    "EmptyState": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "EmptyState"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -10886,7 +10765,38 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "value"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "EmptyState": {
+      "type": "object",
+      "description": "A placeholder shown when there is nothing to display yet, with title, text and icon.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "EmptyState"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "title": {
               "anyOf": [
                 {
@@ -11052,34 +10962,7 @@
             "child": {
               "type": "string",
               "description": "The unique identifier for a component, used for both definitions and references within the same surface."
-            }
-          }
-        }
-      ]
-    },
-    "ExpansionPanel": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "ExpansionPanel"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -11198,7 +11081,35 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "ExpansionPanel": {
+      "type": "object",
+      "description": "A collapsible section: a title that expands to show its child.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "ExpansionPanel"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "title": {
               "anyOf": [
                 {
@@ -11395,38 +11306,7 @@
                 }
               ],
               "description": "Defines an interaction handler that can either trigger a server-side event or execute a local client-side function."
-            }
-          },
-          "required": [
-            "title",
-            "child"
-          ]
-        }
-      ]
-    },
-    "Chip": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "Chip"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -11545,7 +11425,39 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "title",
+            "child"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "Chip": {
+      "type": "object",
+      "description": "A small compact element for a tag, filter or attribute.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "Chip"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "text": {
               "anyOf": [
                 {
@@ -11603,34 +11515,7 @@
             "child": {
               "type": "string",
               "description": "The unique identifier for a component, used for both definitions and references within the same surface."
-            }
-          }
-        }
-      ]
-    },
-    "Avatar": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "Avatar"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -11749,7 +11634,35 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "Avatar": {
+      "type": "object",
+      "description": "A round image, initials or icon representing a person or entity.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "Avatar"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "image": {
               "anyOf": [
                 {
@@ -11861,34 +11774,7 @@
             "child": {
               "type": "string",
               "description": "The unique identifier for a component, used for both definitions and references within the same surface."
-            }
-          }
-        }
-      ]
-    },
-    "Tabs": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "Tabs"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -12007,7 +11893,35 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "Tabs": {
+      "type": "object",
+      "description": "Tabbed sections: each tab has a title and one child shown when selected.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "Tabs"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "tabs": {
               "type": "array",
               "items": {
@@ -12218,37 +12132,7 @@
                 }
               ],
               "description": "Defines an interaction handler that can either trigger a server-side event or execute a local client-side function."
-            }
-          },
-          "required": [
-            "tabs"
-          ]
-        }
-      ]
-    },
-    "Modal": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "Modal"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -12367,7 +12251,38 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "tabs"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "Modal": {
+      "type": "object",
+      "description": "A dialog: clicking the trigger opens the content in an overlay.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "Modal"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "trigger": {
               "type": "string",
               "description": "The unique identifier for a component, used for both definitions and references within the same surface."
@@ -12568,23 +12483,143 @@
                 }
               ],
               "description": "Defines an interaction handler that can either trigger a server-side event or execute a local client-side function."
+            },
+            "accessibility": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "A JSON Pointer path to a value in the data model."
+                        }
+                      },
+                      "required": [
+                        "path"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "call": {
+                          "type": "string",
+                          "description": "The name of the function to call."
+                        },
+                        "args": {
+                          "type": "object",
+                          "additionalProperties": {},
+                          "description": "Arguments passed to the function."
+                        },
+                        "returnType": {
+                          "type": "string",
+                          "enum": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "object",
+                            "any",
+                            "void"
+                          ],
+                          "description": "The expected return type of the function call.",
+                          "default": "boolean"
+                        }
+                      },
+                      "required": [
+                        "call"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Invokes a named function on the client."
+                    }
+                  ],
+                  "description": "Represents a string"
+                },
+                "description": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "A JSON Pointer path to a value in the data model."
+                        }
+                      },
+                      "required": [
+                        "path"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "call": {
+                          "type": "string",
+                          "description": "The name of the function to call."
+                        },
+                        "args": {
+                          "type": "object",
+                          "additionalProperties": {},
+                          "description": "Arguments passed to the function."
+                        },
+                        "returnType": {
+                          "type": "string",
+                          "enum": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "object",
+                            "any",
+                            "void"
+                          ],
+                          "description": "The expected return type of the function call.",
+                          "default": "boolean"
+                        }
+                      },
+                      "required": [
+                        "call"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Invokes a named function on the client."
+                    }
+                  ],
+                  "description": "Represents a string"
+                }
+              },
+              "additionalProperties": false,
+              "description": "Attributes to enhance accessibility when using assistive technologies like screen readers."
+            },
+            "weight": {
+              "type": "number",
+              "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
             }
           },
           "required": [
             "trigger",
             "content"
           ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
         }
       ]
     },
     "Video": {
       "type": "object",
+      "description": "A video player for a URL.",
       "allOf": [
         {
           "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
         },
         {
           "type": "object",
@@ -12600,125 +12635,6 @@
         {
           "type": "object",
           "properties": {
-            "accessibility": {
-              "type": "object",
-              "properties": {
-                "label": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "path": {
-                          "type": "string",
-                          "description": "A JSON Pointer path to a value in the data model."
-                        }
-                      },
-                      "required": [
-                        "path"
-                      ],
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "call": {
-                          "type": "string",
-                          "description": "The name of the function to call."
-                        },
-                        "args": {
-                          "type": "object",
-                          "additionalProperties": {},
-                          "description": "Arguments passed to the function."
-                        },
-                        "returnType": {
-                          "type": "string",
-                          "enum": [
-                            "string",
-                            "number",
-                            "boolean",
-                            "array",
-                            "object",
-                            "any",
-                            "void"
-                          ],
-                          "description": "The expected return type of the function call.",
-                          "default": "boolean"
-                        }
-                      },
-                      "required": [
-                        "call"
-                      ],
-                      "additionalProperties": false,
-                      "description": "Invokes a named function on the client."
-                    }
-                  ],
-                  "description": "Represents a string"
-                },
-                "description": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "path": {
-                          "type": "string",
-                          "description": "A JSON Pointer path to a value in the data model."
-                        }
-                      },
-                      "required": [
-                        "path"
-                      ],
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "call": {
-                          "type": "string",
-                          "description": "The name of the function to call."
-                        },
-                        "args": {
-                          "type": "object",
-                          "additionalProperties": {},
-                          "description": "Arguments passed to the function."
-                        },
-                        "returnType": {
-                          "type": "string",
-                          "enum": [
-                            "string",
-                            "number",
-                            "boolean",
-                            "array",
-                            "object",
-                            "any",
-                            "void"
-                          ],
-                          "description": "The expected return type of the function call.",
-                          "default": "boolean"
-                        }
-                      },
-                      "required": [
-                        "call"
-                      ],
-                      "additionalProperties": false,
-                      "description": "Invokes a named function on the client."
-                    }
-                  ],
-                  "description": "Represents a string"
-                }
-              },
-              "additionalProperties": false,
-              "description": "Attributes to enhance accessibility when using assistive technologies like screen readers."
-            },
-            "weight": {
-              "type": "number",
-              "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
             "url": {
               "anyOf": [
                 {
@@ -12988,22 +12904,142 @@
                 }
               ],
               "description": "A boolean value that can be a literal, a path, or a function call returning a boolean."
+            },
+            "accessibility": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "A JSON Pointer path to a value in the data model."
+                        }
+                      },
+                      "required": [
+                        "path"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "call": {
+                          "type": "string",
+                          "description": "The name of the function to call."
+                        },
+                        "args": {
+                          "type": "object",
+                          "additionalProperties": {},
+                          "description": "Arguments passed to the function."
+                        },
+                        "returnType": {
+                          "type": "string",
+                          "enum": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "object",
+                            "any",
+                            "void"
+                          ],
+                          "description": "The expected return type of the function call.",
+                          "default": "boolean"
+                        }
+                      },
+                      "required": [
+                        "call"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Invokes a named function on the client."
+                    }
+                  ],
+                  "description": "Represents a string"
+                },
+                "description": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "A JSON Pointer path to a value in the data model."
+                        }
+                      },
+                      "required": [
+                        "path"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "call": {
+                          "type": "string",
+                          "description": "The name of the function to call."
+                        },
+                        "args": {
+                          "type": "object",
+                          "additionalProperties": {},
+                          "description": "Arguments passed to the function."
+                        },
+                        "returnType": {
+                          "type": "string",
+                          "enum": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "object",
+                            "any",
+                            "void"
+                          ],
+                          "description": "The expected return type of the function call.",
+                          "default": "boolean"
+                        }
+                      },
+                      "required": [
+                        "call"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Invokes a named function on the client."
+                    }
+                  ],
+                  "description": "Represents a string"
+                }
+              },
+              "additionalProperties": false,
+              "description": "Attributes to enhance accessibility when using assistive technologies like screen readers."
+            },
+            "weight": {
+              "type": "number",
+              "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
             }
           },
           "required": [
             "url"
           ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
         }
       ]
     },
     "AudioPlayer": {
       "type": "object",
+      "description": "An audio player for a URL.",
       "allOf": [
         {
           "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
         },
         {
           "type": "object",
@@ -13019,125 +13055,6 @@
         {
           "type": "object",
           "properties": {
-            "accessibility": {
-              "type": "object",
-              "properties": {
-                "label": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "path": {
-                          "type": "string",
-                          "description": "A JSON Pointer path to a value in the data model."
-                        }
-                      },
-                      "required": [
-                        "path"
-                      ],
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "call": {
-                          "type": "string",
-                          "description": "The name of the function to call."
-                        },
-                        "args": {
-                          "type": "object",
-                          "additionalProperties": {},
-                          "description": "Arguments passed to the function."
-                        },
-                        "returnType": {
-                          "type": "string",
-                          "enum": [
-                            "string",
-                            "number",
-                            "boolean",
-                            "array",
-                            "object",
-                            "any",
-                            "void"
-                          ],
-                          "description": "The expected return type of the function call.",
-                          "default": "boolean"
-                        }
-                      },
-                      "required": [
-                        "call"
-                      ],
-                      "additionalProperties": false,
-                      "description": "Invokes a named function on the client."
-                    }
-                  ],
-                  "description": "Represents a string"
-                },
-                "description": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "path": {
-                          "type": "string",
-                          "description": "A JSON Pointer path to a value in the data model."
-                        }
-                      },
-                      "required": [
-                        "path"
-                      ],
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "call": {
-                          "type": "string",
-                          "description": "The name of the function to call."
-                        },
-                        "args": {
-                          "type": "object",
-                          "additionalProperties": {},
-                          "description": "Arguments passed to the function."
-                        },
-                        "returnType": {
-                          "type": "string",
-                          "enum": [
-                            "string",
-                            "number",
-                            "boolean",
-                            "array",
-                            "object",
-                            "any",
-                            "void"
-                          ],
-                          "description": "The expected return type of the function call.",
-                          "default": "boolean"
-                        }
-                      },
-                      "required": [
-                        "call"
-                      ],
-                      "additionalProperties": false,
-                      "description": "Invokes a named function on the client."
-                    }
-                  ],
-                  "description": "Represents a string"
-                }
-              },
-              "additionalProperties": false,
-              "description": "Attributes to enhance accessibility when using assistive technologies like screen readers."
-            },
-            "weight": {
-              "type": "number",
-              "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
             "url": {
               "anyOf": [
                 {
@@ -13407,37 +13324,7 @@
                 }
               ],
               "description": "A boolean value that can be a literal, a path, or a function call returning a boolean."
-            }
-          },
-          "required": [
-            "url"
-          ]
-        }
-      ]
-    },
-    "ChoicePicker": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/ComponentCommon"
-        },
-        {
-          "$ref": "#/$defs/CatalogComponentCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "component": {
-              "const": "ChoicePicker"
-            }
-          },
-          "required": [
-            "component"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
+            },
             "accessibility": {
               "type": "object",
               "properties": {
@@ -13556,7 +13443,38 @@
             "weight": {
               "type": "number",
               "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-            },
+            }
+          },
+          "required": [
+            "url"
+          ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
+        }
+      ]
+    },
+    "ChoicePicker": {
+      "type": "object",
+      "description": "Picks one or several options; displayStyle chooses a dropdown, a visible list or segmented buttons.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/ComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "ChoicePicker"
+            }
+          },
+          "required": [
+            "component"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
             "label": {
               "anyOf": [
                 {
@@ -13766,12 +13684,134 @@
                 "description": "A single validation rule applied to an input component."
               },
               "description": "A list of checks to perform. These are function calls that must return a boolean indicating validity."
+            },
+            "accessibility": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "A JSON Pointer path to a value in the data model."
+                        }
+                      },
+                      "required": [
+                        "path"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "call": {
+                          "type": "string",
+                          "description": "The name of the function to call."
+                        },
+                        "args": {
+                          "type": "object",
+                          "additionalProperties": {},
+                          "description": "Arguments passed to the function."
+                        },
+                        "returnType": {
+                          "type": "string",
+                          "enum": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "object",
+                            "any",
+                            "void"
+                          ],
+                          "description": "The expected return type of the function call.",
+                          "default": "boolean"
+                        }
+                      },
+                      "required": [
+                        "call"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Invokes a named function on the client."
+                    }
+                  ],
+                  "description": "Represents a string"
+                },
+                "description": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "A JSON Pointer path to a value in the data model."
+                        }
+                      },
+                      "required": [
+                        "path"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "call": {
+                          "type": "string",
+                          "description": "The name of the function to call."
+                        },
+                        "args": {
+                          "type": "object",
+                          "additionalProperties": {},
+                          "description": "Arguments passed to the function."
+                        },
+                        "returnType": {
+                          "type": "string",
+                          "enum": [
+                            "string",
+                            "number",
+                            "boolean",
+                            "array",
+                            "object",
+                            "any",
+                            "void"
+                          ],
+                          "description": "The expected return type of the function call.",
+                          "default": "boolean"
+                        }
+                      },
+                      "required": [
+                        "call"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Invokes a named function on the client."
+                    }
+                  ],
+                  "description": "Represents a string"
+                }
+              },
+              "additionalProperties": false,
+              "description": "Attributes to enhance accessibility when using assistive technologies like screen readers."
+            },
+            "weight": {
+              "type": "number",
+              "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
             }
           },
           "required": [
             "options",
             "value"
           ]
+        },
+        {
+          "$ref": "#/$defs/CatalogComponentCommon"
         }
       ]
     }

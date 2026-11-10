@@ -12,10 +12,12 @@ export function buildIconApi(kit: ProtocolKit): ComponentApi {
     name: 'Icon',
     schema: z
       .object({
-        ...kit.commonProps,
         name: z.union([z.string(), kit.PathBinding]),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A Material Design icon, by name.'),
   };
 }
 

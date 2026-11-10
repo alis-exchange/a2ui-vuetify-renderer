@@ -13,14 +13,16 @@ export function buildVideoApi(kit: ProtocolKit): ComponentApi {
     name: 'Video',
     schema: z
       .object({
-        ...kit.commonProps,
         url: DynamicStringSchema,
         autoplay: DynamicBooleanSchema.optional(),
         controls: DynamicBooleanSchema.optional(),
         loop: DynamicBooleanSchema.optional(),
         muted: DynamicBooleanSchema.optional(),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A video player for a URL.'),
   };
 }
 

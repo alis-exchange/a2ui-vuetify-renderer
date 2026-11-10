@@ -13,14 +13,16 @@ export function buildNumberInputApi(kit: ProtocolKit): ComponentApi {
     name: 'NumberInput',
     schema: z
       .object({
-        ...kit.commonProps,
         label: DynamicStringSchema,
         value: DynamicNumberSchema.optional(),
         variant: z.enum(['filled', 'outlined', 'underlined']).default('outlined').optional(),
         action: ActionSchema.optional(),
         checks: CheckableSchema.shape.checks,
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A numeric input bound to the data model.'),
   };
 }
 

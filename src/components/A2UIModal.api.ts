@@ -13,13 +13,15 @@ export function buildModalApi(kit: ProtocolKit): ComponentApi {
     name: 'Modal',
     schema: z
       .object({
-        ...kit.commonProps,
         trigger: ComponentIdSchema,
         content: ComponentIdSchema,
         open: DynamicBooleanSchema.optional(),
         action: ActionSchema.optional(),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A dialog: clicking the trigger opens the content in an overlay.'),
   };
 }
 

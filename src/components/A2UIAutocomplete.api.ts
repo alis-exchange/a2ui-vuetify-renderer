@@ -13,7 +13,6 @@ export function buildAutocompleteApi(kit: ProtocolKit): ComponentApi {
     name: 'Autocomplete',
     schema: z
       .object({
-        ...kit.commonProps,
         label: DynamicStringSchema.optional(),
         options: z.array(z.any()),
         // DynamicValue, not a plain union: it carries the DynamicValue ref web_core's binder needs to
@@ -21,8 +20,11 @@ export function buildAutocompleteApi(kit: ProtocolKit): ComponentApi {
         value: DynamicValueSchema,
         variant: z.enum(['multipleSelection', 'mutuallyExclusive']).default('mutuallyExclusive').optional(),
         action: ActionSchema.optional(),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A dropdown with type-to-filter for picking from a long fixed list of options.'),
   };
 }
 

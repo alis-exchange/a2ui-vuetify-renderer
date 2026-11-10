@@ -13,7 +13,6 @@ export function buildCalendarApi(kit: ProtocolKit): ComponentApi {
     name: 'Calendar',
     schema: z
       .object({
-        ...kit.commonProps,
         events: z.array(
           z
             .object({
@@ -31,8 +30,11 @@ export function buildCalendarApi(kit: ProtocolKit): ComponentApi {
         color: z.string().optional(),
         eventColor: z.string().optional(),
         action: ActionSchema.optional(),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A month, week or day calendar showing events; clicking a date selects it.'),
   };
 }
 

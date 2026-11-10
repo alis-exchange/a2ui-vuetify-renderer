@@ -13,14 +13,16 @@ export function buildTextFieldApi(kit: ProtocolKit): ComponentApi {
     name: 'TextField',
     schema: z
       .object({
-        ...kit.commonProps,
         label: DynamicStringSchema,
         value: DynamicStringSchema.optional(),
         variant: z.enum(['filled', 'outlined', 'underlined']).default('outlined').optional(),
         action: ActionSchema.optional(),
         checks: CheckableSchema.shape.checks,
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A single-line text input bound to the data model.'),
   };
 }
 

@@ -13,13 +13,15 @@ export function buildEmptyStateApi(kit: ProtocolKit): ComponentApi {
     name: 'EmptyState',
     schema: z
       .object({
-        ...kit.commonProps,
         title: DynamicStringSchema.optional(),
         text: DynamicStringSchema.optional(),
         icon: DynamicStringSchema.optional(),
         child: ComponentIdSchema.optional(),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A placeholder shown when there is nothing to display yet, with title, text and icon.'),
   };
 }
 

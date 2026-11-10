@@ -13,7 +13,6 @@ export function buildDatePickerApi(kit: ProtocolKit): ComponentApi {
     name: 'DatePicker',
     schema: z
       .object({
-        ...kit.commonProps,
         label: DynamicStringSchema.optional(),
         value: DynamicStringSchema,
         min: DynamicStringSchema.optional(),
@@ -26,8 +25,11 @@ export function buildDatePickerApi(kit: ProtocolKit): ComponentApi {
         showAdjacentMonths: DynamicBooleanSchema.optional(),
         action: ActionSchema.optional(),
         checks: CheckableSchema.shape.checks,
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A calendar-style date picker bound to an ISO date (or dates with multiple).'),
   };
 }
 

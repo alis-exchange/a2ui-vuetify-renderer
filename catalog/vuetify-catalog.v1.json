@@ -8,13 +8,10 @@
   "components": {
     "Text": {
       "type": "object",
+      "description": "A run of text: headings (h1-h5), body copy or a caption.",
       "properties": {
         "component": {
           "const": "Text"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "text": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -32,6 +29,10 @@
             "body"
           ],
           "default": "body"
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -42,13 +43,10 @@
     },
     "Image": {
       "type": "object",
+      "description": "An image loaded from a URL, sized by variant (icon, avatar, feature, header).",
       "properties": {
         "component": {
           "const": "Image"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "url": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -80,6 +78,10 @@
             "header"
           ],
           "default": "mediumFeature"
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -90,13 +92,10 @@
     },
     "Icon": {
       "type": "object",
+      "description": "A Material Design icon, by name.",
       "properties": {
         "component": {
           "const": "Icon"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "name": {
           "anyOf": [
@@ -107,6 +106,10 @@
               "$ref": "common_types.json#/$defs/DataBinding"
             }
           ]
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -117,13 +120,10 @@
     },
     "Divider": {
       "type": "object",
+      "description": "A thin line separating content, horizontal or vertical.",
       "properties": {
         "component": {
           "const": "Divider"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "axis": {
           "type": "string",
@@ -132,6 +132,10 @@
             "vertical"
           ],
           "default": "horizontal"
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -141,13 +145,10 @@
     },
     "Row": {
       "type": "object",
+      "description": "Lays children out horizontally; use weight on a child to share free space.",
       "properties": {
         "component": {
           "const": "Row"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "children": {
           "$ref": "common_types.json#/$defs/ChildList"
@@ -174,6 +175,10 @@
             "stretch"
           ],
           "default": "stretch"
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -184,13 +189,10 @@
     },
     "Column": {
       "type": "object",
+      "description": "Stacks children vertically; use weight on a child to share free space.",
       "properties": {
         "component": {
           "const": "Column"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "children": {
           "$ref": "common_types.json#/$defs/ChildList"
@@ -217,6 +219,10 @@
             "stretch"
           ],
           "default": "stretch"
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -227,17 +233,18 @@
     },
     "Card": {
       "type": "object",
+      "description": "A raised container for one child, used to group related content.",
       "properties": {
         "component": {
           "const": "Card"
         },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-        },
         "child": {
           "$ref": "common_types.json#/$defs/ComponentId",
           "description": "The unique identifier for a component, used for both definitions and references within the same surface."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -248,13 +255,10 @@
     },
     "Button": {
       "type": "object",
+      "description": "A clickable button with a label, text and/or icon that runs an action; disabled while its checks fail.",
       "properties": {
         "component": {
           "const": "Button"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "label": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -288,6 +292,10 @@
             "description": "A single validation check rule applied to an input component. The condition function or path evaluates to a structured validation result object or a boolean (which is coerced to a validation result object)."
           },
           "description": "A list of validation check rules to perform on the component."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -298,13 +306,10 @@
     },
     "IconButton": {
       "type": "object",
+      "description": "A compact button showing only an icon that runs an action.",
       "properties": {
         "component": {
           "const": "IconButton"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "icon": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -330,6 +335,10 @@
             "description": "A single validation check rule applied to an input component. The condition function or path evaluates to a structured validation result object or a boolean (which is coerced to a validation result object)."
           },
           "description": "A list of validation check rules to perform on the component."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -341,13 +350,10 @@
     },
     "TextField": {
       "type": "object",
+      "description": "A single-line text input bound to the data model.",
       "properties": {
         "component": {
           "const": "TextField"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "label": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -377,6 +383,10 @@
             "description": "A single validation check rule applied to an input component. The condition function or path evaluates to a structured validation result object or a boolean (which is coerced to a validation result object)."
           },
           "description": "A list of validation check rules to perform on the component."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -387,13 +397,10 @@
     },
     "TextArea": {
       "type": "object",
+      "description": "A multi-line text input bound to the data model.",
       "properties": {
         "component": {
           "const": "TextArea"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "label": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -423,6 +430,10 @@
             "description": "A single validation check rule applied to an input component. The condition function or path evaluates to a structured validation result object or a boolean (which is coerced to a validation result object)."
           },
           "description": "A list of validation check rules to perform on the component."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -433,13 +444,10 @@
     },
     "NumberInput": {
       "type": "object",
+      "description": "A numeric input bound to the data model.",
       "properties": {
         "component": {
           "const": "NumberInput"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "label": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -469,6 +477,10 @@
             "description": "A single validation check rule applied to an input component. The condition function or path evaluates to a structured validation result object or a boolean (which is coerced to a validation result object)."
           },
           "description": "A list of validation check rules to perform on the component."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -479,13 +491,10 @@
     },
     "Checkbox": {
       "type": "object",
+      "description": "A single on/off checkbox bound to a boolean.",
       "properties": {
         "component": {
           "const": "Checkbox"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "label": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -506,6 +515,10 @@
             "description": "A single validation check rule applied to an input component. The condition function or path evaluates to a structured validation result object or a boolean (which is coerced to a validation result object)."
           },
           "description": "A list of validation check rules to perform on the component."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -517,13 +530,10 @@
     },
     "RadioButton": {
       "type": "object",
+      "description": "A group of radio buttons for picking exactly one option, all options visible.",
       "properties": {
         "component": {
           "const": "RadioButton"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "label": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -564,6 +574,10 @@
             "description": "A single validation check rule applied to an input component. The condition function or path evaluates to a structured validation result object or a boolean (which is coerced to a validation result object)."
           },
           "description": "A list of validation check rules to perform on the component."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -575,13 +589,10 @@
     },
     "Select": {
       "type": "object",
+      "description": "A dropdown for picking one option, or several with variant multipleSelection, from a fixed list.",
       "properties": {
         "component": {
           "const": "Select"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "label": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -613,6 +624,10 @@
             "description": "A single validation check rule applied to an input component. The condition function or path evaluates to a structured validation result object or a boolean (which is coerced to a validation result object)."
           },
           "description": "A list of validation check rules to perform on the component."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -624,13 +639,10 @@
     },
     "Autocomplete": {
       "type": "object",
+      "description": "A dropdown with type-to-filter for picking from a long fixed list of options.",
       "properties": {
         "component": {
           "const": "Autocomplete"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "label": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -654,6 +666,10 @@
         "action": {
           "$ref": "common_types.json#/$defs/Action",
           "description": "Defines an interaction handler that can either trigger an agent-side event or execute a local renderer-side function."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -665,13 +681,10 @@
     },
     "Combobox": {
       "type": "object",
+      "description": "A dropdown that suggests options but also accepts free text the user types.",
       "properties": {
         "component": {
           "const": "Combobox"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "label": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -695,6 +708,10 @@
         "action": {
           "$ref": "common_types.json#/$defs/Action",
           "description": "Defines an interaction handler that can either trigger an agent-side event or execute a local renderer-side function."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -706,13 +723,10 @@
     },
     "Slider": {
       "type": "object",
+      "description": "A slider for picking one number between min and max.",
       "properties": {
         "component": {
           "const": "Slider"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "label": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -740,6 +754,10 @@
             "description": "A single validation check rule applied to an input component. The condition function or path evaluates to a structured validation result object or a boolean (which is coerced to a validation result object)."
           },
           "description": "A list of validation check rules to perform on the component."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -751,13 +769,10 @@
     },
     "RangeSlider": {
       "type": "object",
+      "description": "A slider with two handles for picking a [low, high] number range.",
       "properties": {
         "component": {
           "const": "RangeSlider"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "label": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -788,6 +803,10 @@
         "action": {
           "$ref": "common_types.json#/$defs/Action",
           "description": "Defines an interaction handler that can either trigger an agent-side event or execute a local renderer-side function."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -799,13 +818,10 @@
     },
     "DatePicker": {
       "type": "object",
+      "description": "A calendar-style date picker bound to an ISO date (or dates with multiple).",
       "properties": {
         "component": {
           "const": "DatePicker"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "label": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -864,6 +880,10 @@
             "description": "A single validation check rule applied to an input component. The condition function or path evaluates to a structured validation result object or a boolean (which is coerced to a validation result object)."
           },
           "description": "A list of validation check rules to perform on the component."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -874,13 +894,10 @@
     },
     "TimePicker": {
       "type": "object",
+      "description": "A time input bound to a HH:MM value.",
       "properties": {
         "component": {
           "const": "TimePicker"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "label": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -893,6 +910,10 @@
         "action": {
           "$ref": "common_types.json#/$defs/Action",
           "description": "Defines an interaction handler that can either trigger an agent-side event or execute a local renderer-side function."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -903,13 +924,10 @@
     },
     "FileInput": {
       "type": "object",
+      "description": "A file chooser that stores the selected files.",
       "properties": {
         "component": {
           "const": "FileInput"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "label": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -922,6 +940,10 @@
         "action": {
           "$ref": "common_types.json#/$defs/Action",
           "description": "Defines an interaction handler that can either trigger an agent-side event or execute a local renderer-side function."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -932,16 +954,17 @@
     },
     "Form": {
       "type": "object",
+      "description": "Wraps input components so they validate together as one form.",
       "properties": {
         "component": {
           "const": "Form"
         },
+        "children": {
+          "$ref": "common_types.json#/$defs/ChildList"
+        },
         "weight": {
           "type": "number",
           "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-        },
-        "children": {
-          "$ref": "common_types.json#/$defs/ChildList"
         }
       },
       "required": [
@@ -952,13 +975,10 @@
     },
     "List": {
       "type": "object",
+      "description": "A vertical or horizontal list of children, often a template repeated over a data array.",
       "properties": {
         "component": {
           "const": "List"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "children": {
           "$ref": "common_types.json#/$defs/ChildList"
@@ -980,6 +1000,10 @@
             "stretch"
           ],
           "default": "stretch"
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -990,13 +1014,10 @@
     },
     "Table": {
       "type": "object",
+      "description": "A data table: columns name the fields, items are the rows.",
       "properties": {
         "component": {
           "const": "Table"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "items": {
           "type": "array"
@@ -1015,6 +1036,10 @@
             },
             "additionalProperties": false
           }
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -1026,16 +1051,17 @@
     },
     "TreeView": {
       "type": "object",
+      "description": "An expandable tree of nested items.",
       "properties": {
         "component": {
           "const": "TreeView"
         },
+        "items": {
+          "type": "array"
+        },
         "weight": {
           "type": "number",
           "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
-        },
-        "items": {
-          "type": "array"
         }
       },
       "required": [
@@ -1046,13 +1072,10 @@
     },
     "Calendar": {
       "type": "object",
+      "description": "A month, week or day calendar showing events; clicking a date selects it.",
       "properties": {
         "component": {
           "const": "Calendar"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "events": {
           "type": "array",
@@ -1114,6 +1137,10 @@
         "action": {
           "$ref": "common_types.json#/$defs/Action",
           "description": "Defines an interaction handler that can either trigger an agent-side event or execute a local renderer-side function."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -1124,13 +1151,10 @@
     },
     "Alert": {
       "type": "object",
+      "description": "A coloured message box for success, info, warning or error notices.",
       "properties": {
         "component": {
           "const": "Alert"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "title": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -1153,6 +1177,10 @@
         "child": {
           "$ref": "common_types.json#/$defs/ComponentId",
           "description": "The unique identifier for a component, used for both definitions and references within the same surface."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -1162,13 +1190,10 @@
     },
     "Badge": {
       "type": "object",
+      "description": "A small count or label overlaid on its child.",
       "properties": {
         "component": {
           "const": "Badge"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "content": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -1180,6 +1205,10 @@
         "child": {
           "$ref": "common_types.json#/$defs/ComponentId",
           "description": "The unique identifier for a component, used for both definitions and references within the same surface."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -1191,13 +1220,10 @@
     },
     "Banner": {
       "type": "object",
+      "description": "A full-width notice with text and an optional icon, shown above other content.",
       "properties": {
         "component": {
           "const": "Banner"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "text": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -1210,6 +1236,10 @@
         "child": {
           "$ref": "common_types.json#/$defs/ComponentId",
           "description": "The unique identifier for a component, used for both definitions and references within the same surface."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -1220,13 +1250,10 @@
     },
     "Rating": {
       "type": "object",
+      "description": "A row of stars for picking a rating up to max.",
       "properties": {
         "component": {
           "const": "Rating"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "max": {
           "type": "number",
@@ -1239,6 +1266,10 @@
         "action": {
           "$ref": "common_types.json#/$defs/Action",
           "description": "Defines an interaction handler that can either trigger an agent-side event or execute a local renderer-side function."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -1249,13 +1280,10 @@
     },
     "EmptyState": {
       "type": "object",
+      "description": "A placeholder shown when there is nothing to display yet, with title, text and icon.",
       "properties": {
         "component": {
           "const": "EmptyState"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "title": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -1272,6 +1300,10 @@
         "child": {
           "$ref": "common_types.json#/$defs/ComponentId",
           "description": "The unique identifier for a component, used for both definitions and references within the same surface."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -1281,13 +1313,10 @@
     },
     "ExpansionPanel": {
       "type": "object",
+      "description": "A collapsible section: a title that expands to show its child.",
       "properties": {
         "component": {
           "const": "ExpansionPanel"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "title": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -1300,6 +1329,10 @@
         "action": {
           "$ref": "common_types.json#/$defs/Action",
           "description": "Defines an interaction handler that can either trigger an agent-side event or execute a local renderer-side function."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -1311,13 +1344,10 @@
     },
     "Chip": {
       "type": "object",
+      "description": "A small compact element for a tag, filter or attribute.",
       "properties": {
         "component": {
           "const": "Chip"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "text": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -1326,6 +1356,10 @@
         "child": {
           "$ref": "common_types.json#/$defs/ComponentId",
           "description": "The unique identifier for a component, used for both definitions and references within the same surface."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -1335,13 +1369,10 @@
     },
     "Avatar": {
       "type": "object",
+      "description": "A round image, initials or icon representing a person or entity.",
       "properties": {
         "component": {
           "const": "Avatar"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "image": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -1354,6 +1385,10 @@
         "child": {
           "$ref": "common_types.json#/$defs/ComponentId",
           "description": "The unique identifier for a component, used for both definitions and references within the same surface."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -1363,13 +1398,10 @@
     },
     "Tabs": {
       "type": "object",
+      "description": "Tabbed sections: each tab has a title and one child shown when selected.",
       "properties": {
         "component": {
           "const": "Tabs"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "tabs": {
           "type": "array",
@@ -1396,6 +1428,10 @@
         "action": {
           "$ref": "common_types.json#/$defs/Action",
           "description": "Defines an interaction handler that can either trigger an agent-side event or execute a local renderer-side function."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -1406,13 +1442,10 @@
     },
     "Modal": {
       "type": "object",
+      "description": "A dialog: clicking the trigger opens the content in an overlay.",
       "properties": {
         "component": {
           "const": "Modal"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "trigger": {
           "$ref": "common_types.json#/$defs/ComponentId",
@@ -1429,6 +1462,10 @@
         "action": {
           "$ref": "common_types.json#/$defs/Action",
           "description": "Defines an interaction handler that can either trigger an agent-side event or execute a local renderer-side function."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -1440,13 +1477,10 @@
     },
     "Video": {
       "type": "object",
+      "description": "A video player for a URL.",
       "properties": {
         "component": {
           "const": "Video"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "url": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -1467,6 +1501,10 @@
         "muted": {
           "$ref": "common_types.json#/$defs/DynamicBoolean",
           "description": "A boolean value that can be a literal, a path, or a function call returning a boolean or a validation result object (coerced to its 'valid' boolean)."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -1477,13 +1515,10 @@
     },
     "AudioPlayer": {
       "type": "object",
+      "description": "An audio player for a URL.",
       "properties": {
         "component": {
           "const": "AudioPlayer"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "url": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -1504,6 +1539,10 @@
         "muted": {
           "$ref": "common_types.json#/$defs/DynamicBoolean",
           "description": "A boolean value that can be a literal, a path, or a function call returning a boolean or a validation result object (coerced to its 'valid' boolean)."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [
@@ -1514,13 +1553,10 @@
     },
     "ChoicePicker": {
       "type": "object",
+      "description": "Picks one or several options; displayStyle chooses a dropdown, a visible list or segmented buttons.",
       "properties": {
         "component": {
           "const": "ChoicePicker"
-        },
-        "weight": {
-          "type": "number",
-          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         },
         "label": {
           "$ref": "common_types.json#/$defs/DynamicString",
@@ -1557,6 +1593,10 @@
             "description": "A single validation check rule applied to an input component. The condition function or path evaluates to a structured validation result object or a boolean (which is coerced to a validation result object)."
           },
           "description": "A list of validation check rules to perform on the component."
+        },
+        "weight": {
+          "type": "number",
+          "description": "The relative weight of this component within a Row or Column. Similar to CSS 'flex-grow'."
         }
       },
       "required": [

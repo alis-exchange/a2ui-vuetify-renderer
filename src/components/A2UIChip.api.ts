@@ -13,11 +13,13 @@ export function buildChipApi(kit: ProtocolKit): ComponentApi {
     name: 'Chip',
     schema: z
       .object({
-        ...kit.commonProps,
         text: DynamicStringSchema.optional(),
         child: ComponentIdSchema.optional(),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A small compact element for a tag, filter or attribute.'),
   };
 }
 

@@ -13,12 +13,14 @@ export function buildAvatarApi(kit: ProtocolKit): ComponentApi {
     name: 'Avatar',
     schema: z
       .object({
-        ...kit.commonProps,
         image: DynamicStringSchema.optional(),
         text: DynamicStringSchema.optional(),
         child: ComponentIdSchema.optional(),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A round image, initials or icon representing a person or entity.'),
   };
 }
 

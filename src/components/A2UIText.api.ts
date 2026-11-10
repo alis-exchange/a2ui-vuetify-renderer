@@ -13,11 +13,13 @@ export function buildTextApi(kit: ProtocolKit): ComponentApi {
     name: 'Text',
     schema: z
       .object({
-        ...kit.commonProps,
         text: DynamicStringSchema,
         variant: z.enum(['h1', 'h2', 'h3', 'h4', 'h5', 'caption', 'body']).default('body').optional(),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A run of text: headings (h1-h5), body copy or a caption.'),
   };
 }
 

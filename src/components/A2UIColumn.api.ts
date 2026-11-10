@@ -13,12 +13,14 @@ export function buildColumnApi(kit: ProtocolKit): ComponentApi {
     name: 'Column',
     schema: z
       .object({
-        ...kit.commonProps,
         children: ChildListSchema,
         justify: z.enum(['start', 'center', 'end', 'spaceBetween', 'spaceAround', 'spaceEvenly', 'stretch']).default('start').optional(),
         align: z.enum(['center', 'end', 'start', 'stretch']).default('stretch').optional(),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('Stacks children vertically; use weight on a child to share free space.'),
   };
 }
 

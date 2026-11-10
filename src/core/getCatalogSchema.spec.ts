@@ -38,12 +38,22 @@ describe('getCatalogSchema', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const schema = getCatalogSchema(registry, CATALOG_ID);
-    const text = schema.components.Greeting.allOf[3].properties.text;
+    const text = schema.components.Greeting.allOf.find((entry: any) => entry.properties?.text).properties.text;
     const call = text.anyOf.find((branch: any) => branch.properties?.call);
 
     expect(call.properties.args).toEqual({ type: 'object', additionalProperties: {}, description: 'Arguments passed to the function.' });
     expect(warn).not.toHaveBeenCalled();
     warn.mockRestore();
+  });
+
+  it('lays a custom component out like the generated ones: description on top, shared props last', () => {
+    const registry = new ComponentRegistry();
+    registry.register(CATALOG_ID, 'Greeting', {} as any, { name: 'Greeting', schema: z.object({ text: DynamicStringSchema }).strict().describe('Says hello.') } as any);
+
+    const entry = getCatalogSchema(registry, CATALOG_ID).components.Greeting;
+    expect(entry.description).toBe('Says hello.');
+    expect(entry.allOf.at(-1)).toEqual({ $ref: '#/$defs/CatalogComponentCommon' });
+    expect(entry.allOf.find((e: any) => e.properties?.text).description).toBeUndefined();
   });
 
   describe('filter option', () => {

@@ -13,12 +13,14 @@ export function buildListApi(kit: ProtocolKit): ComponentApi {
     name: 'List',
     schema: z
       .object({
-        ...kit.commonProps,
         children: ChildListSchema,
         direction: z.enum(['vertical', 'horizontal']).default('vertical').optional(),
         align: z.enum(['start', 'center', 'end', 'stretch']).default('stretch').optional(),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A vertical or horizontal list of children, often a template repeated over a data array.'),
   };
 }
 

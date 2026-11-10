@@ -13,7 +13,6 @@ export function buildRadioButtonApi(kit: ProtocolKit): ComponentApi {
     name: 'RadioButton',
     schema: z
       .object({
-        ...kit.commonProps,
         label: DynamicStringSchema.optional(),
         options: z.array(
           z
@@ -26,8 +25,11 @@ export function buildRadioButtonApi(kit: ProtocolKit): ComponentApi {
         value: DynamicStringSchema,
         action: ActionSchema.optional(),
         checks: CheckableSchema.shape.checks,
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A group of radio buttons for picking exactly one option, all options visible.'),
   };
 }
 

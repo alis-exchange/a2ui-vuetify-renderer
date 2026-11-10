@@ -13,12 +13,14 @@ export function buildTimePickerApi(kit: ProtocolKit): ComponentApi {
     name: 'TimePicker',
     schema: z
       .object({
-        ...kit.commonProps,
         label: DynamicStringSchema.optional(),
         value: DynamicStringSchema,
         action: ActionSchema.optional(),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A time input bound to a HH:MM value.'),
   };
 }
 

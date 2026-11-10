@@ -54,9 +54,10 @@ export function getCatalogSchema(registry: ComponentRegistry, catalogId: string,
   const registeredKeys = registry.keys(catalogId);
   for (const key of registeredKeys) {
     if (!schema.components[key]) {
+      // Same layout as the generated entries: own props before the shared mixin, since A2UI
+      // Express passes props positionally in declaration order.
       const allOf: any[] = [
         { $ref: '#/$defs/ComponentCommon' },
-        { $ref: '#/$defs/CatalogComponentCommon' },
         {
           type: 'object',
           properties: {
@@ -66,13 +67,19 @@ export function getCatalogSchema(registry: ComponentRegistry, catalogId: string,
         },
       ];
 
+      let description: string | undefined;
       const customApi = registry.getApi(catalogId, key);
       if (customApi) {
-        allOf.push(zodToCatalogJson(customApi.schema));
+        const converted = zodToCatalogJson(customApi.schema);
+        description = converted.description;
+        delete converted.description;
+        allOf.push(converted);
       }
+      allOf.push({ $ref: '#/$defs/CatalogComponentCommon' });
 
       schema.components[key] = {
         type: 'object',
+        ...(description ? { description } : {}),
         allOf: allOf,
       };
     }

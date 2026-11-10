@@ -12,10 +12,12 @@ export function buildTreeViewApi(kit: ProtocolKit): ComponentApi {
     name: 'TreeView',
     schema: z
       .object({
-        ...kit.commonProps,
         items: z.array(z.any()),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('An expandable tree of nested items.'),
   };
 }
 

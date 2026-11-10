@@ -142,6 +142,44 @@ describe('the generated catalog document', () => {
   });
 });
 
+// A2UI Express (the agent SDK's compact inference format) passes component props by position,
+// in declaration order, and shows each component's description next to its signature.
+describe('prompt-friendly catalogs (A2UI Express)', () => {
+  const SHARED = new Set(['weight', 'accessibility']);
+  const v09 = () => JSON.parse(fs.readFileSync(catalogPath, 'utf-8'));
+  const v10 = () => JSON.parse(fs.readFileSync(catalogPathV1, 'utf-8'));
+  /** Own props in the order Express reads them, shared props anywhere but last flagged. */
+  const sharedNotLast = (keys: string[]) => {
+    const firstShared = keys.findIndex((k) => SHARED.has(k));
+    return firstShared !== -1 && keys.slice(firstShared).some((k) => !SHARED.has(k));
+  };
+
+  it('describes every component in both documents', () => {
+    for (const doc of [v09(), v10()]) {
+      const missing = Object.entries<any>(doc.components)
+        .filter(([, def]) => typeof def.description !== 'string' || def.description.length < 10)
+        .map(([name]) => name);
+      expect(missing).toEqual([]);
+    }
+  });
+
+  it("declares shared props after each component's own (v1.0)", () => {
+    const late = Object.entries<any>(v10().components)
+      .filter(([, def]) => sharedNotLast(Object.keys(def.properties).filter((k) => k !== 'component')))
+      .map(([name]) => name);
+    expect(late).toEqual([]);
+  });
+
+  it("declares shared props after each component's own (v0.9)", () => {
+    for (const [name, def] of Object.entries<any>(v09().components)) {
+      const refs = def.allOf.map((entry: any) => entry.$ref ?? 'own');
+      expect(refs.indexOf('#/$defs/CatalogComponentCommon'), name).toBe(refs.length - 1);
+      const own = def.allOf.find((entry: any) => !entry.$ref && !entry.properties?.component);
+      expect(sharedNotLast(Object.keys(own.properties)), name).toBe(false);
+    }
+  });
+});
+
 // Runs after the suite above has regenerated both documents.
 describe('the v1.0 catalog document', () => {
   const doc = () => JSON.parse(fs.readFileSync(catalogPathV1, 'utf-8'));

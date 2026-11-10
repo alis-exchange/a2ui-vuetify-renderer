@@ -13,13 +13,15 @@ export function buildIconButtonApi(kit: ProtocolKit): ComponentApi {
     name: 'IconButton',
     schema: z
       .object({
-        ...kit.commonProps,
         icon: DynamicStringSchema,
         variant: z.enum(['default', 'primary', 'borderless']).default('default').optional(),
         action: ActionSchema,
         checks: CheckableSchema.shape.checks,
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A compact button showing only an icon that runs an action.'),
   };
 }
 

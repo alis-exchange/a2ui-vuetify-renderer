@@ -13,12 +13,14 @@ export function buildBadgeApi(kit: ProtocolKit): ComponentApi {
     name: 'Badge',
     schema: z
       .object({
-        ...kit.commonProps,
         content: DynamicStringSchema,
         color: z.string().optional(),
         child: ComponentIdSchema,
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A small count or label overlaid on its child.'),
   };
 }
 

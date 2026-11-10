@@ -12,7 +12,6 @@ export function buildTableApi(kit: ProtocolKit): ComponentApi {
     name: 'Table',
     schema: z
       .object({
-        ...kit.commonProps,
         items: z.array(z.any()),
         columns: z.array(
           z.object({
@@ -20,8 +19,11 @@ export function buildTableApi(kit: ProtocolKit): ComponentApi {
             key: z.string().optional(),
           }),
         ),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A data table: columns name the fields, items are the rows.'),
   };
 }
 

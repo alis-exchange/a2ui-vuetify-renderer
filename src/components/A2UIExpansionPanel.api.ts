@@ -13,12 +13,14 @@ export function buildExpansionPanelApi(kit: ProtocolKit): ComponentApi {
     name: 'ExpansionPanel',
     schema: z
       .object({
-        ...kit.commonProps,
         title: DynamicStringSchema,
         child: ComponentIdSchema,
         action: ActionSchema.optional(),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A collapsible section: a title that expands to show its child.'),
   };
 }
 

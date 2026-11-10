@@ -13,13 +13,15 @@ export function buildImageApi(kit: ProtocolKit): ComponentApi {
     name: 'Image',
     schema: z
       .object({
-        ...kit.commonProps,
         url: DynamicStringSchema,
         description: DynamicStringSchema.optional(),
         fit: z.enum(['contain', 'cover', 'fill', 'none', 'scaleDown']).default('fill').optional(),
         variant: z.enum(['icon', 'avatar', 'smallFeature', 'mediumFeature', 'largeFeature', 'header']).default('mediumFeature').optional(),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('An image loaded from a URL, sized by variant (icon, avatar, feature, header).'),
   };
 }
 

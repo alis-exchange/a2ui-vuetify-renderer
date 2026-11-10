@@ -18,5 +18,12 @@ export function buildCatalogDocumentV1(components: readonly ComponentApi[], func
     title: 'A2UI Vuetify Catalog (v1.0)',
     description: 'Catalog of A2UI v1.0 components implemented with Vuetify 4 for the Vue renderer.',
   });
-  return catalog.toJson() as Record<string, any>;
+  const doc = catalog.toJson() as Record<string, any>;
+  // web_core 0.15's serializer drops a code-defined component's description (the schema's
+  // `.describe()`); prompt generators such as A2UI Express show it next to each signature.
+  for (const api of components) {
+    const entry = doc.components?.[api.name];
+    if (entry && api.schema.description) doc.components[api.name] = { type: entry.type, description: api.schema.description, ...entry };
+  }
+  return doc;
 }

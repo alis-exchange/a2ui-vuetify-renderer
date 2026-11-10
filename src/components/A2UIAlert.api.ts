@@ -13,13 +13,15 @@ export function buildAlertApi(kit: ProtocolKit): ComponentApi {
     name: 'Alert',
     schema: z
       .object({
-        ...kit.commonProps,
         title: DynamicStringSchema.optional(),
         text: DynamicStringSchema.optional(),
         variant: z.enum(['success', 'info', 'warning', 'error']).default('info').optional(),
         child: ComponentIdSchema.optional(),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A coloured message box for success, info, warning or error notices.'),
   };
 }
 

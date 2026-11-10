@@ -13,7 +13,6 @@ export function buildSelectApi(kit: ProtocolKit): ComponentApi {
     name: 'Select',
     schema: z
       .object({
-        ...kit.commonProps,
         label: DynamicStringSchema.optional(),
         options: z.array(z.any()),
         // DynamicValue, not a plain union: it carries the DynamicValue ref web_core's binder needs to
@@ -22,8 +21,11 @@ export function buildSelectApi(kit: ProtocolKit): ComponentApi {
         variant: z.enum(['multipleSelection', 'mutuallyExclusive']).default('mutuallyExclusive').optional(),
         action: ActionSchema.optional(),
         checks: CheckableSchema.shape.checks,
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A dropdown for picking one option, or several with variant multipleSelection, from a fixed list.'),
   };
 }
 

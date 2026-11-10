@@ -13,12 +13,14 @@ export function buildFileInputApi(kit: ProtocolKit): ComponentApi {
     name: 'FileInput',
     schema: z
       .object({
-        ...kit.commonProps,
         label: DynamicStringSchema,
         value: DynamicValueSchema.optional(),
         action: ActionSchema.optional(),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A file chooser that stores the selected files.'),
   };
 }
 

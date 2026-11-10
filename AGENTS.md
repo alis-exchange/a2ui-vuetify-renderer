@@ -288,7 +288,8 @@ Key patterns:
 - **Actions**: use `dispatchNodeAction(node)` for standard button/click actions, or `sendAction(name, id, context)` for manual payloads
 - **Children**: use `<ComponentNode :id="childId" />` to render child references; use `resolveDynamicChildren` for iterating `{ path, componentId }` template lists
 - **Validation**: call `useChecks(() => props.node)` (see 5.7) — it builds the `createVuetifyRules` rules so `{ condition, message }` conditions resolve against the data model, and exposes the binder's `isValid` / `validationErrors` for gating (Button, IconButton). Do not read `nodeProps` or call `createVuetifyRules` directly in a component
-- **Schemas**: keep every `ComponentApi.schema` a plain `z.object({...}).strict()`. A `.refine()` / `.transform()` root wraps it in a `ZodEffects` that web_core's binder cannot read, turning every prop static (no action closures, no `isValid`); `src/catalog/catalog.spec.ts` guards this
+- **Prompt-friendly schemas**: A2UI Express (the agent SDK's compact inference format, `@a2ui/agent`) passes props **by position in declaration order** and shows the schema's description beside each signature. So declare the component's own props first, most important first, and spread `...kit.commonProps` **last**; end every schema with `.describe('<one line: what it is and when to use it>')`. `generate-catalog.spec.ts` fails otherwise. Reordering props changes Express argument positions for agents, so treat it like an API change.
+- **Schemas**: keep every `ComponentApi.schema` a plain `z.object({...}).strict()` (`.describe()` after `.strict()` is fine; it keeps the shape). A `.refine()` / `.transform()` root wraps it in a `ZodEffects` that web_core's binder cannot read, turning every prop static (no action closures, no `isValid`); `src/catalog/catalog.spec.ts` guards this
 
 ---
 
@@ -376,7 +377,7 @@ ESLint 9 flat config with:
 ### Adding a new default component
 
 1. Create `src/components/A2UI<Name>.vue` following the pattern in §7.3
-2. Write `src/components/A2UI<Name>.api.ts` as `build<Name>Api(kit)` (kit schemas only, `...kit.commonProps`, `.strict()`) plus `<Name>Api = build<Name>Api(A2UI_V09)`, and add both to `src/catalog/vuetify-components.ts`
+2. Write `src/components/A2UI<Name>.api.ts` as `build<Name>Api(kit)` (kit schemas only, own props first, `...kit.commonProps` last, `.strict().describe('…')`) plus `<Name>Api = build<Name>Api(A2UI_V09)`, and add both to `src/catalog/vuetify-components.ts`
 3. Import and register in `src/core/defaultCatalog.ts` inside `registerDefaultComponents()`
 4. Run `pnpm generate:catalog` — it will validate alignment with the registry
 5. Add tests (either in an existing grouped spec or a focused one)

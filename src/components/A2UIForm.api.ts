@@ -13,10 +13,12 @@ export function buildFormApi(kit: ProtocolKit): ComponentApi {
     name: 'Form',
     schema: z
       .object({
-        ...kit.commonProps,
         children: ChildListSchema,
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('Wraps input components so they validate together as one form.'),
   };
 }
 

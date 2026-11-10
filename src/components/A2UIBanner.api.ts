@@ -13,12 +13,14 @@ export function buildBannerApi(kit: ProtocolKit): ComponentApi {
     name: 'Banner',
     schema: z
       .object({
-        ...kit.commonProps,
         text: DynamicStringSchema,
         icon: DynamicStringSchema.optional(),
         child: ComponentIdSchema.optional(),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A full-width notice with text and an optional icon, shown above other content.'),
   };
 }
 

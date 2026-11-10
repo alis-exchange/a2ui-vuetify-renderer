@@ -12,10 +12,12 @@ export function buildDividerApi(kit: ProtocolKit): ComponentApi {
     name: 'Divider',
     schema: z
       .object({
-        ...kit.commonProps,
         axis: z.enum(['horizontal', 'vertical']).default('horizontal').optional(),
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A thin line separating content, horizontal or vertical.'),
   };
 }
 

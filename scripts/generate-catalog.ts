@@ -109,18 +109,25 @@ function buildComponents(): Record<string, any> {
     // Strip meta-properties that conflict with allOf composition
     delete converted.$schema;
     delete converted.additionalProperties;
+    // The component's description belongs on the entry itself, where prompt generators look first.
+    const description = converted.description;
+    delete converted.description;
 
+    // Order matters to A2UI Express, which passes props positionally in the order they are
+    // declared (own props, then allOf entries naming `component`, then the other mixins). So
+    // the component's own props come before CatalogComponentCommon's shared `weight`.
     components[api.name] = {
       type: 'object',
+      ...(description ? { description } : {}),
       allOf: [
         { $ref: '#/$defs/ComponentCommon' },
-        { $ref: '#/$defs/CatalogComponentCommon' },
         {
           type: 'object',
           properties: { component: { const: api.name } },
           required: ['component'],
         },
         converted,
+        { $ref: '#/$defs/CatalogComponentCommon' },
       ],
     };
   }

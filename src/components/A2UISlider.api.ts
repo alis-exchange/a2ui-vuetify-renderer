@@ -13,15 +13,17 @@ export function buildSliderApi(kit: ProtocolKit): ComponentApi {
     name: 'Slider',
     schema: z
       .object({
-        ...kit.commonProps,
         label: DynamicStringSchema.optional(),
         min: z.number().default(0).optional(),
         max: z.number(),
         value: DynamicNumberSchema,
         action: ActionSchema.optional(),
         checks: CheckableSchema.shape.checks,
+        // Shared props last: Express maps positional arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A slider for picking one number between min and max.'),
   };
 }
 
