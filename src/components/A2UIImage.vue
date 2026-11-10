@@ -2,6 +2,7 @@
   import type { ComponentModel } from '@a2ui/web_core/v0_9';
   import { computed } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
+  import { safeMediaUrl } from '../utils/mediaUrl';
 
   const props = defineProps<{
     node: ComponentModel;
@@ -10,7 +11,8 @@
   const { resolveValue } = useA2UI();
 
   const url = computed(() => {
-    return resolveValue<string>(props.node.properties.url) ?? '';
+    // Unsafe schemes and protocol-relative URLs render nothing (A2UI media URL rule).
+    return safeMediaUrl(resolveValue<string>(props.node.properties.url));
   });
 
   const fit = computed(() => {
@@ -40,6 +42,7 @@
 
 <template>
   <v-img
+    v-if="url"
     :src="url"
     :cover="fit"
     :style="style"
