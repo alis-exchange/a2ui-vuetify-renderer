@@ -199,6 +199,15 @@ export interface UseA2UIReturn {
 }
 
 /**
+ * Whether the browser reports an active user gesture right now. Mirrors web_core's own check:
+ * where `navigator.userActivation` is unavailable (older browsers, test environments) it does not
+ * block.
+ */
+function hasUserActivation(): boolean {
+  return typeof navigator === 'undefined' || (navigator.userActivation?.isActive ?? true);
+}
+
+/**
  * Core composable for A2UI component development.
  *
  * Provides reactive data resolution, action dispatching, and data mutation
@@ -257,8 +266,16 @@ export function useA2UI(): UseA2UIReturn {
     // rather than resolving (and, for function calls, executing) it a second time.
     const resolved = context.resolvedByRaw?.value;
     if (resolved && value !== null && typeof value === 'object' && resolved.has(value)) return resolved.get(value) as V | undefined;
-    if (!dataContext.value || value === undefined) return value as V | undefined;
-    return dataContext.value.resolveDynamicValue<V>(value);
+    if (!dataContext.value || value === null || typeof value !== 'object') return value as V | undefined;
+    // Passive evaluation, as web_core's binder evaluates bindings: reading a value to render it
+    // must never run a function that needs a user gesture (`openUrl`); web_core refuses one with
+    // an EXPRESSION_ERROR instead. Actions run actively only in dispatchNodeAction, on the click.
+    const subscription = dataContext.value.subscribeDynamicValue<V>(value, () => {});
+    try {
+      return subscription.value;
+    } finally {
+      subscription.unsubscribe();
+    }
   };
 
   const resolveActionContext = (ctx: any) => {
@@ -334,8 +351,10 @@ export function useA2UI(): UseA2UIReturn {
   };
 
   const dispatchNodeAction = (node: ComponentModel, extraContext?: Record<string, any>) => {
-    const action = resolveValue<Action | undefined>(node.properties.action);
-    if (!action) return;
+    // The raw action, not resolveValue's: resolving would evaluate a functionCall passively, which
+    // refuses gesture-only functions. This is the user's action, so it runs here, actively, once.
+    const action = node.properties.action as Action | undefined;
+    if (!action || typeof action !== 'object') return;
 
     if ('event' in action) {
       const mergedContext = {
@@ -344,7 +363,11 @@ export function useA2UI(): UseA2UIReturn {
       };
       sendAction(action.event.name, node.id, mergedContext);
     } else if ('functionCall' in action) {
-      dataContext.value?.resolveAction(action);
+      // web_core trusts `userActivation` outright (true skips its browser check, false refuses
+      // every gesture-only function), so ask the browser here, as its own check does. Not every
+      // dispatch is a click: a Modal opened by the agent through data dispatches too, and must
+      // not be able to open links on its own.
+      dataContext.value?.resolveAction(action, { userActivation: hasUserActivation() });
     }
   };
 

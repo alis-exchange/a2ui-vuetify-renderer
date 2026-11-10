@@ -1,10 +1,24 @@
-import { Catalog, MessageProcessor, NodeResolver, createFunctionImplementation, getValue, type A2uiMessage } from '@a2ui/web_core/v0_9';
+import { ActionSchema, Catalog, MessageProcessor, NodeResolver, createFunctionImplementation, getValue, type A2uiMessage } from '@a2ui/web_core/v0_9';
 import { mount } from '@vue/test-utils';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { h, nextTick } from 'vue';
+import { defineComponent, h, nextTick } from 'vue';
 import { createVuetify } from 'vuetify';
 import { z } from 'zod';
-import { A2UIProvider, CATALOG_ID, CATALOG_ID_V1, ComponentNode, VUETIFY_COMPONENTS, VUETIFY_COMPONENTS_V1, VUETIFY_FUNCTIONS, VUETIFY_FUNCTIONS_V1, VUETIFY_THEME_SCHEMA, registerDefaultComponents } from './index';
+import {
+  A2UIProvider,
+  CATALOG_ID,
+  CATALOG_ID_V1,
+  ComponentNode,
+  VUETIFY_COMPONENTS,
+  VUETIFY_COMPONENTS_V1,
+  VUETIFY_FUNCTIONS,
+  VUETIFY_FUNCTIONS_V1,
+  VUETIFY_THEME_SCHEMA,
+  defaultRegistry,
+  registerDefaultComponents,
+  useA2UI,
+  useDynamicProps,
+} from './index';
 
 /**
  * End to end: real catalog, real MessageProcessor, the shipped Vuetify components, rendered
@@ -234,17 +248,17 @@ describe('openUrl needs a user click', () => {
 
   const URL_SURFACE = 'open-url';
 
-  function mountWith(components: Record<string, unknown>[]) {
-    const catalog = new Catalog(CATALOG_ID, '0.9', VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA);
+  function mountWith(components: Record<string, unknown>[], nodeResolver = true, extraComponents: { name: string; schema: z.ZodTypeAny }[] = []) {
+    const catalog = new Catalog(CATALOG_ID, '0.9', [...VUETIFY_COMPONENTS, ...extraComponents], VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA);
     const processor = new MessageProcessor([catalog], undefined, { version: 'v0.9' });
     processor.processMessages([{ version: 'v0.9', createSurface: { surfaceId: URL_SURFACE, catalogId: CATALOG_ID } }, { version: 'v0.9', updateComponents: { surfaceId: URL_SURFACE, components } } as A2uiMessage]);
     const onError = vi.fn();
     const wrapper = mount(A2UIProvider, {
       global: { plugins: [createVuetify()] },
-      props: { processor, surfaceId: URL_SURFACE, onAction: vi.fn(), onError },
+      props: { processor, surfaceId: URL_SURFACE, onAction: vi.fn(), onError, nodeResolver },
       slots: { default: () => h(ComponentNode, { id: 'root' }) },
     });
-    return { wrapper, onError };
+    return { wrapper, onError, processor };
   }
 
   const linkButton = (url: string) => [
@@ -340,6 +354,49 @@ describe('openUrl needs a user click', () => {
     mountWith([{ id: 'root', component: type, ...props, action: { functionCall: { call: 'openUrl', args: { url: 'https://example.com/x' } } } }, ...extra]);
     await nextTick();
     expect(open).not.toHaveBeenCalled();
+  });
+
+  it('a custom component using useDynamicProps renders an openUrl action without running it', async () => {
+    // Custom components may read every prop through useDynamicProps, action included. Rendering
+    // resolves passively, so the link opens only when the component dispatches the action.
+    const Linky = defineComponent({
+      props: { node: { type: Object, required: true } },
+      setup(props) {
+        const dynamicProps = useDynamicProps(() => (props.node as any).properties);
+        const { dispatchNodeAction } = useA2UI();
+        return () => h('button', { class: 'linky', onClick: () => dispatchNodeAction(props.node as any) }, String(dynamicProps.value.label));
+      },
+    });
+    defaultRegistry.register(CATALOG_ID, 'Linky', Linky);
+    setUserActivation(true);
+    const schema = z.object({ label: z.string(), action: ActionSchema }).strict();
+    const { wrapper } = mountWith([{ id: 'root', component: 'Linky', label: 'Go', action: { functionCall: { call: 'openUrl', args: { url: 'https://example.com/x' } } } }], true, [{ name: 'Linky', schema }]);
+    await nextTick();
+    expect(open).not.toHaveBeenCalled();
+    await wrapper.find('.linky').trigger('click');
+    expect(open).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not let an agent open a link by opening a Modal through data', async () => {
+    // jsdom has no visualViewport, which Vuetify's dialog positioning reads once it opens.
+    vi.stubGlobal('visualViewport', { width: 1024, height: 768, offsetLeft: 0, offsetTop: 0, scale: 1, addEventListener: vi.fn(), removeEventListener: vi.fn() });
+    setUserActivation(false);
+    const { processor } = mountWith([
+      { id: 'root', component: 'Modal', trigger: 'mt', content: 'mc', open: { path: '/open' }, action: { functionCall: { call: 'openUrl', args: { url: 'tel:+27110000000' } } } },
+      { id: 'mt', component: 'Text', text: 't' },
+      { id: 'mc', component: 'Text', text: 'c' },
+    ]);
+    processor.model.getSurface(URL_SURFACE)!.dataModel.set('/open', true);
+    await nextTick();
+    await nextTick();
+    expect(assign).not.toHaveBeenCalled();
+  });
+
+  it('refuses a binding that would open a link on the legacy render path', async () => {
+    setUserActivation(true);
+    mountWith([{ id: 'root', component: 'Text', text: { call: 'openUrl', args: { url: 'mailto:hi@example.com' } } }], false);
+    await nextTick();
+    expect(assign).not.toHaveBeenCalled();
   });
 
   it('refuses a binding that would open a link while rendering', async () => {

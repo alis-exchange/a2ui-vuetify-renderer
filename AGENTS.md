@@ -156,7 +156,7 @@ The shared `defaultRegistry` is filled by `registerDefaultComponents()`; pass an
 Provides the bridge between `@a2ui/web_core` state and Vue component logic. The function signature is `useA2UI(): UseA2UIReturn`. The explicit return type interface is required so that JSDoc on each member survives into the generated `.d.ts` — see §12.7.
 
 `UseA2UIReturn` members:
-- `resolveValue<V = unknown>(value: DynamicValue | undefined): V | undefined` — resolves literal / `{ path }` / `{ call }` via `DataContext.resolveDynamicValue<V>()`; `DynamicValue` is from `@a2ui/web_core/v0_9`. Pass `V` explicitly for each property (e.g. `resolveValue<string>(props.node.properties.label)`).
+- `resolveValue<V = unknown>(value: DynamicValue | undefined): V | undefined` — resolves literal / `{ path }` / `{ call }` **passively** (`DataContext.subscribeDynamicValue`, read once), as web_core's binder does: rendering never runs a gesture-only function such as `openUrl` (web_core refuses it with an `EXPRESSION_ERROR`). Actions run only in `dispatchNodeAction`, which hands the raw action to `DataContext.resolveAction` with the browser's `navigator.userActivation` state; `DynamicValue` is from `@a2ui/web_core/v0_9`. Pass `V` explicitly for each property (e.g. `resolveValue<string>(props.node.properties.label)`).
 - `resolveDynamicChildren(childrenProp)` — handles static ID arrays and `{ path, componentId }` template iteration
 - `sendAction(name, sourceComponentId, context?)` — builds and dispatches actions (prefers `surface.dispatchAction()`, falls back to `onAction` callback)
 - `dispatchNodeAction(node: ComponentModel, extraContext?)` — reads `node.properties.action`, resolves with `resolveValue<Action | undefined>`, then dispatches `event` or executes `functionCall` locally
@@ -171,8 +171,6 @@ Provides the bridge between `@a2ui/web_core` state and Vue component logic. The 
 In node mode the binder is the only evaluator, so `rules`, `validationErrors`, `isValid` and `errorMessages` always agree. (Before web_core 0.15 the binder read `rule.condition || rule` and passed a literal `condition: false`, so components re-evaluated checks themselves; `src/nodeResolver.spec.ts` pins that 0.15 reports it.) `createVuetifyRules` still mirrors the binder's result handling for the legacy path. Do not hand Vuetify both `rules` and `error-messages` for the same node.
 
 ### 5.8 useDynamicProps composable (`composables/useDynamicProps.ts`)
-
-**Do not use it in a component that has an `action` or `checks` prop.** It resolves every property actively on each render, so a function call there (e.g. `openUrl`) runs during rendering while a user gesture is active; ChoicePicker, Modal and Tabs were fixed for exactly this. Resolve only the props you read with `resolveValue<V>()`.
 
 Accepts a `MaybeRefOrGetter<T>` node, returns a `computed` that runs every property through `resolveValue` (same generic function as `useA2UI`). Designed for custom components that want automatic data binding without manually wrapping each property; use `resolveValue<V>()` on individual `node.properties` fields when you need a concrete `V`.
 

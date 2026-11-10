@@ -8,8 +8,7 @@
   }>();
 
   const { resolveValue, dispatchNodeAction } = useA2UI();
-  // Only the props this component reads: resolving every prop (useDynamicProps) would actively
-  // evaluate `action` on each render, so an `openUrl` in it would fire while a gesture is active.
+  // Only the props this component reads.
   const dynamicProps = computed(() => ({ tabs: resolveValue<{ title?: string; child?: string }[]>(props.node.properties.tabs) }));
   const tab = ref(0);
 

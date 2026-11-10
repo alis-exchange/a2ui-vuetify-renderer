@@ -131,8 +131,10 @@ describe.each<Wire>(['v0.9', 'v0.9.1', '1.0'])('the same surface sent as %s', (w
     vi.stubGlobal('open', open);
     Object.defineProperty(navigator, 'userActivation', { value: { isActive: true, hasBeenActive: true }, configurable: true });
     const { wrapper } = setup();
+    expect(open).not.toHaveBeenCalled();
     await wrapper.findAllComponents({ name: 'VBtn' })[1].trigger('click');
     await nextTick();
+    expect(open).toHaveBeenCalledTimes(1);
     expect(open).toHaveBeenCalledWith('https://example.com/docs', '_blank', 'noopener,noreferrer');
   });
 });

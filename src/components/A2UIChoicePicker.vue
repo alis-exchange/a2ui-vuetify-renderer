@@ -15,9 +15,7 @@
   // ChoicePicker is an A2UI concept that wraps the intent of a choice.
   // We map it to the underlying Vuetify component implementations we already have.
 
-  // Resolve only the two props that pick the delegate. Resolving every prop (useDynamicProps)
-  // would actively evaluate `action` and `checks` on each render, so an `openUrl` call in them
-  // would fire whenever a user gesture happened to be active.
+  // Resolve only the two props that pick the delegate; the delegate reads the rest itself.
   const resolvedComponent = computed(() => {
     const variant = resolveValue<string>(props.node.properties.variant) || 'mutuallyExclusive';
     const displayStyle = resolveValue<string>(props.node.properties.displayStyle) || 'dropdown';

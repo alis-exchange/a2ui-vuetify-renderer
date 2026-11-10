@@ -6,11 +6,9 @@ import { useA2UI } from './useA2UI';
  * A composable that automatically resolves data bindings for a given A2UI node.
  * Useful for authoring custom components without needing to manually wrap every property in `resolveValue`.
  *
- * Caution: it resolves *every* property on each render, including action and check props, and
- * those are evaluated actively. A function call in them (such as `openUrl`) would then run during
- * rendering whenever the browser counts a user gesture. In a component with an `action` or
- * `checks`, resolve only the props you read with `resolveValue` instead; dispatch actions with
- * `dispatchNodeAction` and read checks through `useChecks`.
+ * Values are resolved passively, as web_core's binder resolves them: a function that needs a user
+ * gesture (`openUrl`) is refused here, even inside an `action`. Actions run only when dispatched
+ * with `dispatchNodeAction`.
  *
  * @param node The A2UI component node definition.
  * @returns A computed ref containing the resolved properties.

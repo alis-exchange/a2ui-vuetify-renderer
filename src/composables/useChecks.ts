@@ -41,7 +41,7 @@ export interface UseChecksReturn {
  * ```
  */
 export function useChecks(node: MaybeRefOrGetter<ComponentModel>): UseChecksReturn {
-  const { resolveValue, nodeProps, dataContext } = useA2UI();
+  const { resolveValue, nodeProps } = useA2UI();
 
   const validationErrors = computed(() => {
     const errors = nodeProps?.value?.validationErrors;
@@ -54,22 +54,8 @@ export function useChecks(node: MaybeRefOrGetter<ComponentModel>): UseChecksRetu
   const hasBinderVerdict = computed(() => validationErrors.value !== undefined);
   const binderRule = (): true | string => validationErrors.value?.[0] ?? true;
 
-  // Elsewhere (the legacy render path, or a schema without CheckableSchema) the conditions are
-  // evaluated here, passively, as web_core's binder evaluates them. `resolveValue` is an
-  // active evaluation, so a condition calling a function that needs a user gesture (`openUrl`)
-  // would run whenever the rules run while the user types; a passive one is refused by web_core
-  // (reported as an EXPRESSION_ERROR) instead.
-  const resolveCondition = <V = unknown>(value: any): V | undefined => {
-    nodeProps?.value; // keep the rules reactive to the node, as resolveValue does
-    const context = dataContext.value;
-    if (!context || value === null || typeof value !== 'object') return resolveValue<V>(value);
-    const subscription = context.subscribeDynamicValue<V>(value, () => {});
-    try {
-      return subscription.value;
-    } finally {
-      subscription.unsubscribe();
-    }
-  };
+  // Elsewhere (the legacy render path, or a schema without CheckableSchema) the rules evaluate the
+  // conditions themselves, passively through resolveValue, as web_core's binder does.
 
   // `checks` is CHECKABLE, never a binder-resolved dynamic value, so read the raw array off the
   // node: routing it through `resolveValue` is an identity no-op that would subscribe this
@@ -79,7 +65,7 @@ export function useChecks(node: MaybeRefOrGetter<ComponentModel>): UseChecksRetu
   const rules = computed(() => {
     const checks = (toValue(node).properties.checks as any[]) ?? [];
     if (checks.length === 0) return [];
-    return hasBinderVerdict.value ? [binderRule] : createVuetifyRules(checks, resolveCondition);
+    return hasBinderVerdict.value ? [binderRule] : createVuetifyRules(checks, resolveValue);
   });
 
   const isValid = computed(() => nodeProps?.value?.isValid !== false);
