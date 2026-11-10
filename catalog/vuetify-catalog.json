@@ -4988,9 +4988,62 @@
                   "type": "string"
                 },
                 {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
                   "type": "array"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "A JSON Pointer path to a value in the data model."
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "call": {
+                      "type": "string",
+                      "description": "The name of the function to call."
+                    },
+                    "args": {
+                      "type": "object",
+                      "additionalProperties": {},
+                      "description": "Arguments passed to the function."
+                    },
+                    "returnType": {
+                      "type": "string",
+                      "enum": [
+                        "string",
+                        "number",
+                        "boolean",
+                        "array",
+                        "object",
+                        "any",
+                        "void"
+                      ],
+                      "description": "The expected return type of the function call.",
+                      "default": "boolean"
+                    }
+                  },
+                  "required": [
+                    "call"
+                  ],
+                  "additionalProperties": false,
+                  "description": "Invokes a named function on the client."
                 }
-              ]
+              ],
+              "description": "A value that can be a literal, a path, or a function call returning any type."
             },
             "variant": {
               "type": "string",
@@ -5425,9 +5478,62 @@
                   "type": "string"
                 },
                 {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
                   "type": "array"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "A JSON Pointer path to a value in the data model."
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "call": {
+                      "type": "string",
+                      "description": "The name of the function to call."
+                    },
+                    "args": {
+                      "type": "object",
+                      "additionalProperties": {},
+                      "description": "Arguments passed to the function."
+                    },
+                    "returnType": {
+                      "type": "string",
+                      "enum": [
+                        "string",
+                        "number",
+                        "boolean",
+                        "array",
+                        "object",
+                        "any",
+                        "void"
+                      ],
+                      "description": "The expected return type of the function call.",
+                      "default": "boolean"
+                    }
+                  },
+                  "required": [
+                    "call"
+                  ],
+                  "additionalProperties": false,
+                  "description": "Invokes a named function on the client."
                 }
-              ]
+              ],
+              "description": "A value that can be a literal, a path, or a function call returning any type."
             },
             "variant": {
               "type": "string",
@@ -5789,9 +5895,62 @@
                   "type": "string"
                 },
                 {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
                   "type": "array"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "A JSON Pointer path to a value in the data model."
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "call": {
+                      "type": "string",
+                      "description": "The name of the function to call."
+                    },
+                    "args": {
+                      "type": "object",
+                      "additionalProperties": {},
+                      "description": "Arguments passed to the function."
+                    },
+                    "returnType": {
+                      "type": "string",
+                      "enum": [
+                        "string",
+                        "number",
+                        "boolean",
+                        "array",
+                        "object",
+                        "any",
+                        "void"
+                      ],
+                      "description": "The expected return type of the function call.",
+                      "default": "boolean"
+                    }
+                  },
+                  "required": [
+                    "call"
+                  ],
+                  "additionalProperties": false,
+                  "description": "Invokes a named function on the client."
                 }
-              ]
+              ],
+              "description": "A value that can be a literal, a path, or a function call returning any type."
             },
             "variant": {
               "type": "string",
@@ -13461,9 +13620,62 @@
                   "type": "string"
                 },
                 {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
                   "type": "array"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "A JSON Pointer path to a value in the data model."
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "call": {
+                      "type": "string",
+                      "description": "The name of the function to call."
+                    },
+                    "args": {
+                      "type": "object",
+                      "additionalProperties": {},
+                      "description": "Arguments passed to the function."
+                    },
+                    "returnType": {
+                      "type": "string",
+                      "enum": [
+                        "string",
+                        "number",
+                        "boolean",
+                        "array",
+                        "object",
+                        "any",
+                        "void"
+                      ],
+                      "description": "The expected return type of the function call.",
+                      "default": "boolean"
+                    }
+                  },
+                  "required": [
+                    "call"
+                  ],
+                  "additionalProperties": false,
+                  "description": "Invokes a named function on the client."
                 }
-              ]
+              ],
+              "description": "A value that can be a literal, a path, or a function call returning any type."
             },
             "variant": {
               "type": "string",

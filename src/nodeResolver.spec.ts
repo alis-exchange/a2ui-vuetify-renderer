@@ -298,3 +298,50 @@ describe('openUrl needs a user click', () => {
     expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringMatching(/requires user activation/) }));
   });
 });
+
+describe('select-style inputs bind to the data model', () => {
+  beforeAll(() => registerDefaultComponents());
+
+  const SELECT_SURFACE = 'selects';
+
+  it.each([
+    ['Select', 'VSelect'],
+    ['Autocomplete', 'VAutocomplete'],
+    ['Combobox', 'VCombobox'],
+    ['ChoicePicker', 'VSelect'],
+  ])('%s accepts { path } and writes the choice back', async (type, vuetifyName) => {
+    const catalog = new Catalog(CATALOG_ID, '0.9', VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA);
+    const processor = new MessageProcessor([catalog], undefined, { version: 'v0.9' });
+    // Before web_core could see these as bindable, MessageProcessor rejected the { path } value outright.
+    processor.processMessages([
+      { version: 'v0.9', createSurface: { surfaceId: SELECT_SURFACE, catalogId: CATALOG_ID } },
+      { version: 'v0.9', updateDataModel: { surfaceId: SELECT_SURFACE, path: '/', value: { choice: 'a' } } },
+      {
+        version: 'v0.9',
+        updateComponents: {
+          surfaceId: SELECT_SURFACE,
+          components: [
+            { id: 'root', component: 'Column', children: ['pick', 'echo'] },
+            { id: 'pick', component: type, options: ['a', 'b'], value: { path: '/choice' } },
+            { id: 'echo', component: 'Text', text: { path: '/choice' } },
+          ],
+        },
+      } as A2uiMessage,
+    ]);
+    const wrapper = mount(A2UIProvider, {
+      global: { plugins: [createVuetify()] },
+      props: { processor, surfaceId: SELECT_SURFACE, onAction: vi.fn(), onError: vi.fn() },
+      slots: { default: () => h(ComponentNode, { id: 'root' }) },
+    });
+
+    const echo = () => wrapper.findComponent({ name: 'A2UIText' }).text();
+    const input = wrapper.findComponent({ name: vuetifyName });
+    expect(input.props('modelValue')).toBe('a');
+    expect(echo()).toBe('a');
+
+    await input.vm.$emit('update:modelValue', 'b');
+    await nextTick();
+    expect(processor.model.getSurface(SELECT_SURFACE)!.dataModel.get('/choice')).toBe('b');
+    expect(echo()).toBe('b');
+  });
+});
