@@ -172,6 +172,8 @@ In node mode the binder is the only evaluator, so `rules`, `validationErrors`, `
 
 ### 5.8 useDynamicProps composable (`composables/useDynamicProps.ts`)
 
+**Do not use it in a component that has an `action` or `checks` prop.** It resolves every property actively on each render, so a function call there (e.g. `openUrl`) runs during rendering while a user gesture is active; ChoicePicker, Modal and Tabs were fixed for exactly this. Resolve only the props you read with `resolveValue<V>()`.
+
 Accepts a `MaybeRefOrGetter<T>` node, returns a `computed` that runs every property through `resolveValue` (same generic function as `useA2UI`). Designed for custom components that want automatic data binding without manually wrapping each property; use `resolveValue<V>()` on individual `node.properties` fields when you need a concrete `V`.
 
 ### 5.9 getCatalogSchema + catalogFilters

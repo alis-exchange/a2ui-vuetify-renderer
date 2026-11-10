@@ -1,15 +1,20 @@
 <script setup lang="ts">
   import type { ComponentModel } from '@a2ui/web_core/v0_9';
-  import { ref, watch, watchEffect } from 'vue';
+  import { computed, ref, watch, watchEffect } from 'vue';
   import { useA2UI } from '../composables/useA2UI';
-  import { useDynamicProps } from '../composables/useDynamicProps';
 
   const props = defineProps<{
     node: ComponentModel;
   }>();
 
-  const dynamicProps = useDynamicProps(() => props.node.properties);
-  const { dispatchNodeAction } = useA2UI();
+  const { resolveValue, dispatchNodeAction } = useA2UI();
+  // Only the props this component reads: resolving every prop (useDynamicProps) would actively
+  // evaluate `action` on each render, so an `openUrl` in it would fire while a gesture is active.
+  const dynamicProps = computed(() => ({
+    open: resolveValue<boolean>(props.node.properties.open),
+    trigger: resolveValue<string>(props.node.properties.trigger),
+    content: resolveValue<string>(props.node.properties.content),
+  }));
 
   const isOpen = ref(false);
 

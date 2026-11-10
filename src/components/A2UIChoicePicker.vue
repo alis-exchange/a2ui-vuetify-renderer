@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import type { ComponentModel } from '@a2ui/web_core/v0_9';
   import { computed } from 'vue';
-  import { useDynamicProps } from '../composables/useDynamicProps';
+  import { useA2UI } from '../composables/useA2UI';
   import A2UIRadioButton from './A2UIRadioButton.vue';
   import A2UISegmentedChoice from './A2UISegmentedChoice.vue';
   import A2UISelect from './A2UISelect.vue';
@@ -10,14 +10,17 @@
     node: ComponentModel;
   }>();
 
-  const dynamicProps = useDynamicProps(() => props.node.properties);
+  const { resolveValue } = useA2UI();
 
   // ChoicePicker is an A2UI concept that wraps the intent of a choice.
   // We map it to the underlying Vuetify component implementations we already have.
 
+  // Resolve only the two props that pick the delegate. Resolving every prop (useDynamicProps)
+  // would actively evaluate `action` and `checks` on each render, so an `openUrl` call in them
+  // would fire whenever a user gesture happened to be active.
   const resolvedComponent = computed(() => {
-    const variant = dynamicProps.value.variant || 'mutuallyExclusive';
-    const displayStyle = dynamicProps.value.displayStyle || 'dropdown';
+    const variant = resolveValue<string>(props.node.properties.variant) || 'mutuallyExclusive';
+    const displayStyle = resolveValue<string>(props.node.properties.displayStyle) || 'dropdown';
 
     if (displayStyle === 'segmented') {
       return A2UISegmentedChoice;

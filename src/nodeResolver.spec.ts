@@ -314,6 +314,34 @@ describe('openUrl needs a user click', () => {
     expect(open).not.toHaveBeenCalled();
   });
 
+  it.each(['ChoicePicker', 'Select'])('%s with an openUrl action opens the link once per choice, never on render', async (type) => {
+    // A gesture is active throughout, so only "not evaluated outside the action" keeps renders quiet.
+    setUserActivation(true);
+    const { wrapper } = mountWith([{ id: 'root', component: type, options: ['a', 'b'], value: { path: '/c' }, action: { functionCall: { call: 'openUrl', args: { url: 'https://example.com/x' } } } }]);
+    await nextTick();
+    expect(open).not.toHaveBeenCalled();
+    await wrapper.findComponent({ name: 'VSelect' }).vm.$emit('update:modelValue', 'b');
+    await nextTick();
+    expect(open).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ['Tabs', { tabs: [{ title: 'A', child: 'ta' }] }, [{ id: 'ta', component: 'Text', text: 'a' }]],
+    [
+      'Modal',
+      { trigger: 'mt', content: 'mc' },
+      [
+        { id: 'mt', component: 'Text', text: 't' },
+        { id: 'mc', component: 'Text', text: 'c' },
+      ],
+    ],
+  ])('%s with an openUrl action does not open the link on render', async (type, props, extra) => {
+    setUserActivation(true);
+    mountWith([{ id: 'root', component: type, ...props, action: { functionCall: { call: 'openUrl', args: { url: 'https://example.com/x' } } } }, ...extra]);
+    await nextTick();
+    expect(open).not.toHaveBeenCalled();
+  });
+
   it('refuses a binding that would open a link while rendering', async () => {
     const { onError } = mountWith([
       { id: 'root', component: 'Column', children: ['t'] },
