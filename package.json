@@ -14,7 +14,8 @@
       "types": "./dist/index.d.ts"
     },
     "./style.css": "./dist/a2ui-vuetify-renderer.css",
-    "./catalog": "./catalog/vuetify-catalog.json"
+    "./catalog": "./catalog/vuetify-catalog.json",
+    "./catalog/v1": "./catalog/vuetify-catalog.v1.json"
   },
   "files": [
     "dist",

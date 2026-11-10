@@ -53,10 +53,10 @@ export { A2UI_V09, A2UI_V10 } from './protocol/kits';
 export type { ProtocolKit } from './protocol/kits';
 
 // The generated catalog document itself, for consumers that want it without a registry
-export { VUETIFY_CATALOG } from './core/vuetifyCatalog';
+export { VUETIFY_CATALOG, VUETIFY_CATALOG_V1 } from './core/vuetifyCatalog';
 
 // Export Vuetify catalog ComponentApi[], FunctionImplementation[], and theme schema
 export { VUETIFY_COMPONENTS, VUETIFY_COMPONENTS_V1, buildVuetifyComponents } from './catalog/vuetify-components';
-export { VUETIFY_FUNCTIONS, VuetifyOpenUrlImplementation, createVuetifyFunctions } from './catalog/vuetify-functions';
+export { VUETIFY_FUNCTIONS, VUETIFY_FUNCTIONS_V1, VuetifyOpenUrlImplementation, VuetifyOpenUrlImplementationV1, createVuetifyFunctions } from './catalog/vuetify-functions';
 export type { VuetifyFunctionsOptions } from './catalog/vuetify-functions';
 export { VUETIFY_THEME_SCHEMA } from './catalog/vuetify-theme';

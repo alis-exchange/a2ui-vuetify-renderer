@@ -2,7 +2,8 @@ import { RpcHandler } from '@a2ui/web_core/rpc';
 import { A2uiExpressionError, Catalog, type FunctionImplementation } from '@a2ui/web_core/v0_9';
 import { BASIC_FUNCTIONS, OpenUrlApi, OpenUrlImplementation } from '@a2ui/web_core/v0_9/basic_catalog';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { VUETIFY_FUNCTIONS, VuetifyOpenUrlImplementation, createVuetifyFunctions } from './vuetify-functions';
+import { A2UI_V10 } from '../protocol/kits';
+import { VUETIFY_FUNCTIONS, VuetifyOpenUrlImplementation, VuetifyOpenUrlImplementationV1, createVuetifyFunctions } from './vuetify-functions';
 
 /** Runs a function through a real Catalog so zod parsing and defaults apply, like at runtime. */
 function invoke(fns: FunctionImplementation[], name: string, args: Record<string, unknown>) {
@@ -127,5 +128,32 @@ describe('agent-initiated calls (callRendererFunction)', () => {
   it('keeps the pure helpers renderer-only', async () => {
     const response: any = await call('required', { value: 'x' });
     expect(JSON.stringify(response)).toMatch(/cannot be called by agent \(allowedCallers is rendererOnly\)/);
+  });
+});
+
+describe('v1.0 functions', () => {
+  const fnsV1 = createVuetifyFunctions({ protocol: A2UI_V10 });
+  const invokeV1 = (name: string, args: Record<string, unknown>) => new Catalog('v1-test', '1.0', [], fnsV1).invoker(name, args, undefined as any);
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('are the specification functions plus @index, with the Vuetify openUrl', () => {
+    expect(fnsV1.map((fn) => fn.name)).not.toContain('add');
+    expect(fnsV1.find((fn) => fn.name === 'openUrl')).toBe(VuetifyOpenUrlImplementationV1);
+    expect(VuetifyOpenUrlImplementationV1.allowedCallers).toBe('rendererOnly');
+    expect(VuetifyOpenUrlImplementationV1.requiresUserActivation).toBe(true);
+  });
+
+  it('return ValidationResults from validators', () => {
+    expect(invokeV1('required', { value: '' })).toMatchObject({ valid: false });
+    expect(invokeV1('required', { value: 'x' })).toMatchObject({ valid: true });
+  });
+
+  it('keep mailto: on v1.0, like v0.9', () => {
+    const assign = vi.fn();
+    vi.stubGlobal('location', { href: 'https://example.com/', assign });
+    vi.stubGlobal('open', vi.fn());
+    invokeV1('openUrl', { url: 'mailto:hi@example.com' });
+    expect(assign).toHaveBeenCalledWith('mailto:hi@example.com');
   });
 });

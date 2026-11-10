@@ -2,10 +2,12 @@ import { DynamicStringSchema } from '@a2ui/web_core/v0_9';
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import baseCatalog from '../../catalog/vuetify-catalog.json';
+import { A2UI_V10 } from '../protocol/kits';
 import { catalogFilters } from './catalogFilters';
 import { ComponentRegistry, defaultRegistry } from './ComponentRegistry';
-import { CATALOG_ID } from './constants';
+import { CATALOG_ID, CATALOG_ID_V1 } from './constants';
 import { getCatalogSchema } from './getCatalogSchema';
+import { VUETIFY_CATALOG_V1 } from './vuetifyCatalog';
 
 const baseKeys = Object.keys(baseCatalog.components);
 
@@ -114,6 +116,38 @@ describe('getCatalogSchema', () => {
       expect(schema.components['Calendar']).toBeUndefined();
       expect(schema.components['Button']).toBeDefined();
       expect(schema.components['Text']).toBeDefined();
+    });
+  });
+
+  describe('for CATALOG_ID_V1', () => {
+    const chartApi = (kit: typeof A2UI_V10) => ({ name: 'Chart', schema: z.object({ title: kit.DynamicStringSchema }).strict() });
+
+    it('returns the published v1.0 document when nothing custom is registered', () => {
+      expect(getCatalogSchema(new ComponentRegistry(), CATALOG_ID_V1)).toEqual(VUETIFY_CATALOG_V1);
+    });
+
+    it('adds a custom component that has a v1.0 schema, in v1.0 syntax', () => {
+      const registry = new ComponentRegistry();
+      registry.register(CATALOG_ID_V1, 'Chart', {} as any, chartApi(A2UI_V10) as any);
+      const doc = getCatalogSchema(registry, CATALOG_ID_V1);
+      expect(doc.components.Chart.properties.title.$ref).toBe('common_types.json#/$defs/DynamicString');
+      expect(JSON.stringify(doc.$defs.anyComponent)).toContain('Chart');
+    });
+
+    it('leaves out a custom component with only a v0.9 schema, and says so', () => {
+      const registry = new ComponentRegistry();
+      registry.register(CATALOG_ID, 'Legacy', {} as any, { name: 'Legacy', schema: z.object({}).strict() } as any);
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const doc = getCatalogSchema(registry, CATALOG_ID_V1);
+      expect(doc.components.Legacy).toBeUndefined();
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('Legacy'));
+      warn.mockRestore();
+    });
+
+    it('applies the filter before building, so the component index matches', () => {
+      const doc = getCatalogSchema(new ComponentRegistry(), CATALOG_ID_V1, { filter: catalogFilters.only('Text', 'Button') });
+      expect(Object.keys(doc.components).sort()).toEqual(['Button', 'Text']);
+      expect(JSON.stringify(doc.$defs.anyComponent)).not.toContain('TextField');
     });
   });
 });

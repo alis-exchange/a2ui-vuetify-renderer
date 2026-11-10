@@ -4,7 +4,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { h, nextTick } from 'vue';
 import { createVuetify } from 'vuetify';
 import { z } from 'zod';
-import { A2UIProvider, CATALOG_ID, CATALOG_ID_V1, ComponentNode, VUETIFY_COMPONENTS, VUETIFY_COMPONENTS_V1, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA, registerDefaultComponents } from './index';
+import { A2UIProvider, CATALOG_ID, CATALOG_ID_V1, ComponentNode, VUETIFY_COMPONENTS, VUETIFY_COMPONENTS_V1, VUETIFY_FUNCTIONS, VUETIFY_FUNCTIONS_V1, VUETIFY_THEME_SCHEMA, registerDefaultComponents } from './index';
 
 /**
  * End to end: real catalog, real MessageProcessor, the shipped Vuetify components, rendered
@@ -484,5 +484,48 @@ describe('v1.0 check results', () => {
     await nextTick();
     expect(rule()).toBe(true);
     expect(wrapper.findComponent({ name: 'VBtn' }).props('disabled')).toBe(false);
+  });
+});
+
+describe('v1.0 surface with the Vuetify v1.0 functions', () => {
+  beforeAll(() => registerDefaultComponents());
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    delete (navigator as { userActivation?: unknown }).userActivation;
+  });
+
+  it('runs @call checks and opens a link from a clicked Button', async () => {
+    const open = vi.fn();
+    vi.stubGlobal('open', open);
+    Object.defineProperty(navigator, 'userActivation', { value: { isActive: true, hasBeenActive: true }, configurable: true });
+    const processor = new MessageProcessor([new Catalog(CATALOG_ID_V1, '1.0', VUETIFY_COMPONENTS_V1, VUETIFY_FUNCTIONS_V1)]);
+    processor.processMessages([
+      { version: '1.0', createSurface: { surfaceId: 'f', catalogId: CATALOG_ID_V1, dataModel: { name: '' } } },
+      {
+        version: '1.0',
+        updateComponents: {
+          surfaceId: 'f',
+          components: [
+            { id: 'root', component: 'Column', children: ['tf', 'docs'] },
+            { id: 'tf', component: 'TextField', label: 'Name', value: { '@path': '/name' }, checks: [{ condition: { '@call': 'required', args: { value: { '@path': '/name' } } }, message: 'Name is required' }] },
+            { id: 'docs', component: 'Button', label: 'Docs', action: { functionCall: { '@call': 'openUrl', args: { url: 'https://example.com/docs' } } } },
+          ],
+        },
+      },
+    ] as never);
+    const wrapper = mount(A2UIProvider, {
+      global: { plugins: [createVuetify()] },
+      props: { processor, surfaceId: 'f', onAction: vi.fn(), onError: vi.fn() },
+      slots: { default: () => h(ComponentNode, { id: 'root' }) },
+    });
+    const rule = () => (wrapper.findComponent({ name: 'VTextField' }).props('rules') as ((v: unknown) => unknown)[])[0]('');
+    expect(rule()).toBe('Name is required');
+    processor.model.getSurface('f')!.dataModel.set('/name', 'Ada');
+    await nextTick();
+    expect(rule()).toBe(true);
+
+    await wrapper.findComponent({ name: 'VBtn' }).trigger('click');
+    await nextTick();
+    expect(open).toHaveBeenCalledWith('https://example.com/docs', '_blank', 'noopener,noreferrer');
   });
 });

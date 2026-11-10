@@ -57,4 +57,9 @@ describe('index.ts', () => {
   it('should export useBinding', () => {
     expect(typeof exports.useBinding).toBe('function');
   });
+
+  it('should export the v1.0 catalog document and functions', () => {
+    expect((exports.VUETIFY_CATALOG_V1 as any).catalogId).toBe(exports.CATALOG_ID_V1);
+    expect(exports.VUETIFY_FUNCTIONS_V1.find((fn) => fn.name === 'openUrl')).toBe(exports.VuetifyOpenUrlImplementationV1);
+  });
 });

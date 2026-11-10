@@ -1,4 +1,5 @@
 import baseCatalog from '../../catalog/vuetify-catalog.json';
+import baseCatalogV1 from '../../catalog/vuetify-catalog.v1.json';
 
 /**
  * The generated Vuetify catalog document, exactly as published at the catalog's own `$id`.
@@ -23,3 +24,12 @@ import baseCatalog from '../../catalog/vuetify-catalog.json';
  * ```
  */
 export const VUETIFY_CATALOG: Readonly<Record<string, any>> = baseCatalog;
+
+/**
+ * The generated A2UI v1.0 Vuetify catalog document, the counterpart of {@link VUETIFY_CATALOG}
+ * for `CATALOG_ID_V1`. Written by web_core's `Catalog.toJson()`, so it references
+ * `common_types.json` rather than inlining every type.
+ *
+ * Treat it as read-only. Outside a bundler: `require('@alis-build/a2ui-vuetify-renderer/catalog/v1')`.
+ */
+export const VUETIFY_CATALOG_V1: Readonly<Record<string, any>> = baseCatalogV1;

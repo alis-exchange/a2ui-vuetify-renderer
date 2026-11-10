@@ -1,8 +1,10 @@
+import { Catalog } from '@a2ui/web_core/v1_0';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { VUETIFY_COMPONENTS } from '../src/catalog/vuetify-components';
-import { VUETIFY_FUNCTIONS } from '../src/catalog/vuetify-functions';
+import { VUETIFY_COMPONENTS, VUETIFY_COMPONENTS_V1 } from '../src/catalog/vuetify-components';
+import { VUETIFY_FUNCTIONS, VUETIFY_FUNCTIONS_V1 } from '../src/catalog/vuetify-functions';
+import { buildCatalogDocumentV1 } from '../src/core/catalogDocumentV1';
 import { zodToCatalogJson } from '../src/core/zodToCatalogJson';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -10,6 +12,7 @@ const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 const catalogDir = path.join(rootDir, 'catalog');
 const catalogPath = path.join(catalogDir, 'vuetify-catalog.json');
+const catalogPathV1 = path.join(catalogDir, 'vuetify-catalog.v1.json');
 
 // ---------------------------------------------------------------------------
 // Static $defs — A2UI protocol primitives shared across all components
@@ -207,7 +210,7 @@ function getRegisteredComponents(): string[] {
   return keys;
 }
 
-function validateCatalog(catalogComponents: Record<string, any>): void {
+function validateCatalog(catalogComponents: Record<string, any>, label = 'v0.9'): void {
   const registeredKeys = getRegisteredComponents();
   const catalogKeys = Object.keys(catalogComponents);
 
@@ -219,7 +222,7 @@ function validateCatalog(catalogComponents: Record<string, any>): void {
   const extraInCatalog = catalogKeys.filter((k) => !registeredKeys.includes(k));
 
   if (missingInCatalog.length > 0 || extraInCatalog.length > 0) {
-    console.error('Validation Error: Catalog components do not match registered components in defaultCatalog.ts');
+    console.error(`Validation Error: ${label} catalog components do not match registered components in defaultCatalog.ts`);
     if (missingInCatalog.length > 0) {
       console.error(`Missing in catalog schema: ${missingInCatalog.join(', ')}`);
     }
@@ -290,6 +293,31 @@ function main() {
 
   fs.writeFileSync(catalogPath, JSON.stringify(catalog, null, 2), 'utf-8');
   console.log(`Generated catalog at ${catalogPath}`);
+
+  writeV1Catalog();
+}
+
+/**
+ * The A2UI v1.0 catalog document, written by web_core itself (`Catalog.toJson()`), so its
+ * layout follows `catalog_definition.json`: functions as a map keyed by name, `@call`,
+ * `$ref`s into `common_types.json`, and `protocolVersion: "1.0"`. The v0.9 document above is
+ * hand-assembled and stays byte-identical; this one is independent of it.
+ */
+function writeV1Catalog() {
+  const doc = buildCatalogDocumentV1(VUETIFY_COMPONENTS_V1);
+
+  // Loading it back is web_core's own catalog validation (identifiers, $refs, closures).
+  const reloaded = Catalog.fromJson(doc, '1.0');
+  // `@index` and other `@` system functions belong to no catalog, so toJson() leaves them out.
+  const catalogFunctions = VUETIFY_FUNCTIONS_V1.filter((fn) => !fn.name.startsWith('@'));
+  if (reloaded.components.size !== VUETIFY_COMPONENTS_V1.length || reloaded.functions.size !== catalogFunctions.length) {
+    console.error(`Validation Error: v1.0 catalog round trip lost entries (${reloaded.components.size} components, ${reloaded.functions.size} functions)`);
+    process.exit(1);
+  }
+  validateCatalog(doc.components, 'v1.0');
+
+  fs.writeFileSync(catalogPathV1, JSON.stringify(doc, null, 2) + '\n', 'utf-8');
+  console.log(`Generated catalog at ${catalogPathV1}`);
 }
 
 main();

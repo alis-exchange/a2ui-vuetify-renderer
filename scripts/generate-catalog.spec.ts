@@ -9,12 +9,14 @@ const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 const catalogDir = path.join(rootDir, 'catalog');
 const catalogPath = path.join(catalogDir, 'vuetify-catalog.json');
+const catalogPathV1 = path.join(catalogDir, 'vuetify-catalog.v1.json');
 const scriptPath = path.join(__dirname, 'generate-catalog.ts');
 
 describe('generate-catalog.ts', () => {
   // Read before the first test regenerates the file in place, so a schema change without a
   // regenerated catalog fails here (in CI, on a clean checkout) instead of shipping stale JSON.
   const committed = fs.existsSync(catalogPath) ? fs.readFileSync(catalogPath, 'utf-8') : undefined;
+  const committedV1 = fs.existsSync(catalogPathV1) ? fs.readFileSync(catalogPathV1, 'utf-8') : undefined;
 
   beforeAll(() => {
     if (!fs.existsSync(catalogDir)) {
@@ -29,6 +31,7 @@ describe('generate-catalog.ts', () => {
 
     const content = fs.readFileSync(catalogPath, 'utf-8');
     expect(content, 'catalog/vuetify-catalog.json is stale: run pnpm generate:catalog and commit it').toBe(committed);
+    expect(fs.readFileSync(catalogPathV1, 'utf-8'), 'catalog/vuetify-catalog.v1.json is stale: run pnpm generate:catalog and commit it').toBe(committedV1);
     const json = JSON.parse(content);
 
     expect(json).toBeDefined();
@@ -139,6 +142,38 @@ describe('the generated catalog document', () => {
   });
 });
 
+// Runs after the suite above has regenerated both documents.
+describe('the v1.0 catalog document', () => {
+  const doc = () => JSON.parse(fs.readFileSync(catalogPathV1, 'utf-8'));
+
+  it('is a v1.0 catalog_definition named by CATALOG_ID_V1', () => {
+    const v1 = doc();
+    expect(v1.protocolVersion).toBe('1.0');
+    expect(v1.$id).toBe(v1.catalogId);
+    expect(v1.catalogId).toBe('https://raw.githubusercontent.com/alis-exchange/a2ui-vuetify-renderer/main/catalog/vuetify-catalog.v1.json');
+    expect(Array.isArray(v1.functions)).toBe(false);
+    expect(Object.keys(v1.components)).toEqual(Object.keys(JSON.parse(fs.readFileSync(catalogPath, 'utf-8')).components));
+  });
+
+  it('lists only the specification functions, without the @index system function', () => {
+    expect(Object.keys(doc().functions).sort()).toEqual(['and', 'email', 'formatCurrency', 'formatDate', 'formatNumber', 'formatString', 'length', 'not', 'numeric', 'openUrl', 'or', 'pluralize', 'regex', 'required']);
+  });
+
+  it('gates openUrl on a user click and keeps it renderer-only', () => {
+    const openUrl = doc().functions.openUrl;
+    expect(openUrl.allowedCallers).toBe('rendererOnly');
+    expect(openUrl.requiresUserActivation).toBe(true);
+  });
+
+  it('declares no envelope keys on components', () => {
+    for (const [name, def] of Object.entries<any>(doc().components)) {
+      for (const key of ['id', 'catalogId', 'accessibility', 'metadata']) {
+        expect(def.properties?.[key], `${name}.${key}`).toBeUndefined();
+      }
+    }
+  });
+});
+
 describe('the published package', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf-8'));
 
@@ -150,5 +185,9 @@ describe('the published package', () => {
     const subpath = pkg.exports['./catalog'];
     expect(subpath).toBe('./catalog/vuetify-catalog.json');
     expect(fs.existsSync(path.join(rootDir, subpath))).toBe(true);
+
+    const subpathV1 = pkg.exports['./catalog/v1'];
+    expect(subpathV1).toBe('./catalog/vuetify-catalog.v1.json');
+    expect(fs.existsSync(path.join(rootDir, subpathV1))).toBe(true);
   });
 });
