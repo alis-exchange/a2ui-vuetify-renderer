@@ -38,21 +38,24 @@ import A2UITextField from '../components/A2UITextField.vue';
 import A2UITimePicker from '../components/A2UITimePicker.vue';
 import A2UITreeView from '../components/A2UITreeView.vue';
 import A2UIVideo from '../components/A2UIVideo.vue';
-import { defaultRegistry } from './ComponentRegistry';
+import { defaultRegistry, type ComponentRegistry } from './ComponentRegistry';
 import { CATALOG_ID } from './constants';
 
 /**
- * Registers all built-in Vuetify-backed A2UI components into the {@link defaultRegistry}.
+ * Registers all built-in Vuetify-backed A2UI components into a registry, the shared
+ * {@link defaultRegistry} unless another is given.
  *
  * Called automatically by the {@link A2UiVueRenderer} plugin during `app.use()`.
- * You only need to call this directly if you are setting up the registry manually
- * without using the plugin.
+ * Call it directly to fill your own `ComponentRegistry` (provided under `A2UI_REGISTRY_KEY`),
+ * or when setting up the registry without the plugin.
  *
  * Maps A2UI component type names (e.g. `"Button"`, `"TextField"`, `"List"`) to
  * their corresponding Vue component implementations.
+ *
+ * @param registry - The registry to fill. Defaults to {@link defaultRegistry}.
  */
-export function registerDefaultComponents() {
-  defaultRegistry.registerAll(CATALOG_ID, {
+export function registerDefaultComponents(registry: ComponentRegistry = defaultRegistry) {
+  registry.registerAll(CATALOG_ID, {
     Text: A2UIText,
     Image: A2UIImage,
     Icon: A2UIIcon,

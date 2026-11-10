@@ -195,7 +195,7 @@ function getRegisteredComponents(): string[] {
 
   const content = fs.readFileSync(defaultCatalogPath, 'utf-8');
 
-  const match = content.match(/defaultRegistry\.registerAll\([^,]+,\s*\{([\s\S]*?)\}\s*\);?/);
+  const match = content.match(/\w+\.registerAll\([^,]+,\s*\{([\s\S]*?)\}\s*\);?/);
   if (!match) {
     throw new Error('Could not parse defaultRegistry.registerAll call in defaultCatalog.ts');
   }

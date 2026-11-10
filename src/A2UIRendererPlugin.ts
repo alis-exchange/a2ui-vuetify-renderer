@@ -1,7 +1,7 @@
 import type { App, Plugin } from 'vue';
 import A2UIProvider from './composables/A2UIProvider.vue';
 import ComponentNode from './core/ComponentNode.vue';
-import { defaultRegistry } from './core/ComponentRegistry';
+import { A2UI_REGISTRY_KEY, defaultRegistry, type ComponentRegistry } from './core/ComponentRegistry';
 import { registerDefaultComponents } from './core/defaultCatalog';
 
 import { CATALOG_ID } from './core/constants';
@@ -26,6 +26,12 @@ export interface A2UiVueRendererOptions {
    * ```
    */
   components?: Record<string, any>;
+  /**
+   * A registry for this app instead of the shared {@link defaultRegistry}. The plugin fills it
+   * with the built-in components and `components`, and provides it under `A2UI_REGISTRY_KEY`, so
+   * two Vue apps on one page do not see each other's custom components.
+   */
+  registry?: ComponentRegistry;
 }
 
 /**
@@ -51,10 +57,15 @@ export const A2UiVueRenderer: Plugin = {
     app.component('A2uiProvider', A2UIProvider);
     app.component('A2uiComponentNode', ComponentNode);
 
-    registerDefaultComponents();
+    const registry = options?.registry ?? defaultRegistry;
+    registerDefaultComponents(registry);
 
     if (options?.components) {
-      defaultRegistry.registerAll(CATALOG_ID, options.components);
+      registry.registerAll(CATALOG_ID, options.components);
+    }
+    // ComponentNode falls back to defaultRegistry on its own; only an app registry needs providing.
+    if (options?.registry) {
+      app.provide(A2UI_REGISTRY_KEY, options.registry);
     }
   },
 };
