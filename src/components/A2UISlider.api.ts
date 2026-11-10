@@ -4,7 +4,7 @@
  */
 import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
+import type { ProtocolKit } from '../protocol/kits';
 
 /** Builds the Slider API for one protocol family; see {@link ProtocolKit}. */
 export function buildSliderApi(kit: ProtocolKit): ComponentApi {
@@ -26,6 +26,3 @@ export function buildSliderApi(kit: ProtocolKit): ComponentApi {
       .describe('A slider for picking one number between min and max.'),
   };
 }
-
-/** The Slider API for A2UI v0.9 / v0.9.1. */
-export const SliderApi: ComponentApi = buildSliderApi(A2UI_V09);

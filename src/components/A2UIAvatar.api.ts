@@ -4,7 +4,7 @@
  */
 import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
+import type { ProtocolKit } from '../protocol/kits';
 
 /** Builds the Avatar API for one protocol family; see {@link ProtocolKit}. */
 export function buildAvatarApi(kit: ProtocolKit): ComponentApi {
@@ -23,6 +23,3 @@ export function buildAvatarApi(kit: ProtocolKit): ComponentApi {
       .describe('A round image, initials or icon representing a person or entity.'),
   };
 }
-
-/** The Avatar API for A2UI v0.9 / v0.9.1. */
-export const AvatarApi: ComponentApi = buildAvatarApi(A2UI_V09);

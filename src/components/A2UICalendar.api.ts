@@ -4,7 +4,7 @@
  */
 import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
+import type { ProtocolKit } from '../protocol/kits';
 
 /** Builds the Calendar API for one protocol family; see {@link ProtocolKit}. */
 export function buildCalendarApi(kit: ProtocolKit): ComponentApi {
@@ -37,6 +37,3 @@ export function buildCalendarApi(kit: ProtocolKit): ComponentApi {
       .describe('A month, week or day calendar showing events; clicking a date selects it.'),
   };
 }
-
-/** The Calendar API for A2UI v0.9 / v0.9.1. */
-export const CalendarApi: ComponentApi = buildCalendarApi(A2UI_V09);

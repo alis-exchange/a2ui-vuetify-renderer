@@ -4,7 +4,7 @@
  */
 import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
+import type { ProtocolKit } from '../protocol/kits';
 
 /** Builds the Checkbox API for one protocol family; see {@link ProtocolKit}. */
 export function buildCheckboxApi(kit: ProtocolKit): ComponentApi {
@@ -24,6 +24,3 @@ export function buildCheckboxApi(kit: ProtocolKit): ComponentApi {
       .describe('A single on/off checkbox bound to a boolean.'),
   };
 }
-
-/** The Checkbox API for A2UI v0.9 / v0.9.1. */
-export const CheckboxApi: ComponentApi = buildCheckboxApi(A2UI_V09);

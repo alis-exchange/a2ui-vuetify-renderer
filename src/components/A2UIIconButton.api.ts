@@ -4,7 +4,7 @@
  */
 import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
+import type { ProtocolKit } from '../protocol/kits';
 
 /** Builds the IconButton API for one protocol family; see {@link ProtocolKit}. */
 export function buildIconButtonApi(kit: ProtocolKit): ComponentApi {
@@ -24,6 +24,3 @@ export function buildIconButtonApi(kit: ProtocolKit): ComponentApi {
       .describe('A compact button showing only an icon that runs an action.'),
   };
 }
-
-/** The IconButton API for A2UI v0.9 / v0.9.1. */
-export const IconButtonApi: ComponentApi = buildIconButtonApi(A2UI_V09);

@@ -65,7 +65,7 @@ describe('generate-catalog.ts', () => {
     }
   });
 
-  it('should fail if components in defaultCatalog.ts do not match catalog components', { timeout: 30_000 }, () => {
+  it('should fail if a generated catalog does not list every built-in component', { timeout: 30_000 }, () => {
     expect(() => {
       execSync(`npx tsx ${scriptPath} --test-fail`, { cwd: rootDir, stdio: 'pipe' });
     }).toThrow();

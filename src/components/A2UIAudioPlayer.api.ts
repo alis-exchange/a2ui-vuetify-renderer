@@ -4,7 +4,7 @@
  */
 import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
+import type { ProtocolKit } from '../protocol/kits';
 
 /** Builds the AudioPlayer API for one protocol family; see {@link ProtocolKit}. */
 export function buildAudioPlayerApi(kit: ProtocolKit): ComponentApi {
@@ -25,6 +25,3 @@ export function buildAudioPlayerApi(kit: ProtocolKit): ComponentApi {
       .describe('An audio player for a URL.'),
   };
 }
-
-/** The AudioPlayer API for A2UI v0.9 / v0.9.1. */
-export const AudioPlayerApi: ComponentApi = buildAudioPlayerApi(A2UI_V09);

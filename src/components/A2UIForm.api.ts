@@ -4,7 +4,7 @@
  */
 import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
+import type { ProtocolKit } from '../protocol/kits';
 
 /** Builds the Form API for one protocol family; see {@link ProtocolKit}. */
 export function buildFormApi(kit: ProtocolKit): ComponentApi {
@@ -21,6 +21,3 @@ export function buildFormApi(kit: ProtocolKit): ComponentApi {
       .describe('A container that groups related input components into one form.'),
   };
 }
-
-/** The Form API for A2UI v0.9 / v0.9.1. */
-export const FormApi: ComponentApi = buildFormApi(A2UI_V09);

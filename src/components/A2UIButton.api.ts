@@ -4,7 +4,7 @@
  */
 import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
+import type { ProtocolKit } from '../protocol/kits';
 
 /** Builds the Button API for one protocol family; see {@link ProtocolKit}. */
 export function buildButtonApi(kit: ProtocolKit): ComponentApi {
@@ -29,6 +29,3 @@ export function buildButtonApi(kit: ProtocolKit): ComponentApi {
       .describe('A clickable button with a label, text and/or icon that runs an action; disabled while its checks fail.'),
   };
 }
-
-/** The Button API for A2UI v0.9 / v0.9.1. */
-export const ButtonApi: ComponentApi = buildButtonApi(A2UI_V09);

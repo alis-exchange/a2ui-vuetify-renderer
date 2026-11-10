@@ -1,3 +1,5 @@
+import type { Component } from 'vue';
+import type { VuetifyComponentName } from '../catalog/vuetify-components';
 import A2UIAlert from '../components/A2UIAlert.vue';
 import A2UIAudioPlayer from '../components/A2UIAudioPlayer.vue';
 import A2UIAutocomplete from '../components/A2UIAutocomplete.vue';
@@ -42,6 +44,54 @@ import { defaultRegistry, type ComponentRegistry } from './ComponentRegistry';
 import { CATALOG_ID } from './constants';
 
 /**
+ * The Vue component for each built-in A2UI type. Typed against {@link VuetifyComponentName}, the
+ * keys of `COMPONENT_BUILDERS`, so a component with a schema but no Vue implementation (or the
+ * reverse) fails to compile.
+ */
+const BUILT_IN_COMPONENTS = {
+  Text: A2UIText,
+  Image: A2UIImage,
+  Icon: A2UIIcon,
+  Divider: A2UIDivider,
+  Row: A2UIRow,
+  Column: A2UIColumn,
+  Card: A2UICard,
+  Button: A2UIButton,
+  IconButton: A2UIIconButton,
+  TextField: A2UITextField,
+  TextArea: A2UITextArea,
+  NumberInput: A2UINumberInput,
+  Checkbox: A2UICheckbox,
+  RadioButton: A2UIRadioButton,
+  Select: A2UISelect,
+  Autocomplete: A2UIAutocomplete,
+  Combobox: A2UICombobox,
+  Slider: A2UISlider,
+  RangeSlider: A2UIRangeSlider,
+  DatePicker: A2UIDatePicker,
+  TimePicker: A2UITimePicker,
+  FileInput: A2UIFileInput,
+  Form: A2UIForm,
+  List: A2UIList,
+  Table: A2UITable,
+  TreeView: A2UITreeView,
+  Calendar: A2UICalendar,
+  Alert: A2UIAlert,
+  Badge: A2UIBadge,
+  Banner: A2UIBanner,
+  Rating: A2UIRating,
+  EmptyState: A2UIEmptyState,
+  ExpansionPanel: A2UIExpansionPanel,
+  Chip: A2UIChip,
+  Avatar: A2UIAvatar,
+  Tabs: A2UITabs,
+  Modal: A2UIModal,
+  Video: A2UIVideo,
+  AudioPlayer: A2UIAudioPlayer,
+  ChoicePicker: A2UIChoicePicker,
+} satisfies Record<VuetifyComponentName, Component>;
+
+/**
  * Registers all built-in Vuetify-backed A2UI components into a registry, the shared
  * {@link defaultRegistry} unless another is given.
  *
@@ -55,46 +105,5 @@ import { CATALOG_ID } from './constants';
  * @param registry - The registry to fill. Defaults to {@link defaultRegistry}.
  */
 export function registerDefaultComponents(registry: ComponentRegistry = defaultRegistry) {
-  registry.registerAll(CATALOG_ID, {
-    Text: A2UIText,
-    Image: A2UIImage,
-    Icon: A2UIIcon,
-    Divider: A2UIDivider,
-    Row: A2UIRow,
-    Column: A2UIColumn,
-    Card: A2UICard,
-    Button: A2UIButton,
-    IconButton: A2UIIconButton,
-    TextField: A2UITextField,
-    TextArea: A2UITextArea,
-    NumberInput: A2UINumberInput,
-    Checkbox: A2UICheckbox,
-    RadioButton: A2UIRadioButton,
-    Select: A2UISelect,
-    Autocomplete: A2UIAutocomplete,
-    Combobox: A2UICombobox,
-    Slider: A2UISlider,
-    RangeSlider: A2UIRangeSlider,
-    DatePicker: A2UIDatePicker,
-    TimePicker: A2UITimePicker,
-    FileInput: A2UIFileInput,
-    Form: A2UIForm,
-    List: A2UIList,
-    Table: A2UITable,
-    TreeView: A2UITreeView,
-    Calendar: A2UICalendar,
-    Alert: A2UIAlert,
-    Badge: A2UIBadge,
-    Banner: A2UIBanner,
-    Rating: A2UIRating,
-    EmptyState: A2UIEmptyState,
-    ExpansionPanel: A2UIExpansionPanel,
-    Chip: A2UIChip,
-    Avatar: A2UIAvatar,
-    Tabs: A2UITabs,
-    Modal: A2UIModal,
-    Video: A2UIVideo,
-    AudioPlayer: A2UIAudioPlayer,
-    ChoicePicker: A2UIChoicePicker,
-  });
+  registry.registerAll(CATALOG_ID, BUILT_IN_COMPONENTS);
 }

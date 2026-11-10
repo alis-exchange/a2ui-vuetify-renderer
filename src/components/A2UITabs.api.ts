@@ -4,7 +4,7 @@
  */
 import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
+import type { ProtocolKit } from '../protocol/kits';
 
 /** Builds the Tabs API for one protocol family; see {@link ProtocolKit}. */
 export function buildTabsApi(kit: ProtocolKit): ComponentApi {
@@ -31,6 +31,3 @@ export function buildTabsApi(kit: ProtocolKit): ComponentApi {
       .describe('Tabbed sections: each tab has a title and one child shown when selected.'),
   };
 }
-
-/** The Tabs API for A2UI v0.9 / v0.9.1. */
-export const TabsApi: ComponentApi = buildTabsApi(A2UI_V09);

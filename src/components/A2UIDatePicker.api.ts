@@ -4,7 +4,7 @@
  */
 import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
+import type { ProtocolKit } from '../protocol/kits';
 
 /** Builds the DatePicker API for one protocol family; see {@link ProtocolKit}. */
 export function buildDatePickerApi(kit: ProtocolKit): ComponentApi {
@@ -32,6 +32,3 @@ export function buildDatePickerApi(kit: ProtocolKit): ComponentApi {
       .describe('A calendar-style date picker bound to an ISO date (or dates with multiple).'),
   };
 }
-
-/** The DatePicker API for A2UI v0.9 / v0.9.1. */
-export const DatePickerApi: ComponentApi = buildDatePickerApi(A2UI_V09);

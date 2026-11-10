@@ -4,7 +4,7 @@
  */
 import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
+import type { ProtocolKit } from '../protocol/kits';
 
 /** Builds the ChoicePicker API for one protocol family; see {@link ProtocolKit}. */
 export function buildChoicePickerApi(kit: ProtocolKit): ComponentApi {
@@ -31,6 +31,3 @@ export function buildChoicePickerApi(kit: ProtocolKit): ComponentApi {
       .describe('Picks one or several options, shown as a dropdown (default), a list of radio buttons (list, single choice) or a row of segmented buttons (segmented).'),
   };
 }
-
-/** The ChoicePicker API for A2UI v0.9 / v0.9.1. */
-export const ChoicePickerApi: ComponentApi = buildChoicePickerApi(A2UI_V09);

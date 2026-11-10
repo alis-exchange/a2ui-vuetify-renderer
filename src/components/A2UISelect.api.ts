@@ -4,7 +4,7 @@
  */
 import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
+import type { ProtocolKit } from '../protocol/kits';
 
 /** Builds the Select API for one protocol family; see {@link ProtocolKit}. */
 export function buildSelectApi(kit: ProtocolKit): ComponentApi {
@@ -28,6 +28,3 @@ export function buildSelectApi(kit: ProtocolKit): ComponentApi {
       .describe('A dropdown for picking one option, or several with variant multipleSelection, from a fixed list.'),
   };
 }
-
-/** The Select API for A2UI v0.9 / v0.9.1. */
-export const SelectApi: ComponentApi = buildSelectApi(A2UI_V09);

@@ -51,11 +51,11 @@ renderer/
 │   │   ├── constants.ts               # CATALOG_ID, CATALOG_ID_V1
 │   │   ├── catalogDocumentV1.ts       # buildCatalogDocumentV1(apis): the v1.0 document via Catalog.toJson()
 │   │   ├── zodToCatalogJson.ts        # Zod → inline JSON Schema for the v0.9 document (collapses FunctionCall args)
-│   │   ├── defaultCatalog.ts          # Registers 40 default components
+│   │   ├── defaultCatalog.ts          # BUILT_IN_COMPONENTS (typed against COMPONENT_BUILDERS) + registerDefaultComponents(registry?)
 │   │   └── getCatalogSchema.ts        # Merges base JSON Schema + custom stubs; supports filtering
 │   ├── components/
 │   │   ├── A2UI*.vue                  # 40 Vuetify-backed component implementations
-│   │   └── A2UI*.api.ts               # build<Name>Api(kit) + <Name>Api (v0.9): each schema written once
+│   │   └── A2UI*.api.ts               # build<Name>Api(kit): each schema written once, built per protocol
 │   ├── protocol/
 │   │   ├── kits.ts                    # A2UI_V09 / A2UI_V10: web_core schemas per protocol family
 │   │   ├── version.ts                 # isV10Surface(surface)
@@ -109,7 +109,7 @@ All public API is exported from this barrel. If you add a new public symbol, it 
 ### 5.2 Vue Plugin (`A2UIRendererPlugin.ts`)
 
 - Globally registers `<A2uiProvider>` and `<A2uiComponentNode>`
-- Calls `registerDefaultComponents()` to fill `defaultRegistry`
+- Calls `registerDefaultComponents(registry)` to fill `defaultRegistry`, or the app's own registry when the `registry` option is given (then provided under `A2UI_REGISTRY_KEY`)
 - Accepts optional `components` map for user overrides, merged via `registerAll`
 
 ### 5.3 A2UIProvider (`composables/A2UIProvider.vue`)
@@ -147,7 +147,7 @@ A double-keyed map: `Map<catalogId, Map<typeName, Component>>` with a parallel m
 - `has(catalogId, type)` → boolean
 - `keys(catalogId)` → `string[]`
 
-The singleton `defaultRegistry` is pre-populated by `registerDefaultComponents()`.
+The shared `defaultRegistry` is filled by `registerDefaultComponents()`; pass another registry (`registerDefaultComponents(myRegistry)`, or the plugin's `registry` option) to keep an app's components separate.
 
 ### 5.6 useA2UI composable (`composables/useA2UI.ts`)
 
@@ -223,7 +223,7 @@ Run `pnpm generate:catalog` (executes `scripts/generate-catalog.ts`):
 1. Reads Zod schemas from `VUETIFY_COMPONENTS` and `VUETIFY_FUNCTIONS`
 2. Converts each to JSON Schema via `zodToJsonSchema`
 3. Merges with shared `$defs` and `ComponentCommon` / `CatalogComponentCommon` refs
-4. Validates that every key in the generated catalog matches a registered component in `defaultCatalog.ts` (and vice versa). Exits non-zero on mismatch.
+4. Validates that every key in the generated catalog matches `COMPONENT_BUILDERS` (and vice versa). Exits non-zero on mismatch. The Vue side needs no check here: `defaultCatalog.ts` is typed against the same names, so it fails to compile when out of sync.
 5. Writes to `catalog/vuetify-catalog.json`
 6. Builds the v1.0 document from `VUETIFY_COMPONENTS_V1` / `VUETIFY_FUNCTIONS_V1`, loads it back with `Catalog.fromJson(doc, '1.0')` as validation, checks it against the registry and writes `catalog/vuetify-catalog.v1.json`
 
@@ -231,9 +231,9 @@ Run `pnpm generate:catalog` (executes `scripts/generate-catalog.ts`):
 
 Whenever you add/remove a component:
 1. Create/delete the `.vue` file in `src/components/`
-2. Add/remove `src/components/A2UI<Name>.api.ts` (`build<Name>Api(kit)` + `<Name>Api`) and list both in `src/catalog/vuetify-components.ts` (`VUETIFY_COMPONENTS` and `BUILDERS`, same order)
-3. Add/remove the registration in `src/core/defaultCatalog.ts`
-4. Run `pnpm generate:catalog` — it will error if things are out of sync
+2. Add/remove `src/components/A2UI<Name>.api.ts` (`build<Name>Api(kit)`) and its entry in `COMPONENT_BUILDERS` (`src/catalog/vuetify-components.ts`, the one list of built-ins)
+3. Add/remove the Vue component in `BUILT_IN_COMPONENTS` (`src/core/defaultCatalog.ts`); `vue-tsc` fails until steps 2 and 3 agree
+4. Run `pnpm generate:catalog`
 5. Update tests
 
 ---
@@ -377,8 +377,8 @@ ESLint 9 flat config with:
 ### Adding a new default component
 
 1. Create `src/components/A2UI<Name>.vue` following the pattern in §7.3
-2. Write `src/components/A2UI<Name>.api.ts` as `build<Name>Api(kit)` (kit schemas only, own props first, `...kit.commonProps` last, `.strict().describe('…')`) plus `<Name>Api = build<Name>Api(A2UI_V09)`, and add both to `src/catalog/vuetify-components.ts`
-3. Import and register in `src/core/defaultCatalog.ts` inside `registerDefaultComponents()`
+2. Write `src/components/A2UI<Name>.api.ts` as `build<Name>Api(kit)` (kit schemas only, own props first, `...kit.commonProps` last, `.strict().describe('…')`) and add it to `COMPONENT_BUILDERS` in `src/catalog/vuetify-components.ts`
+3. Add the Vue component to `BUILT_IN_COMPONENTS` in `src/core/defaultCatalog.ts` (the compiler requires it once step 2 is done)
 4. Run `pnpm generate:catalog` — it will validate alignment with the registry
 5. Add tests (either in an existing grouped spec or a focused one)
 6. Run `pnpm test` to confirm

@@ -4,7 +4,7 @@
  */
 import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
+import type { ProtocolKit } from '../protocol/kits';
 
 /** Builds the Row API for one protocol family; see {@link ProtocolKit}. */
 export function buildRowApi(kit: ProtocolKit): ComponentApi {
@@ -23,6 +23,3 @@ export function buildRowApi(kit: ProtocolKit): ComponentApi {
       .describe('Lays children out horizontally; use weight on a child to share free space.'),
   };
 }
-
-/** The Row API for A2UI v0.9 / v0.9.1. */
-export const RowApi: ComponentApi = buildRowApi(A2UI_V09);

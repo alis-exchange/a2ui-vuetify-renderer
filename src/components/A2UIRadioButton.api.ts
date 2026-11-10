@@ -4,7 +4,7 @@
  */
 import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
+import type { ProtocolKit } from '../protocol/kits';
 
 /** Builds the RadioButton API for one protocol family; see {@link ProtocolKit}. */
 export function buildRadioButtonApi(kit: ProtocolKit): ComponentApi {
@@ -32,6 +32,3 @@ export function buildRadioButtonApi(kit: ProtocolKit): ComponentApi {
       .describe('A group of radio buttons for picking exactly one option, all options visible.'),
   };
 }
-
-/** The RadioButton API for A2UI v0.9 / v0.9.1. */
-export const RadioButtonApi: ComponentApi = buildRadioButtonApi(A2UI_V09);

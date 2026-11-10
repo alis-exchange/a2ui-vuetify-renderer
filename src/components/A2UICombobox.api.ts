@@ -4,7 +4,7 @@
  */
 import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
+import type { ProtocolKit } from '../protocol/kits';
 
 /** Builds the Combobox API for one protocol family; see {@link ProtocolKit}. */
 export function buildComboboxApi(kit: ProtocolKit): ComponentApi {
@@ -27,6 +27,3 @@ export function buildComboboxApi(kit: ProtocolKit): ComponentApi {
       .describe('A dropdown that suggests options but also accepts free text the user types.'),
   };
 }
-
-/** The Combobox API for A2UI v0.9 / v0.9.1. */
-export const ComboboxApi: ComponentApi = buildComboboxApi(A2UI_V09);

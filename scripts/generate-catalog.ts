@@ -2,7 +2,7 @@ import { Catalog } from '@a2ui/web_core/v1_0';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { VUETIFY_COMPONENTS, VUETIFY_COMPONENTS_V1 } from '../src/catalog/vuetify-components';
+import { COMPONENT_BUILDERS, VUETIFY_COMPONENTS, VUETIFY_COMPONENTS_V1 } from '../src/catalog/vuetify-components';
 import { VUETIFY_FUNCTIONS, VUETIFY_FUNCTIONS_V1 } from '../src/catalog/vuetify-functions';
 import { buildCatalogDocumentV1 } from '../src/core/catalogDocumentV1';
 import { zodToCatalogJson } from '../src/core/zodToCatalogJson';
@@ -187,38 +187,9 @@ function buildFunctions(): Record<string, any> {
 // Validation — ensure generated catalog matches registered Vue components
 // ---------------------------------------------------------------------------
 
-function getRegisteredComponents(): string[] {
-  const defaultCatalogPath = path.join(rootDir, 'src', 'core', 'defaultCatalog.ts');
-  if (!fs.existsSync(defaultCatalogPath)) {
-    throw new Error(`Could not find defaultCatalog.ts at ${defaultCatalogPath}`);
-  }
-
-  const content = fs.readFileSync(defaultCatalogPath, 'utf-8');
-
-  const match = content.match(/\w+\.registerAll\([^,]+,\s*\{([\s\S]*?)\}\s*\);?/);
-  if (!match) {
-    throw new Error('Could not parse defaultRegistry.registerAll call in defaultCatalog.ts');
-  }
-
-  const objectBody = match[1];
-  const keys: string[] = [];
-
-  const lines = objectBody.split('\n');
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('//')) continue;
-
-    const parts = trimmed.split(':');
-    if (parts.length > 1) {
-      keys.push(parts[0].trim());
-    }
-  }
-
-  return keys;
-}
-
 function validateCatalog(catalogComponents: Record<string, any>, label = 'v0.9'): void {
-  const registeredKeys = getRegisteredComponents();
+  // defaultCatalog.ts is type-checked against COMPONENT_BUILDERS, so its keys are the registry's.
+  const registeredKeys = Object.keys(COMPONENT_BUILDERS);
   const catalogKeys = Object.keys(catalogComponents);
 
   if (process.argv.includes('--test-fail')) {
@@ -229,7 +200,7 @@ function validateCatalog(catalogComponents: Record<string, any>, label = 'v0.9')
   const extraInCatalog = catalogKeys.filter((k) => !registeredKeys.includes(k));
 
   if (missingInCatalog.length > 0 || extraInCatalog.length > 0) {
-    console.error(`Validation Error: ${label} catalog components do not match registered components in defaultCatalog.ts`);
+    console.error(`Validation Error: ${label} catalog components do not match the built-in components`);
     if (missingInCatalog.length > 0) {
       console.error(`Missing in catalog schema: ${missingInCatalog.join(', ')}`);
     }

@@ -4,7 +4,7 @@
  */
 import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
+import type { ProtocolKit } from '../protocol/kits';
 
 /** Builds the TextField API for one protocol family; see {@link ProtocolKit}. */
 export function buildTextFieldApi(kit: ProtocolKit): ComponentApi {
@@ -25,6 +25,3 @@ export function buildTextFieldApi(kit: ProtocolKit): ComponentApi {
       .describe('A single-line text input bound to the data model.'),
   };
 }
-
-/** The TextField API for A2UI v0.9 / v0.9.1. */
-export const TextFieldApi: ComponentApi = buildTextFieldApi(A2UI_V09);

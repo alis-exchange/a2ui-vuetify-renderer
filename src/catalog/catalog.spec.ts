@@ -2,9 +2,9 @@ import { A2uiValidationError, Catalog, MessageProcessor, scrapeSchemaBehavior, t
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CATALOG_ID, CATALOG_ID_V1 } from '../core/constants';
 import { zodToCatalogJson } from '../core/zodToCatalogJson';
-import { A2UI_V09 } from '../protocol/kits';
+import { A2UI_V09, A2UI_V10 } from '../protocol/kits';
 import { VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA } from './index';
-import { buildVuetifyComponents, VUETIFY_COMPONENTS_V1 } from './vuetify-components';
+import { buildVuetifyComponents, COMPONENT_BUILDERS, VUETIFY_COMPONENTS_V1 } from './vuetify-components';
 
 /**
  * Pins down how @a2ui/web_core (>= 0.10.6) treats the Vuetify catalog: every component in an
@@ -90,9 +90,16 @@ describe('Vuetify catalog under MessageProcessor validation', () => {
 });
 
 describe('one schema source, built per protocol', () => {
-  it('builds exactly today’s v0.9 schemas from the v0.9 kit', () => {
+  it('keys every builder by the type name it builds', () => {
+    for (const [name, build] of Object.entries(COMPONENT_BUILDERS)) {
+      expect(build(A2UI_V09).name).toBe(name);
+      expect(build(A2UI_V10).name).toBe(name);
+    }
+  });
+
+  it('builds the published v0.9 component list from the v0.9 kit', () => {
     const rebuilt = buildVuetifyComponents(A2UI_V09);
-    expect(rebuilt.map((api) => api.name)).toEqual(VUETIFY_COMPONENTS.map((api) => api.name));
+    expect(rebuilt.map((api) => api.name)).toEqual(Object.keys(COMPONENT_BUILDERS));
     rebuilt.forEach((api, i) => expect(zodToCatalogJson(api.schema), api.name).toEqual(zodToCatalogJson(VUETIFY_COMPONENTS[i].schema)));
   });
 

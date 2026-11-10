@@ -4,7 +4,7 @@
  */
 import type { ComponentApi } from '@a2ui/web_core/v0_9';
 import { z } from 'zod';
-import { A2UI_V09, type ProtocolKit } from '../protocol/kits';
+import type { ProtocolKit } from '../protocol/kits';
 
 /** Builds the TimePicker API for one protocol family; see {@link ProtocolKit}. */
 export function buildTimePickerApi(kit: ProtocolKit): ComponentApi {
@@ -23,6 +23,3 @@ export function buildTimePickerApi(kit: ProtocolKit): ComponentApi {
       .describe('A time input bound to a HH:MM value.'),
   };
 }
-
-/** The TimePicker API for A2UI v0.9 / v0.9.1. */
-export const TimePickerApi: ComponentApi = buildTimePickerApi(A2UI_V09);
