@@ -27,10 +27,10 @@
   ```
 -->
 <script setup lang="ts">
-  import { ResolvedBinding, effect, getValue, type ComponentNode as A2uiNode, type NodeProps } from '@a2ui/web_core/v0_9';
+  import { ResolvedBinding, effect, getValue, scrapeSchemaBehavior, type ComponentNode as A2uiNode, type NodeProps } from '@a2ui/web_core/v0_9';
   import { computed, inject, onUnmounted, provide, shallowRef, watch } from 'vue';
   import { A2UI_CONTEXT_KEY } from '../composables/useA2UI';
-  import { findLegacyBindings } from '../protocol/legacyBindings';
+  import { findLegacyBindings, type SchemaBehavior } from '../protocol/legacyBindings';
   import { isV10Surface } from '../protocol/version';
   import { A2UI_REGISTRY_KEY, ComponentRegistry, defaultRegistry } from './ComponentRegistry';
   import { CATALOG_ID } from './constants';
@@ -158,7 +158,9 @@
     (model) => {
       if (!model || checkedForLegacyBindings.has(model.properties) || !isV10Surface(surface.value)) return;
       checkedForLegacyBindings.add(model.properties);
-      const pointers = findLegacyBindings(model.properties);
+      // Only binding slots count: elsewhere a { path } object is ordinary data in v1.0.
+      const schema = model.catalog?.components?.get(model.type)?.schema;
+      const pointers = schema ? findLegacyBindings(model.properties, scrapeSchemaBehavior(schema) as SchemaBehavior) : [];
       if (pointers.length === 0) return;
       void surface.value.dispatchError?.({
         code: 'VALIDATION_FAILED',
