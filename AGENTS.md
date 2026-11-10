@@ -6,7 +6,7 @@
 
 ## 1. What This Project Is
 
-A **rendering library** (not an application). It consumes a JSONL stream of A2UI messages (`createSurface`, `updateComponents`, `updateDataModel`, `deleteSurface`) and turns them into live Vuetify UI. Protocol parsing, state management, and data binding are delegated to `@a2ui/web_core` v0.9; this package provides the Vue component layer on top.
+A **rendering library** (not an application). It consumes a JSONL stream of A2UI messages (`createSurface`, `updateComponents`, `updateDataModel`, `deleteSurface`) and turns them into live Vuetify UI. Protocol parsing, state management, and data binding are delegated to `@a2ui/web_core`; this package provides the Vue component layer on top. It speaks A2UI **v0.9, v0.9.1 and v1.0** with one set of 40 components: only the component schemas and the catalog document are built per version (see §5.12).
 
 ```
 Agent → JSONL stream → @a2ui/web_core (MessageProcessor) → Vue reactivity bridge → Vuetify 4 components
@@ -21,10 +21,11 @@ The library ships ESM, UMD, TypeScript declarations, and a CSS export. Host apps
 ```
 renderer/
 ├── catalog/
-│   └── vuetify-catalog.json          # Generated JSON Schema consumed by agents / tooling
+│   ├── vuetify-catalog.json          # Generated v0.9 catalog (hand-assembled from Zod), consumed by agents / tooling
+│   └── vuetify-catalog.v1.json       # Generated v1.0 catalog (web_core Catalog.toJson())
 ├── examples/client/                   # Vite playground app for manual testing
 ├── scripts/
-│   ├── generate-catalog.ts            # Builds vuetify-catalog.json from Zod schemas
+│   ├── generate-catalog.ts            # Builds both catalog documents; fails if either disagrees with the registry
 │   └── generate-catalog.spec.ts
 ├── src/
 │   ├── index.ts                       # Public barrel — all exports originate here
@@ -34,23 +35,33 @@ renderer/
 │   ├── style.css                      # Minimal base styles
 │   ├── catalog/
 │   │   ├── index.ts                   # Re-exports components, functions, theme
-│   │   ├── vuetify-components.ts      # Zod-based ComponentApi for every component
-│   │   ├── vuetify-functions.ts       # createVuetifyFunctions({ locale }): basic catalog + Vuetify openUrl (http/https/mailto/tel)
+│   │   ├── vuetify-components.ts      # VUETIFY_COMPONENTS (v0.9), VUETIFY_COMPONENTS_V1, buildVuetifyComponents(kit)
+│   │   ├── vuetify-functions.ts       # createVuetifyFunctions({ locale, protocol }): basic catalog + Vuetify openUrl (http/https/mailto/tel)
 │   │   └── vuetify-theme.ts           # Zod theme schema for Catalog constructor
 │   ├── composables/
 │   │   ├── A2UIProvider.vue           # Context provider + Vuetify theme bridge
 │   │   ├── useA2UI.ts                 # Core composable: resolveValue<V>, sendAction, setData, etc.
+│   │   ├── useBinding.ts              # Two-way binding through the binder's setters (any protocol version)
+│   │   ├── useChecks.ts               # checks → Vuetify rules + binder isValid / validationErrors
 │   │   └── useDynamicProps.ts         # Resolves all node properties through resolveValue
 │   ├── core/
 │   │   ├── ComponentNode.vue          # Recursive renderer (<component :is="...">)
 │   │   ├── ComponentRegistry.ts       # Map<catalogId, Map<type, Component>>
 │   │   ├── catalogFilters.ts          # Predicate helpers for getCatalogSchema filtering
-│   │   ├── constants.ts               # CATALOG_ID constant
+│   │   ├── constants.ts               # CATALOG_ID, CATALOG_ID_V1
+│   │   ├── catalogDocumentV1.ts       # buildCatalogDocumentV1(apis): the v1.0 document via Catalog.toJson()
+│   │   ├── zodToCatalogJson.ts        # Zod → inline JSON Schema for the v0.9 document (collapses FunctionCall args)
 │   │   ├── defaultCatalog.ts          # Registers 40 default components
 │   │   └── getCatalogSchema.ts        # Merges base JSON Schema + custom stubs; supports filtering
 │   ├── components/
-│   │   └── A2UI*.vue                  # 40 Vuetify-backed component implementations
+│   │   ├── A2UI*.vue                  # 40 Vuetify-backed component implementations
+│   │   └── A2UI*.api.ts               # build<Name>Api(kit) + <Name>Api (v0.9): each schema written once
+│   ├── protocol/
+│   │   ├── kits.ts                    # A2UI_V09 / A2UI_V10: web_core schemas per protocol family
+│   │   ├── version.ts                 # isV10Surface(surface)
+│   │   └── legacyBindings.ts          # findLegacyBindings: v0.9 { path } / { call } on a v1.0 surface
 │   └── utils/
+│       ├── mediaUrl.ts                # safeMediaUrl: the A2UI media URL rule (Image, Avatar, Video, AudioPlayer)
 │       └── validation.ts              # A2UI checks ({ condition, message }) → Vuetify rule functions
 ├── vite.config.ts                     # Library-mode build config
 ├── vitest.config.ts                   # Test config (jsdom, vuetify inlined)
@@ -108,8 +119,9 @@ All public API is exported from this barrel. If you add a new public symbol, it 
 - Subscribes to `processor.model.onSurfaceCreated` / `onSurfaceDeleted` (the only lifecycle events web_core emits; `MessageProcessor` is not an `EventTarget`). When the surface exists it creates one `NodeResolver(surface, surface.defaultCatalog)` (`catalog` is a deprecated alias since web_core 0.12), exposed as `context.resolver`, and disposes it on delete/unmount.
 - Both handlers check the model rather than trusting the event. `EventEmitter.emit` awaits each listener, so a handler can run a microtask late: a `deleted` that arrives after the surface was recreated would otherwise dispose the live resolver, and a provider that mounts mid-emit would attach the same surface twice. `deleted` is ignored while `model.getSurface(id)` still returns a surface; `created` is ignored when it names the surface already attached.
 - The `NodeResolver` constructor builds the tree eagerly, so an unbindable surface throws there. That is caught and reported through `onError`, leaving the subtree on the static path — without it the throw escapes `setup()` and the provider renders nothing whenever the surface already existed at mount. Note the asymmetry that remains: the same bad binding arriving *after* mount is swallowed by web_core's emitter and never reaches `onError`.
+- A v1.0 surface always gets a `NodeResolver`, even with `nodeResolver=false` (the legacy path only understands v0.9; it warns once), and even with no default catalog (v1.0 `createSurface` may omit `catalogId`; each component names its own).
 - Forwards `surface.onError` events to `onError` (or `console.error`).
-- Reads `surface.theme` and dynamically creates a scoped Vuetify theme (`v-theme-provider`) mapping `primaryColor`, `errorColor`, `backgroundColor`, `surfaceColor` to Vuetify color tokens. Cleans up the theme on unmount.
+- Reads `surface.theme` (v0.9 only: web_core rejects `theme` on a v1.0 `createSurface`) and dynamically creates a scoped Vuetify theme (`v-theme-provider`) mapping `primaryColor`, `errorColor`, `backgroundColor`, `surfaceColor` to Vuetify color tokens. Cleans up the theme on unmount.
 
 ### 5.4 ComponentNode (`core/ComponentNode.vue`)
 
@@ -117,7 +129,8 @@ The recursive heart of the renderer:
 1. Injects `A2UI_CONTEXT_KEY` to get the processor, surface ID, resolver and the parent's `nodeProps`.
 2. Finds its live web_core node: `id="root"` directly under the provider reads `resolver.rootNode`; any other `id` is found with `findLiveNode(parentNodeProps, id, path)` (`core/liveNodes.ts`: single refs, child lists, template items by data path, `tabs[].child`). Containers keep passing ids, which is why none of the 40 components needed changes.
 3. Mirrors the node's `props` signal into a `shallowRef` (`effect` + `getValue`) and provides it as `nodeProps`, with `dataContextPath = node.dataPath`. `resolveValue` / `resolveDynamicChildren` read `nodeProps`, so every computed built on them re-runs when web_core reports a change.
-4. Reads the raw `ComponentModel` from `SurfaceComponentsModel` (components still resolve raw properties one-shot) and resolves the Vue component from the `ComponentRegistry` by type name + `catalogId`.
+4. Reads the raw `ComponentModel` from `SurfaceComponentsModel` (components still resolve raw properties one-shot) and resolves the Vue component from the `ComponentRegistry` by type name + the node's own catalog (`ComponentModel.catalog.id`; v1.0 lets a component choose), falling back to `CATALOG_ID` so a host that named its catalog differently keeps rendering.
+   On a v1.0 surface it also checks each component version once for v0.9 syntax (`findLegacyBindings`) and dispatches a `VALIDATION_FAILED` surface error, because web_core's v1.0 validation lets `{ path }` through and then treats it as a literal.
 5. Renders via `<component :is="resolvedComponent" :node="node">`.
 6. `pending` / `cyclic` nodes render a `[state: id]` placeholder and are swapped in place when resolvable; `unknown-type` nodes still try the registry (custom components outside the catalog), else the red error fallback.
 7. Without a live node (legacy path, `nodeResolver=false`) it falls back to the static lookup by `id`; a missing node renders the orange "Missing node" debug box; `path` scopes descendants.
@@ -125,8 +138,9 @@ The recursive heart of the renderer:
 
 ### 5.5 ComponentRegistry (`core/ComponentRegistry.ts`)
 
-A double-keyed map: `Map<catalogId, Map<typeName, Component>>` with a parallel map for `ComponentApi` schemas. Key methods:
+A double-keyed map: `Map<catalogId, Map<typeName, Component>>` with a parallel map for `ComponentApi` schemas. `CATALOG_ID_V1` is an alias of `CATALOG_ID` for components (one Vue component renders on both versions) while `ComponentApi`s stay per id. Key methods:
 - `register(catalogId, type, component, api?)` — single entry
+- `registerApi(catalogId, type, api)` — a schema only, e.g. the v1.0 one for a component already registered
 - `registerAll(catalogId, components, apis?)` — batch
 - `get(catalogId, type)` → `Component | undefined`
 - `getApi(catalogId, type)` → `ComponentApi | undefined`
@@ -162,6 +176,8 @@ Accepts a `MaybeRefOrGetter<T>` node, returns a `computed` that runs every prope
 
 `getCatalogSchema(registry, catalogId, options?)` deep-clones the base `vuetify-catalog.json`, adds JSON Schema stubs for any registered-but-not-base components (using `ComponentApi` Zod schemas if available), and optionally filters the result via `options.filter`.
 
+For `CATALOG_ID_V1` it instead rebuilds the v1.0 document with `buildCatalogDocumentV1` from the built-in v1.0 APIs plus each custom type's registered v1.0 API, applying the filter first so `$defs.anyComponent` matches. A custom type with no v1.0 API is left out with a `console.warn`.
+
 `catalogFilters` provides three convenience predicates:
 - `customOnly` — excludes base catalog keys
 - `only(...names)` — include-list
@@ -176,7 +192,16 @@ Accepts a `MaybeRefOrGetter<T>` node, returns a `computed` that runs every prope
 
 ### 5.11 Catalog functions (`catalog/vuetify-functions.ts`)
 
-`createVuetifyFunctions({ locale })` builds the `FunctionImplementation[]` from web_core's `createBasicCatalogFunctions` and swaps `openUrl` for `VuetifyOpenUrlImplementation` (allows `http:`, `https:`, `mailto:`, `tel:`; everything else throws `A2uiExpressionError` like upstream). It is `allowedCallers: 'rendererOnly'` + `requiresUserActivation: true`: agents cannot call it and bindings/checks cannot evaluate it, only user-triggered actions; `src/nodeResolver.spec.ts` covers the click path. The generator reads both flags off the implementation, so never set them only in the JSON. Replace by name, never append: the generator iterates the array. `VUETIFY_FUNCTIONS` is `createVuetifyFunctions()`.
+`createVuetifyFunctions({ locale, protocol })` builds the `FunctionImplementation[]` from web_core's `createBasicCatalogFunctions` (v0.9, default) or its v1.0 counterpart in `@a2ui/web_core/catalogs/basic/v1` (`protocol: A2UI_V10`: validators return `ValidationResult`s, no legacy math helpers, `@index` included) and swaps `openUrl` for `VuetifyOpenUrlImplementation` (allows `http:`, `https:`, `mailto:`, `tel:`; everything else throws `A2uiExpressionError` like upstream). It is `allowedCallers: 'rendererOnly'` + `requiresUserActivation: true`: agents cannot call it and bindings/checks cannot evaluate it, only user-triggered actions; `src/nodeResolver.spec.ts` covers the click path. The generator reads both flags off the implementation, so never set them only in the JSON. Replace by name, never append: the generator iterates the array. `VUETIFY_FUNCTIONS` is `createVuetifyFunctions()`, `VUETIFY_FUNCTIONS_V1` the v1.0 set with `VuetifyOpenUrlImplementationV1` (same body; keeping `mailto:`/`tel:` on v1.0 goes beyond that spec on purpose).
+
+### 5.12 Protocol versions (`protocol/kits.ts`)
+
+A **protocol kit** (`A2UI_V09` for v0.9 and v0.9.1, `A2UI_V10`) hands a schema builder the web_core building blocks for one family: `/v0_9` and `/v1_0` export them under the same names, so `build<Name>Api(kit)` is written once and validates `{ path }` on v0.9 and `{ "@path" }` on v1.0. `kit.commonProps` is `{ accessibility, weight }` on v0.9 and `{ weight }` on v1.0 (`accessibility`, `catalogId`, `metadata` are envelope keys there and must not be declared; `weight` must). `kit.PathBinding` covers props that accept a bare binding (Icon `name`, RangeSlider `value`). Rules that follow:
+
+- Never read `properties.<prop>.path` or build `{ path }` by hand at runtime: v1.0 treats a bare `{ path }` as a literal. Bind inputs with `useBinding`; when you must build a binding, check `dataContext.atLeastV10` (see `resolveDynamicChildren`).
+- ChildList templates keep the unprefixed `{ componentId, path }` in every version.
+- v0.9.1 needs nothing of its own: web_core accepts `version: "v0.9.1"` against the v0.9 catalog.
+- `src/protocols.spec.ts` runs one surface as v0.9, v0.9.1 and v1.0 through a processor holding both catalogs; extend it when a behaviour should hold on every version.
 
 ---
 
@@ -184,9 +209,9 @@ Accepts a `MaybeRefOrGetter<T>` node, returns a `computed` that runs every prope
 
 Since `@a2ui/web_core` 0.10.6, `MessageProcessor.processMessages` validates every `updateComponents` component against its Zod schema (all Vuetify schemas are `.strict()`) before mutating state and throws `A2uiValidationError` for the whole message on the first failure. `src/catalog/catalog.spec.ts` pins this behaviour.
 
-### 6.1 The JSON Schema (`catalog/vuetify-catalog.json`)
+### 6.1 The JSON Schemas (`catalog/vuetify-catalog.json`, `catalog/vuetify-catalog.v1.json`)
 
-A generated file — **never edit manually**. Contains:
+Generated files — **never edit manually**. The v1.0 document is written by web_core (`Catalog.toJson()` via `buildCatalogDocumentV1`) and references `common_types.json`, so it is a fraction of the size; the v0.9 document below is hand-assembled and must stay byte-stable (`generate-catalog.spec.ts` fails on either being stale). The v0.9 one contains:
 - `$defs` for shared types (`DynamicString`, `ChildList`, `Action`, `ComponentCommon`, `CatalogComponentCommon`, etc.). `checks` is inlined per component from web_core's `CheckRuleSchema` (`{ condition, message }`).
 - `components` map with a JSON Schema entry per A2UI type
 - `functions` array with function schemas
@@ -200,12 +225,13 @@ Run `pnpm generate:catalog` (executes `scripts/generate-catalog.ts`):
 3. Merges with shared `$defs` and `ComponentCommon` / `CatalogComponentCommon` refs
 4. Validates that every key in the generated catalog matches a registered component in `defaultCatalog.ts` (and vice versa). Exits non-zero on mismatch.
 5. Writes to `catalog/vuetify-catalog.json`
+6. Builds the v1.0 document from `VUETIFY_COMPONENTS_V1` / `VUETIFY_FUNCTIONS_V1`, loads it back with `Catalog.fromJson(doc, '1.0')` as validation, checks it against the registry and writes `catalog/vuetify-catalog.v1.json`
 
 ### 6.3 Keeping catalog and components in sync
 
 Whenever you add/remove a component:
 1. Create/delete the `.vue` file in `src/components/`
-2. Add/remove the Zod `ComponentApi` in `src/catalog/vuetify-components.ts` and include it in the `VUETIFY_COMPONENTS` array
+2. Add/remove `src/components/A2UI<Name>.api.ts` (`build<Name>Api(kit)` + `<Name>Api`) and list both in `src/catalog/vuetify-components.ts` (`VUETIFY_COMPONENTS` and `BUILDERS`, same order)
 3. Add/remove the registration in `src/core/defaultCatalog.ts`
 4. Run `pnpm generate:catalog` — it will error if things are out of sync
 5. Update tests
@@ -280,7 +306,8 @@ Tests use **Vitest** with `jsdom` environment and `@vue/test-utils`. Vuetify is 
 | Schema | `getCatalogSchema.spec.ts`, `index.spec.ts` | Schema generation, filtering, barrel exports |
 | Components | `CoreComponents.spec.ts`, `FormInputs.spec.ts`, `SelectionInputs.spec.ts`, `PickersAndSliders.spec.ts`, `DataDisplay.spec.ts`, `LayoutAndMisc.spec.ts`, `Feedback.spec.ts`, `Form.spec.ts`, `DynamicLists.spec.ts` | Grouped specs covering component rendering, props, events |
 | Focused | `A2UITabs.spec.ts`, `A2UIModal.spec.ts`, `A2UIVideo.spec.ts`, `A2UIAudioPlayer.spec.ts`, `A2UIChoicePicker.spec.ts` | Complex components with specific interaction patterns |
-| Utils | `validation.spec.ts` | Check-to-rule conversion |
+| Protocols | `protocols.spec.ts`, `nodeResolver.spec.ts`, `catalog.spec.ts`, `protocol/legacyBindings.spec.ts` | One surface on v0.9 / v0.9.1 / v1.0, binding, checks, openUrl gating, per-version schemas under a real `MessageProcessor` |
+| Utils | `validation.spec.ts`, `mediaUrl.spec.ts`, `MediaUrls.spec.ts` | Check-to-rule conversion (incl. `ValidationResult`), media URL rule |
 | Tooling | `generate-catalog.spec.ts` | Catalog generation validation |
 
 ### 8.3 Running tests
@@ -336,7 +363,9 @@ ESLint 9 flat config with:
 ```json
 {
   ".": { "import": "...", "require": "...", "types": "..." },
-  "./style.css": "./dist/a2ui-vuetify-renderer.css"
+  "./style.css": "./dist/a2ui-vuetify-renderer.css",
+  "./catalog": "./catalog/vuetify-catalog.json",
+  "./catalog/v1": "./catalog/vuetify-catalog.v1.json"
 }
 ```
 
@@ -347,7 +376,7 @@ ESLint 9 flat config with:
 ### Adding a new default component
 
 1. Create `src/components/A2UI<Name>.vue` following the pattern in §7.3
-2. Define a Zod `ComponentApi` in `src/catalog/vuetify-components.ts`, add it to the `VUETIFY_COMPONENTS` array
+2. Write `src/components/A2UI<Name>.api.ts` as `build<Name>Api(kit)` (kit schemas only, `...kit.commonProps`, `.strict()`) plus `<Name>Api = build<Name>Api(A2UI_V09)`, and add both to `src/catalog/vuetify-components.ts`
 3. Import and register in `src/core/defaultCatalog.ts` inside `registerDefaultComponents()`
 4. Run `pnpm generate:catalog` — it will validate alignment with the registry
 5. Add tests (either in an existing grouped spec or a focused one)
@@ -356,13 +385,13 @@ ESLint 9 flat config with:
 ### Adding a custom component (consumer-side)
 
 1. Create the Vue component using `useA2UI()` or `useDynamicProps()`
-2. Optionally define a `ComponentApi` with a Zod schema
-3. Register with `defaultRegistry.register(CATALOG_ID, 'TypeName', component, api?)`
-4. Use `getCatalogSchema(registry, catalogId)` to expose it to the LLM agent
+2. Optionally define its schema as a builder `(kit: ProtocolKit) => ComponentApi`
+3. Register with `defaultRegistry.register(CATALOG_ID, 'TypeName', component, build(A2UI_V09))`, and `defaultRegistry.registerApi(CATALOG_ID_V1, 'TypeName', build(A2UI_V10))` for v1.0
+4. Use `getCatalogSchema(registry, CATALOG_ID)` / `getCatalogSchema(registry, CATALOG_ID_V1)` to expose it to the LLM agent
 
 ### Modifying the catalog schema
 
-**Never edit `catalog/vuetify-catalog.json` by hand.** Change the Zod schemas in `src/catalog/vuetify-components.ts` or the `$defs` in `scripts/generate-catalog.ts`, then run `pnpm generate:catalog`.
+**Never edit `catalog/vuetify-catalog.json` or `catalog/vuetify-catalog.v1.json` by hand.** Change the Zod schemas in `src/catalog/vuetify-components.ts` or the `$defs` in `scripts/generate-catalog.ts`, then run `pnpm generate:catalog`.
 
 ### Filtering the catalog for agents
 

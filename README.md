@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/@alis-build/a2ui-vuetify-renderer)](https://www.npmjs.com/package/@alis-build/a2ui-vuetify-renderer)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-A Vue 3 rendering library for the [A2UI Protocol v0.9](https://a2ui.org/specification/v0.9-a2ui/). It translates A2UI JSON messages into interactive Vue interfaces backed by [Vuetify 4](https://vuetifyjs.com/) components.
+A Vue 3 rendering library for the A2UI Protocol, [v0.9](https://a2ui.org/specification/v0.9-a2ui/), [v0.9.1](https://a2ui.org/specification/v0.9.1-a2ui/) and [v1.0](https://a2ui.org/specification/v1.0-a2ui/). It translates A2UI JSON messages into interactive Vue interfaces backed by [Vuetify 4](https://vuetifyjs.com/) components. One set of components serves every version; see [Protocol versions](#protocol-versions).
 
 The default component catalog extends the ideas of the [v0.9 basic catalog](https://a2ui.org/specification/v0.9-a2ui/) with additional Vuetify-backed types (for example `Tabs`, `Modal`, `Video`, `AudioPlayer`, `ChoicePicker`). Agents must use the same `catalogId` your app advertises—typically `CATALOG_ID` from this package—so `createSurface` and the renderer registry stay aligned.
 
@@ -34,6 +34,8 @@ The library ships ESM (`dist/a2ui-vuetify-renderer.js`), UMD (`dist/a2ui-vuetify
 ### Catalog ID
 
 `CATALOG_ID` is the URI of the [Vuetify catalog JSON schema](https://github.com/alis-exchange/a2ui-vuetify-renderer/blob/main/catalog/vuetify-catalog.json) (`https://raw.githubusercontent.com/alis-exchange/a2ui-vuetify-renderer/main/catalog/vuetify-catalog.json`). That URI always resolves to the catalog on `main`, so it moves independently of the version you install; for a copy pinned to your installed version read `VUETIFY_CATALOG` or the `./catalog` subpath instead of fetching the URL. Pass it to `new Catalog(CATALOG_ID, …)`, `createSurface.catalogId`, and `a2uiClientCapabilities.supportedCatalogIds` so validation and rendering agree.
+
+`CATALOG_ID_V1` is the same for A2UI v1.0: it names `catalog/vuetify-catalog.v1.json` (pinned copies: `VUETIFY_CATALOG_V1`, the `./catalog/v1` subpath).
 
 ## Setup
 
@@ -162,6 +164,72 @@ If you skip the plugin, import `A2UIProvider`, `ComponentNode`, and `registerDef
   </v-app>
 </template>
 ```
+
+## Protocol versions
+
+The renderer speaks A2UI v0.9, v0.9.1 and v1.0 with the same 40 components. Only the component schemas and the catalog document differ per version; each surface is rendered in the version its messages declare.
+
+|                   | v0.9 / v0.9.1                       | v1.0                                  |
+| ----------------- | ----------------------------------- | ------------------------------------- |
+| Catalog id        | `CATALOG_ID`                        | `CATALOG_ID_V1`                       |
+| Component schemas | `VUETIFY_COMPONENTS`                | `VUETIFY_COMPONENTS_V1`               |
+| Functions         | `VUETIFY_FUNCTIONS`                 | `VUETIFY_FUNCTIONS_V1`                |
+| Catalog document  | `VUETIFY_CATALOG`, `./catalog`      | `VUETIFY_CATALOG_V1`, `./catalog/v1`  |
+| Bindings          | `{ "path": "/x" }`, `{ "call": … }` | `{ "@path": "/x" }`, `{ "@call": … }` |
+
+One processor can serve both, routing each surface by its `version`:
+
+```typescript
+import { Catalog, MessageProcessor } from '@a2ui/web_core/v0_9';
+import { A2UI_V10, CATALOG_ID, CATALOG_ID_V1, VUETIFY_COMPONENTS, VUETIFY_COMPONENTS_V1, VUETIFY_THEME_SCHEMA, createVuetifyFunctions } from '@alis-build/a2ui-vuetify-renderer';
+import { markRaw } from 'vue';
+
+const locale = navigator.language;
+const processor = markRaw(
+  new MessageProcessor(
+    [new Catalog(CATALOG_ID, '0.9', VUETIFY_COMPONENTS, createVuetifyFunctions({ locale }), VUETIFY_THEME_SCHEMA), new Catalog(CATALOG_ID_V1, '1.0', VUETIFY_COMPONENTS_V1, createVuetifyFunctions({ locale, protocol: A2UI_V10 }))],
+    handleAction,
+    { version: 'v0.9' },
+  ),
+);
+```
+
+**Capabilities.** `getRendererCapabilities({ versions })` lists every catalog the processor holds under every version, so with both catalogs it would offer a v0.9 agent the v1.0 catalog. Send the per-version object instead:
+
+```typescript
+const capabilities = {
+  'v0.9': { supportedCatalogIds: [CATALOG_ID] },
+  'v1.0': { supportedCatalogIds: [CATALOG_ID_V1] },
+};
+```
+
+v0.9.1 uses the v0.9 catalog and components unchanged: web_core accepts `version: "v0.9.1"` messages against it. The v0.9.1 pages disagree on whether capabilities are keyed `v0.9` or `v0.9.1`; ask the agent which one it reads.
+
+**What changes on a v1.0 surface**
+
+- **Bindings use the `@` prefix.** web_core's v1.0 validation still accepts a v0.9 `{ "path" }` or `{ "call" }`, then treats it as a literal object, so the field shows the object or nothing. The renderer reports each such value once through `onError`, as a `VALIDATION_FAILED` error naming the component and the JSON Pointer of the value. ChildList templates (`{ "componentId", "path" }`) keep the unprefixed `path` in v1.0.
+- **Checks can return a result.** v1.0 validators return `{ valid, message, severity }`. A failed result blocks only when its severity is `error`; warnings and info never do.
+- **No theme.** v1.0 removed `theme` from `createSurface`; the provider's theme bridge applies to v0.9 surfaces only.
+- **No default catalog required.** A v1.0 `createSurface` may omit `catalogId` when every component names its own.
+- **Always node mode.** The legacy static render path (`node-resolver="false"`) only understands v0.9; a v1.0 surface ignores it, with a console warning.
+
+**Custom components on both versions.** Write the schema once as a builder over a protocol kit, register the Vue component once, and register its schema per version:
+
+```typescript
+import { A2UI_V09, A2UI_V10, CATALOG_ID, CATALOG_ID_V1, defaultRegistry, type ProtocolKit } from '@alis-build/a2ui-vuetify-renderer';
+import type { ComponentApi } from '@a2ui/web_core/v0_9';
+import { z } from 'zod';
+
+const buildChartApi = (kit: ProtocolKit): ComponentApi => ({
+  name: 'Chart',
+  schema: z.object({ ...kit.commonProps, title: kit.DynamicStringSchema, action: kit.ActionSchema.optional() }).strict(),
+});
+
+defaultRegistry.register(CATALOG_ID, 'Chart', ChartComponent, buildChartApi(A2UI_V09));
+defaultRegistry.registerApi(CATALOG_ID_V1, 'Chart', buildChartApi(A2UI_V10));
+```
+
+`CATALOG_ID` and `CATALOG_ID_V1` share one component map, so the Vue component renders on both. `getCatalogSchema(registry, CATALOG_ID_V1)` includes a custom component only once it has a v1.0 schema. In the component, bind inputs with `useBinding(() => props.node, 'value')` rather than reading `properties.value.path`, which v1.0 spells `@path`.
 
 ## Architecture
 
@@ -637,15 +705,16 @@ While the A2UI Vue Renderer focuses solely on the UI layer, host applications mu
 You must explicitly announce which `catalogId`s your renderer supports to the AI agent during the connection handshake. Failure to do so may result in the server sending unhandled component types.
 
 ```typescript
-// The processor derives the capabilities from its catalogs
-const metadata = processor.getClientCapabilities();
+// The processor derives the capabilities from its catalogs (getClientCapabilities is deprecated)
+const metadata = processor.getRendererCapabilities({ versions: ['v0.9'] });
 // { 'v0.9': { supportedCatalogIds: [CATALOG_ID] } }
 
-// Advertise protocol v0.9.1 instead (messages with version 'v0.9.1' are accepted either way),
-// or embed the full catalog schemas for agents that cannot fetch CATALOG_ID
-const metadata091 = processor.getClientCapabilities({ version: 'v0.9.1', includeInlineCatalogs: true });
+// Embed the full catalog schemas for agents that cannot fetch CATALOG_ID
+const inline = processor.getRendererCapabilities({ versions: ['v0.9'], includeInlineCatalogs: true });
 // Send metadata to the server...
 ```
+
+With both a v0.9 and a v1.0 catalog in one processor, see [Protocol versions](#protocol-versions) for what to send.
 
 `MessageProcessor` takes the default version as its third argument: `new MessageProcessor([catalog], handleAction, { version: 'v0.9.1' })`.
 
@@ -683,7 +752,7 @@ Custom components receive a `node` prop (the component node from A2UI). To resol
 
 ## Catalog functions
 
-`createVuetifyFunctions({ locale })` returns the `FunctionImplementation[]` for the Vuetify catalog: the basic catalog functions (`required`, `regex`, `formatString`, `and`, …) with two differences:
+`createVuetifyFunctions({ locale, protocol })` returns the `FunctionImplementation[]` for the Vuetify catalog (`protocol: A2UI_V10` for v1.0, where validators return `{ valid, message }` results and only the specification's functions exist): the basic catalog functions (`required`, `regex`, `formatString`, `and`, …) with two differences:
 
 - **Locale** — `formatNumber`, `formatCurrency` and `pluralize` use the given BCP 47 locale (e.g. `navigator.language`). Omit it for the host runtime locale.
 - **`openUrl`** — the basic catalog's `openUrl` (web_core ≥ 0.10.2) only allows `http:`/`https:`. The Vuetify override keeps that protection but also allows `mailto:` and `tel:`:
@@ -696,7 +765,7 @@ Custom components receive a `node` prop (the component node from A2UI). To resol
 
 `openUrl` only runs from something the user clicked, such as a Button `functionCall` action. It is `allowedCallers: 'rendererOnly'` with `requiresUserActivation: true`, as A2UI v1.0 requires: an agent's `callRendererFunction` is refused, and so is `openUrl` in a binding or a check (reported through `onError` as an `EXPRESSION_ERROR`). Otherwise a `mailto:` or `tel:` link, which bypasses the popup blocker, could start a mail app or a call with no click.
 
-Function names, schemas and return types are identical to the basic catalog, so `catalog/vuetify-catalog.json` does not change. `VUETIFY_FUNCTIONS` is `createVuetifyFunctions()` and `VuetifyOpenUrlImplementation` is exported on its own.
+Function names, schemas and return types are identical to the basic catalog, so the catalog documents do not depend on the locale. `VUETIFY_FUNCTIONS` is `createVuetifyFunctions()`, `VUETIFY_FUNCTIONS_V1` its v1.0 counterpart, and `VuetifyOpenUrlImplementation` / `VuetifyOpenUrlImplementationV1` are exported on their own. Keeping `mailto:` and `tel:` on v1.0 goes beyond that spec (http(s) only) on purpose; the click gate removes the risk the rule guards against.
 
 ## Exports
 
@@ -707,7 +776,7 @@ Everything is available from the package root:
 import { A2UIProvider, ComponentNode } from '@alis-build/a2ui-vuetify-renderer';
 
 // Composables
-import { useA2UI, useDynamicProps, useChecks } from '@alis-build/a2ui-vuetify-renderer';
+import { useA2UI, useDynamicProps, useChecks, useBinding } from '@alis-build/a2ui-vuetify-renderer';
 
 // Registry & catalog bootstrap
 import {
@@ -715,14 +784,24 @@ import {
   defaultRegistry,
   registerDefaultComponents,
   CATALOG_ID,
+  CATALOG_ID_V1,
+  VUETIFY_CATALOG,
+  VUETIFY_CATALOG_V1,
   VUETIFY_COMPONENTS,
+  VUETIFY_COMPONENTS_V1,
+  buildVuetifyComponents,
   VUETIFY_FUNCTIONS,
+  VUETIFY_FUNCTIONS_V1,
   VUETIFY_THEME_SCHEMA,
   createVuetifyFunctions,
   VuetifyOpenUrlImplementation,
+  VuetifyOpenUrlImplementationV1,
   getCatalogSchema,
   catalogFilters,
 } from '@alis-build/a2ui-vuetify-renderer';
+
+// Protocol kits, to build a component schema per A2UI version
+import { A2UI_V09, A2UI_V10, type ProtocolKit } from '@alis-build/a2ui-vuetify-renderer';
 
 // Plugin
 import { A2UiVueRenderer } from '@alis-build/a2ui-vuetify-renderer';
@@ -756,7 +835,8 @@ pnpm install
 ```
 renderer/
 ├── catalog/
-│   └── vuetify-catalog.json        # JSON Schema + catalogId for agents
+│   ├── vuetify-catalog.json        # v0.9 catalog (JSON Schema + catalogId) for agents
+│   └── vuetify-catalog.v1.json     # v1.0 catalog, written by web_core's Catalog.toJson()
 ├── examples/client/                # Vite app for manual integration testing
 ├── scripts/
 │   └── generate-catalog.ts         # Catalog JSON build script
@@ -766,23 +846,28 @@ renderer/
 │   ├── style.css                   # Base styles
 │   ├── catalog/
 │   │   ├── index.ts                # Barrel for catalog exports
-│   │   ├── vuetify-components.ts   # Zod-based ComponentApi[] for all Vuetify components
-│   │   ├── vuetify-functions.ts    # createVuetifyFunctions(): basic catalog + Vuetify openUrl
+│   │   ├── vuetify-components.ts   # ComponentApi[] per protocol (VUETIFY_COMPONENTS, VUETIFY_COMPONENTS_V1)
+│   │   ├── vuetify-functions.ts    # createVuetifyFunctions({ locale, protocol }): basic catalog + Vuetify openUrl
 │   │   └── vuetify-theme.ts        # Zod theme schema for Catalog constructor
 │   ├── composables/
 │   │   ├── A2UIProvider.vue        # Context provider + theme bridge
 │   │   ├── useA2UI.ts              # Core composable
+│   │   ├── useBinding.ts           # Two-way binding on any protocol version
+│   │   ├── useChecks.ts            # checks → rules + binder validity
 │   │   └── useDynamicProps.ts      # Resolved props helper for custom widgets
 │   ├── core/
 │   │   ├── ComponentNode.vue       # Recursive component renderer
 │   │   ├── ComponentRegistry.ts    # Type → Component map (per catalogId)
-│   │   ├── constants.ts            # CATALOG_ID
+│   │   ├── constants.ts            # CATALOG_ID, CATALOG_ID_V1
 │   │   ├── defaultCatalog.ts       # Registers 40 default components
 │   │   ├── getCatalogSchema.ts     # Schema merge for tooling / agents
 │   │   └── catalogFilters.ts      # Pre-built filter predicates
 │   ├── components/
-│   │   └── A2UI*.vue               # Vuetify-backed (and media) implementations
+│   │   ├── A2UI*.vue               # Vuetify-backed (and media) implementations
+│   │   └── A2UI*.api.ts            # Component schemas, written once as build<Name>Api(kit)
+│   ├── protocol/                   # Protocol kits (v0.9 / v1.0), version and legacy-binding checks
 │   └── utils/
+│       ├── mediaUrl.ts             # Media URL rule (http(s), data:, relative)
 │       └── validation.ts           # A2UI checks ({ condition, message }) → Vuetify rules
 ├── dist/                           # Built library output
 ├── vite.config.ts                  # Vite lib mode + vuetify auto-import
@@ -795,6 +880,7 @@ renderer/
 Tests use Vitest with `@vue/test-utils` and `jsdom`. Vuetify is inlined during tests via `vitest.config.ts`. Test files live alongside source as `*.spec.ts`:
 
 - **Core** — plugin, provider (real `MessageProcessor`), `useA2UI`, `useDynamicProps`, `ComponentNode`, `liveNodes`, `ComponentRegistry`, `getCatalogSchema`, barrel `index.spec.ts`
+- **Protocols** — `protocols.spec.ts` runs one surface as v0.9, v0.9.1 and v1.0 (rendering, binding in rows, checks, `openUrl`), and one processor serving both versions
 - **End to end** — `nodeResolver.spec.ts` renders the shipped components through the resolver: typing updates siblings, checks gate the Button, template lists grow on local writes, placeholders upgrade
 - **Components** — grouped specs (`CoreComponents`, `FormInputs`, …) plus focused tests for `Tabs`, `Modal`, `Video`, `AudioPlayer`, `ChoicePicker`
 - **Tooling** — `scripts/generate-catalog.spec.ts`, `validation.spec.ts`
