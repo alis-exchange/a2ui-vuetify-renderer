@@ -21,6 +21,9 @@ importers:
         specifier: ^3.25.2
         version: 3.25.2(zod@3.25.76)
     devDependencies:
+      '@a2ui/agent':
+        specifier: ^0.1.0
+        version: 0.1.0
       '@a2ui/web_core':
         specifier: ^0.15.0
         version: 0.15.0
@@ -113,6 +116,9 @@ importers:
         version: 4.3.2(typescript@6.0.3)(vite-plugin-vuetify@2.1.3)(vue@3.5.45(typescript@6.0.3))
 
 packages:
+
+  '@a2ui/agent@0.1.0':
+    resolution: {integrity: sha512-qpqMN+uQU+vA8JEjtIJsGT6qJJ0FZCnOKSRB6HBhleqnlsasjAiNIMSJfwX/lANv13cnEF10CgMiQGDLSyjnLQ==}
 
   '@a2ui/web_core@0.15.0':
     resolution: {integrity: sha512-S3k9rAJ9O55z5TlDeWy22ly3yQnDLO+XBWihlL5JQSuyxaCUmd7jgFnxO4eq/Bn6dSgdBF0WG8cve/euMoz8SA==}
@@ -1440,6 +1446,9 @@ packages:
   ansis@4.5.0:
     resolution: {integrity: sha512-KwIVkfFfJSSzBmZhDGuTmkhWqTdyB5oNVzzznBJbBZ5bZtHiqSrcugRF0RKJKT4Ss3d7ZrcjnlFVDlQNmtWfWw==}
     engines: {node: '>=14'}
+
+  antlr4ng@3.0.16:
+    resolution: {integrity: sha512-DQuJkC7kX3xunfF4K2KsWTSvoxxslv+FQp/WHQZTJSsH2Ec3QfFmrxC3Nky2ok9yglXn6nHM4zUaVDxcN5f6kA==}
 
   argparse@1.0.10:
     resolution: {integrity: sha512-o5Roy6tNG4SL/FOkCAN6RzjiakZS25RLYFrcMttJqbdd8BWrnA+fGz57iN5Pb06pvBGvl5gQ0B48dJlslXvoTg==}
@@ -3455,6 +3464,11 @@ packages:
 
 snapshots:
 
+  '@a2ui/agent@0.1.0':
+    dependencies:
+      '@a2ui/web_core': 0.15.0
+      antlr4ng: 3.0.16
+
   '@a2ui/web_core@0.15.0':
     dependencies:
       '@lit/context': 1.1.6
@@ -4635,6 +4649,8 @@ snapshots:
   alien-signals@3.2.1: {}
 
   ansis@4.5.0: {}
+
+  antlr4ng@3.0.16: {}
 
   argparse@1.0.10:
     dependencies:
