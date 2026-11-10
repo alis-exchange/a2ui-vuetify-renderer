@@ -223,7 +223,12 @@ import { z } from 'zod';
 
 const buildChartApi = (kit: ProtocolKit): ComponentApi => ({
   name: 'Chart',
-  schema: z.object({ ...kit.commonProps, title: kit.DynamicStringSchema, action: kit.ActionSchema.optional() }).strict(),
+  // Own props first and shared props last, with a one-line description: A2UI Express shows the
+  // model `Chart(title, action?, …)` with this text, and passes arguments in that order.
+  schema: z
+    .object({ title: kit.DynamicStringSchema, action: kit.ActionSchema.optional(), ...kit.commonProps })
+    .strict()
+    .describe('A chart of sales over time; set title to name it.'),
 });
 
 defaultRegistry.register(CATALOG_ID, 'Chart', ChartComponent, buildChartApi(A2UI_V09));

@@ -215,7 +215,10 @@
   // registered for v0.9 and v1.0. The Vue component itself is registered once.
   const buildCustomGraphApi = (kit: ProtocolKit): ComponentApi => ({
     name: 'CustomGraph',
-    schema: z.object({ ...kit.commonProps }).strict(),
+    schema: z
+      .object({ ...kit.commonProps })
+      .strict()
+      .describe('A placeholder graph, loaded lazily.'),
   });
 
   defaultRegistry.register(CATALOG_ID, 'CustomGraph', AsyncGraphComponent, buildCustomGraphApi(A2UI_V09));
@@ -226,11 +229,13 @@
     name: 'CustomChart',
     schema: z
       .object({
-        ...kit.commonProps,
         title: z.string().describe('The title of the chart').optional(),
         data: z.array(z.number()).describe('The data points to render'),
+        // Shared props last: A2UI Express passes arguments in declaration order.
+        ...kit.commonProps,
       })
-      .strict(),
+      .strict()
+      .describe('A bar chart of a list of numbers, with an optional title.'),
   });
 
   defaultRegistry.register(CATALOG_ID, 'CustomChart', CustomChartWidget, buildCustomChartApi(A2UI_V09));
