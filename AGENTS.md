@@ -41,7 +41,7 @@ renderer/
 │   ├── composables/
 │   │   ├── A2UIProvider.vue           # Context provider + Vuetify theme bridge
 │   │   ├── useA2UI.ts                 # Core composable: resolveValue<V>, sendAction, setData, etc.
-│   │   ├── useBinding.ts              # Two-way binding through the binder's setters (any protocol version)
+│   │   ├── useBinding.ts              # Two-way binding through web_core's WritableBinding (any protocol version)
 │   │   ├── useChecks.ts               # checks → Vuetify rules + binder isValid / validationErrors
 │   │   └── useDynamicProps.ts         # Resolves all node properties through resolveValue
 │   ├── core/
@@ -284,7 +284,7 @@ Every component receives a single `node` prop typed as `ComponentModel` from `@a
 
 Key patterns:
 - **Always** use `resolveValue<V>()` to read node properties — handles `{ path }` and `{ call }` bindings; choose `V` to match the resolved runtime type
-- **Two-way binding**: `useBinding<T>(() => props.node, 'value', fallback)` returns a writable computed. It writes through the setter web_core's binder generates (`setValue`), so the same code handles v0.9 `{ path }`, v1.0 `{ "@path" }` and relative paths in template rows. Never read `properties.value.path` and call `setData` yourself: that breaks on v1.0 and wrote template rows to the root on v0.9. Wrap it in your own `computed` when a write needs extra work (coercion, an action)
+- **Two-way binding**: `useBinding<T>(() => props.node, 'value', fallback)` returns a writable computed. In node mode it writes through the `WritableBinding` web_core's `NodeResolver` puts in the node's props (its `set` goes through the node's `DataContext`; legacy path: the raw binding's path, same `DataContext`), so the same code handles v0.9 `{ path }`, v1.0 `{ "@path" }` and relative paths in template rows. Never read `properties.value.path` and call `setData` yourself: that breaks on v1.0 and wrote template rows to the root on v0.9. Wrap it in your own `computed` when a write needs extra work (coercion, an action)
 - **Actions**: use `dispatchNodeAction(node)` for standard button/click actions, or `sendAction(name, id, context)` for manual payloads
 - **Children**: use `<ComponentNode :id="childId" />` to render child references; use `resolveDynamicChildren` for iterating `{ path, componentId }` template lists
 - **Validation**: call `useChecks(() => props.node)` (see 5.7) — it builds the `createVuetifyRules` rules so `{ condition, message }` conditions resolve against the data model, and exposes the binder's `isValid` / `validationErrors` for gating (Button, IconButton). Do not read `nodeProps` or call `createVuetifyRules` directly in a component
