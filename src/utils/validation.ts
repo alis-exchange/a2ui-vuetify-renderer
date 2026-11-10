@@ -14,12 +14,19 @@ export type CheckValueResolver = <V = unknown>(value: any) => V | undefined;
  *
  * Protocol shape (`CheckRule` from the A2UI spec, what agents send):
  * - `{ condition, message }` where `condition` is a `DynamicBoolean`: a literal boolean,
- *   a data binding `{ path: '/name' }`, or a function call
- *   `{ call: 'required', args: { value: { path: '/name' } } }`.
+ *   a data binding (`{ path }` on v0.9, `{ "@path" }` on v1.0), or a function call
+ *   (`{ call, args }` / `{ "@call", args }`).
  *   Dynamic conditions are resolved with `resolveValue` each time the rule runs, so they
- *   see the live data model. A rule passes when the condition is truthy.
- *   If no resolver is given, or resolving throws, the rule passes: a broken rule must
- *   never lock the user out of an input.
+ *   see the live data model. If no resolver is given, or resolving throws, the rule passes:
+ *   a broken rule must never lock the user out of an input.
+ * - The resolved condition is read exactly as web_core's binder reads it, so these rules
+ *   agree with the node's `validationErrors`:
+ *   - A v1.0 `ValidationResult` (`{ valid, message?, severity? }`) fails only when `valid` is
+ *     false and `severity` is `error` (the default); warnings and info never block.
+ *   - Anything else fails when falsy.
+ *   - Message: a function-call condition shows the rule's own `message`; a path-bound one
+ *     shows the result's `message` (the agent wrote the finding there), falling back to the
+ *     rule's; with neither, `Validation failed`.
  *
  * Legacy shapes (kept for direct callers; `@a2ui/web_core` >= 0.10.6 rejects them at
  * message level because `checks` must match `CheckRule`):
@@ -52,7 +59,9 @@ export function createVuetifyRules(checks: any[], resolveValue?: CheckValueResol
       if (check == null) return true;
 
       if (typeof check === 'object' && 'condition' in check) {
-        return evaluateCondition(check.condition, resolveValue) || check.message || 'Invalid value';
+        const ruleMessage = typeof check.message === 'string' ? check.message : undefined;
+        const outcome = readCheckOutcome(evaluateCondition(check.condition, resolveValue), isPathBound(check.condition) ? undefined : ruleMessage, ruleMessage ?? 'Validation failed');
+        return outcome.valid || outcome.severity !== 'error' ? true : outcome.message;
       }
 
       if (check === 'required' || check.type === 'required' || check.name === 'required') {
@@ -86,16 +95,43 @@ export function createVuetifyRules(checks: any[], resolveValue?: CheckValueResol
 }
 
 /**
- * Evaluates a `DynamicBoolean` condition. Dynamic forms need the resolver; without one,
- * or when resolving fails, the condition counts as passed (see {@link createVuetifyRules}).
+ * Resolves a `DynamicBoolean` condition to its raw value. Dynamic forms need the resolver;
+ * without one, or when resolving fails, the condition counts as passed (see {@link createVuetifyRules}).
  */
-function evaluateCondition(condition: unknown, resolveValue?: CheckValueResolver): boolean {
-  if (typeof condition === 'boolean') return condition;
-  if (condition === null || typeof condition !== 'object') return Boolean(condition);
+function evaluateCondition(condition: unknown, resolveValue?: CheckValueResolver): unknown {
+  if (condition === null || typeof condition !== 'object') return condition;
   if (!resolveValue) return true;
   try {
-    return Boolean(resolveValue(condition));
+    return resolveValue(condition);
   } catch {
     return true;
   }
+}
+
+/** Whether a condition is a data binding rather than a function call, in either syntax. */
+function isPathBound(condition: unknown): boolean {
+  if (condition === null || typeof condition !== 'object') return false;
+  const rec = condition as Record<string, unknown>;
+  return (typeof rec['@path'] === 'string' && !('@call' in rec)) || (typeof rec.path === 'string' && !('call' in rec));
+}
+
+interface CheckOutcome {
+  valid: boolean;
+  message: string;
+  severity: 'error' | 'warning' | 'info';
+}
+
+/**
+ * Reads a resolved condition the way web_core's `GenericBinder.extractValidationResult` does
+ * (`resolution/generic-binder.js`), so Vuetify rules and the binder's `validationErrors` never
+ * disagree. Keep the two in step when upgrading web_core.
+ */
+function readCheckOutcome(value: unknown, explicitMessage: string | undefined, fallbackMessage: string): CheckOutcome {
+  if (typeof value === 'object' && value !== null && 'valid' in value) {
+    const rec = value as Record<string, unknown>;
+    const severity = rec.severity === 'warning' || rec.severity === 'info' ? rec.severity : 'error';
+    const message = explicitMessage ?? (rec.message !== undefined && rec.message !== null ? String(rec.message) : fallbackMessage);
+    return { valid: Boolean(rec.valid), message, severity };
+  }
+  return { valid: Boolean(value), message: explicitMessage ?? fallbackMessage, severity: 'error' };
 }

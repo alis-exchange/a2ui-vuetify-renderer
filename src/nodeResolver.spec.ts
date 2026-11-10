@@ -449,3 +449,40 @@ describe('two-way binding through useBinding', () => {
     expect(data.get('/name')).toBe('Legacy');
   });
 });
+
+describe('v1.0 check results', () => {
+  beforeAll(() => registerDefaultComponents());
+
+  it('agree between Vuetify rules and the binder, for errors and warnings', async () => {
+    const processor = new MessageProcessor([new Catalog(CATALOG_ID_V1, '1.0', VUETIFY_COMPONENTS_V1, [])]);
+    const check = { condition: { '@path': '/emailCheck' }, message: 'Enter an email' };
+    processor.processMessages([
+      { version: '1.0', createSurface: { surfaceId: 'c', catalogId: CATALOG_ID_V1, dataModel: { email: 'x', emailCheck: { valid: false, message: 'Domain is blocked' } } } },
+      {
+        version: '1.0',
+        updateComponents: {
+          surfaceId: 'c',
+          components: [
+            { id: 'root', component: 'Column', children: ['tf', 'send'] },
+            { id: 'tf', component: 'TextField', label: 'Email', value: { '@path': '/email' }, checks: [check] },
+            { id: 'send', component: 'Button', label: 'Send', action: { event: { name: 'send' } }, checks: [check] },
+          ],
+        },
+      },
+    ] as never);
+    const wrapper = mount(A2UIProvider, {
+      global: { plugins: [createVuetify()] },
+      props: { processor, surfaceId: 'c', onAction: vi.fn(), onError: vi.fn() },
+      slots: { default: () => h(ComponentNode, { id: 'root' }) },
+    });
+    const rule = () => (wrapper.findComponent({ name: 'VTextField' }).props('rules') as ((v: unknown) => unknown)[])[0]('x');
+
+    expect(rule()).toBe('Domain is blocked');
+    expect(wrapper.findComponent({ name: 'VBtn' }).props('disabled')).toBe(true);
+
+    processor.model.getSurface('c')!.dataModel.set('/emailCheck', { valid: false, message: 'Unusual domain', severity: 'warning' });
+    await nextTick();
+    expect(rule()).toBe(true);
+    expect(wrapper.findComponent({ name: 'VBtn' }).props('disabled')).toBe(false);
+  });
+});

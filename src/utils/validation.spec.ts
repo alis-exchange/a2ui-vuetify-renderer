@@ -57,9 +57,38 @@ describe('createVuetifyRules with protocol CheckRule shape', () => {
     expect(rules[0]('anything')).toBe(true);
   });
 
-  it('falls back to a generic message', () => {
+  it("falls back to the binder's generic message", () => {
     const rules = createVuetifyRules([{ condition: false }]);
-    expect(rules[0]('anything')).toBe('Invalid value');
+    expect(rules[0]('anything')).toBe('Validation failed');
+  });
+
+  describe('v1.0 ValidationResult conditions', () => {
+    const resolveTo = (result: unknown) => (() => result) as never;
+
+    it('fails an error result with the rule message for a function call', () => {
+      const rules = createVuetifyRules([{ condition: { '@call': 'email', args: {} }, message: 'Enter an email' }], resolveTo({ valid: false, message: 'Not an email' }));
+      expect(rules[0]('x')).toBe('Enter an email');
+    });
+
+    it('uses the result message for a path-bound condition', () => {
+      const rules = createVuetifyRules([{ condition: { '@path': '/emailCheck' }, message: 'Enter an email' }], resolveTo({ valid: false, message: 'Domain is blocked' }));
+      expect(rules[0]('x')).toBe('Domain is blocked');
+    });
+
+    it('falls back to the rule message when the result has none', () => {
+      const rules = createVuetifyRules([{ condition: { path: '/emailCheck' }, message: 'Enter an email' }], resolveTo({ valid: false }));
+      expect(rules[0]('x')).toBe('Enter an email');
+    });
+
+    it.each(['warning', 'info'])('never blocks on a %s', (severity) => {
+      const rules = createVuetifyRules([{ condition: { '@call': 'length', args: {} }, message: 'Long' }], resolveTo({ valid: false, severity }));
+      expect(rules[0]('x')).toBe(true);
+    });
+
+    it('passes a valid result', () => {
+      const rules = createVuetifyRules([{ condition: { '@call': 'required', args: {} }, message: 'Required' }], resolveTo({ valid: true }));
+      expect(rules[0]('x')).toBe(true);
+    });
   });
 
   it('resolves a data-binding condition through the resolver', () => {
