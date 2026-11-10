@@ -1,6 +1,6 @@
 import { DataContext, type A2uiClientAction, type Action, type ComponentModel, type DynamicValue, type NodeProps, type NodeResolver } from '@a2ui/web_core/v0_9';
 import { computed, inject, type ComputedRef, type InjectionKey, type ShallowRef } from 'vue';
-import { isV10Surface } from '../protocol/version';
+import { isV10Surface, pathBinding } from '../protocol/version';
 
 export type A2UIActionPayload = A2uiClientAction;
 
@@ -300,8 +300,7 @@ export function useA2UI(): UseA2UIReturn {
     if (childrenProp && typeof childrenProp === 'object' && childrenProp.path && childrenProp.componentId) {
       // The template keeps an unprefixed `path` in every version, but the binding that reads it
       // must use the surface's own syntax: v1.0 treats a bare { path } as a literal object.
-      const binding = dataContext.value?.atLeastV10 ? { '@path': childrenProp.path } : { path: childrenProp.path };
-      const resolvedArray = resolveValue(binding as DynamicValue);
+      const resolvedArray = resolveValue(pathBinding(childrenProp.path, dataContext.value) as DynamicValue);
       if (Array.isArray(resolvedArray)) {
         const basePath = toAbsolutePath(childrenProp.path);
         return resolvedArray.map((_, index) => {

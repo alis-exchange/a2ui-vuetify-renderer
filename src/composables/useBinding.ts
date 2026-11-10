@@ -1,5 +1,6 @@
 import { ResolvedBinding, isWritable, type ComponentModel } from '@a2ui/web_core/v0_9';
 import { computed, toValue, type MaybeRefOrGetter, type WritableComputedRef } from 'vue';
+import { bindingPath } from '../protocol/version';
 import { useA2UI } from './useA2UI';
 
 /**
@@ -41,10 +42,8 @@ export function useBinding<T>(node: MaybeRefOrGetter<ComponentModel>, prop: stri
         return;
       }
       // Legacy render path: no node tree, so no bindings to write through.
-      const raw = toValue(node).properties[prop];
-      if (!raw || typeof raw !== 'object') return;
-      const path = dataContext.value?.atLeastV10 ? raw['@path'] : raw.path;
-      if (typeof path !== 'string') return;
+      const path = bindingPath(toValue(node).properties[prop], dataContext.value);
+      if (path === undefined) return;
       if (dataContext.value) dataContext.value.set(path, next);
       else setData(path, next);
     },
