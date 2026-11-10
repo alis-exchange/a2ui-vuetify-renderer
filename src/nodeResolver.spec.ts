@@ -4,7 +4,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { h, nextTick } from 'vue';
 import { createVuetify } from 'vuetify';
 import { z } from 'zod';
-import { A2UIProvider, CATALOG_ID, ComponentNode, VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA, registerDefaultComponents } from './index';
+import { A2UIProvider, CATALOG_ID, CATALOG_ID_V1, ComponentNode, VUETIFY_COMPONENTS, VUETIFY_COMPONENTS_V1, VUETIFY_FUNCTIONS, VUETIFY_THEME_SCHEMA, registerDefaultComponents } from './index';
 
 /**
  * End to end: real catalog, real MessageProcessor, the shipped Vuetify components, rendered
@@ -343,5 +343,48 @@ describe('select-style inputs bind to the data model', () => {
     await nextTick();
     expect(processor.model.getSurface(SELECT_SURFACE)!.dataModel.get('/choice')).toBe('b');
     expect(echo()).toBe('b');
+  });
+});
+
+describe('component lookup by catalog', () => {
+  beforeAll(() => registerDefaultComponents());
+
+  const render = (processor: MessageProcessor, surfaceId: string) =>
+    mount(A2UIProvider, {
+      global: { plugins: [createVuetify()] },
+      props: { processor, surfaceId, onAction: vi.fn(), onError: vi.fn() },
+      slots: { default: () => h(ComponentNode, { id: 'root' }) },
+    });
+
+  it('renders a v1.0 surface with the same Vuetify components', () => {
+    const processor = new MessageProcessor([new Catalog(CATALOG_ID_V1, '1.0', VUETIFY_COMPONENTS_V1, [])]);
+    processor.processMessages([
+      { version: '1.0', createSurface: { surfaceId: 'v1', catalogId: CATALOG_ID_V1, dataModel: { name: 'Ada', items: [{ label: 'first' }, { label: 'second' }] } } },
+      {
+        version: '1.0',
+        updateComponents: {
+          surfaceId: 'v1',
+          components: [
+            { id: 'root', component: 'Column', children: ['greeting', 'list'] },
+            { id: 'greeting', component: 'Text', text: { '@path': '/name' } },
+            { id: 'list', component: 'Column', children: { componentId: 'item', path: '/items' } },
+            { id: 'item', component: 'Text', text: { '@path': 'label' } },
+          ],
+        },
+      },
+    ] as never);
+    const text = render(processor, 'v1').text();
+    expect(text).toContain('Ada');
+    expect(text).toContain('first');
+    expect(text).toContain('second');
+  });
+
+  it('still renders a v0.9 surface whose host named its catalog something else', () => {
+    const processor = new MessageProcessor([new Catalog('my-own-catalog', '0.9', VUETIFY_COMPONENTS, VUETIFY_FUNCTIONS)], undefined, { version: 'v0.9' });
+    processor.processMessages([
+      { version: 'v0.9', createSurface: { surfaceId: 'own', catalogId: 'my-own-catalog' } },
+      { version: 'v0.9', updateComponents: { surfaceId: 'own', components: [{ id: 'root', component: 'Text', text: 'hello' }] } } as A2uiMessage,
+    ]);
+    expect(render(processor, 'own').text()).toContain('hello');
   });
 });

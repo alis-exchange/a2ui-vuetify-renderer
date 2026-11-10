@@ -45,4 +45,12 @@ describe('index.ts', () => {
   it('should export useChecks for custom components', () => {
     expect(typeof exports.useChecks).toBe('function');
   });
+
+  it('should export the v1.0 catalog id, kits and component APIs', () => {
+    expect(exports.CATALOG_ID_V1).toBe('https://raw.githubusercontent.com/alis-exchange/a2ui-vuetify-renderer/main/catalog/vuetify-catalog.v1.json');
+    expect(exports.A2UI_V09.version).toBe('v0.9');
+    expect(exports.A2UI_V10.version).toBe('v1.0');
+    expect(exports.VUETIFY_COMPONENTS_V1.map((api) => api.name)).toEqual(exports.VUETIFY_COMPONENTS.map((api) => api.name));
+    expect(exports.buildVuetifyComponents(exports.A2UI_V10).length).toBe(exports.VUETIFY_COMPONENTS_V1.length);
+  });
 });

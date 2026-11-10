@@ -45,13 +45,17 @@ export type { GetCatalogSchemaOptions } from './core/getCatalogSchema';
 export type { ComponentModel } from '@a2ui/web_core/v0_9';
 
 // Export catalog ID for consumers to reference the schema
-export { CATALOG_ID } from './core/constants';
+export { CATALOG_ID, CATALOG_ID_V1 } from './core/constants';
+
+// Protocol kits: build a component API once per A2UI protocol family (v0.9/v0.9.1 and v1.0)
+export { A2UI_V09, A2UI_V10 } from './protocol/kits';
+export type { ProtocolKit } from './protocol/kits';
 
 // The generated catalog document itself, for consumers that want it without a registry
 export { VUETIFY_CATALOG } from './core/vuetifyCatalog';
 
 // Export Vuetify catalog ComponentApi[], FunctionImplementation[], and theme schema
-export { VUETIFY_COMPONENTS } from './catalog/vuetify-components';
+export { VUETIFY_COMPONENTS, VUETIFY_COMPONENTS_V1, buildVuetifyComponents } from './catalog/vuetify-components';
 export { VUETIFY_FUNCTIONS, VuetifyOpenUrlImplementation, createVuetifyFunctions } from './catalog/vuetify-functions';
 export type { VuetifyFunctionsOptions } from './catalog/vuetify-functions';
 export { VUETIFY_THEME_SCHEMA } from './catalog/vuetify-theme';

@@ -296,7 +296,10 @@ export function useA2UI(): UseA2UIReturn {
     }
 
     if (childrenProp && typeof childrenProp === 'object' && childrenProp.path && childrenProp.componentId) {
-      const resolvedArray = resolveValue({ path: childrenProp.path });
+      // The template keeps an unprefixed `path` in every version, but the binding that reads it
+      // must use the surface's own syntax: v1.0 treats a bare { path } as a literal object.
+      const binding = dataContext.value?.atLeastV10 ? { '@path': childrenProp.path } : { path: childrenProp.path };
+      const resolvedArray = resolveValue(binding as DynamicValue);
       if (Array.isArray(resolvedArray)) {
         const basePath = toAbsolutePath(childrenProp.path);
         return resolvedArray.map((_, index) => {

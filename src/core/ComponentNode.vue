@@ -143,9 +143,9 @@
     return componentId ? surface.value?.componentsModel?.get(componentId) : undefined;
   });
 
-  const catalogId = computed(() => {
-    return surface.value?.catalogId || CATALOG_ID;
-  });
+  // The node's own catalog: on v1.0 a component may name one other than the surface default.
+  // (This used to read surface.catalogId, which SurfaceModel does not have, so it always fell back.)
+  const catalogId = computed(() => node.value?.catalog?.id ?? CATALOG_ID);
 
   const componentType = computed(() => {
     return node.value?.type ?? liveNode.value?.type;
@@ -164,7 +164,9 @@
 
   const resolvedComponent = computed(() => {
     if (!componentType.value) return undefined;
-    return registry.get(catalogId.value, componentType.value);
+    // Fall back to CATALOG_ID: lookup ignored the catalog id before, so a host that built its
+    // Catalog under its own id must keep rendering the built-in components.
+    return registry.get(catalogId.value, componentType.value) ?? registry.get(CATALOG_ID, componentType.value);
   });
 
   // Pending and cyclic stand-ins have nothing to render yet. An unknown-type node still has its
