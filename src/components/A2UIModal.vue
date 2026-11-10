@@ -16,15 +16,22 @@
   }));
 
   const isOpen = ref(false);
+  // Set when the agent's data, not the user, opened or closed the dialog: that dispatch must not
+  // run gesture-only functions (openUrl) on the strength of the user's last click elsewhere.
+  let changedByData = false;
 
   watchEffect(() => {
-    if (dynamicProps.value.open !== undefined) {
-      isOpen.value = !!dynamicProps.value.open;
+    const open = dynamicProps.value.open;
+    if (open !== undefined && !!open !== isOpen.value) {
+      changedByData = true;
+      isOpen.value = !!open;
     }
   });
 
   watch(isOpen, (open) => {
-    dispatchNodeAction(props.node, { open });
+    const userInitiated = !changedByData;
+    changedByData = false;
+    dispatchNodeAction(props.node, { open }, { userInitiated });
   });
 </script>
 

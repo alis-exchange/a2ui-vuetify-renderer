@@ -29,6 +29,16 @@ export interface A2UIContext {
 /** Vue injection key for the A2UI context. Provided by `A2UIProvider`, consumed by `useA2UI`. */
 export const A2UI_CONTEXT_KEY: InjectionKey<A2UIContext> = Symbol('A2UI_CONTEXT_KEY');
 
+/** Options for {@link UseA2UIReturn.dispatchNodeAction}. */
+export interface DispatchNodeActionOptions {
+  /**
+   * Whether the user's own input on this component caused the dispatch (default `true`). Pass
+   * `false` for dispatches driven by data or by the agent, so gesture-only functions such as
+   * `openUrl` are refused even while the browser's page-wide gesture flag is still on.
+   */
+  userInitiated?: boolean;
+}
+
 /**
  * The return type of {@link useA2UI}.
  */
@@ -142,8 +152,7 @@ export interface UseA2UIReturn {
   /**
    * Dispatches the action defined on a component node's `action` property.
    *
-   * Reads `node.properties.action` (which is itself a `DynamicValue` that resolves to
-   * an {@link Action}), then handles it based on its type:
+   * Reads the raw `node.properties.action` (an {@link Action}) and handles it by type:
    *
    * - **Event action** (`{ event: { name, context? } }`) — merges the action's own context
    *   with any `extraContext`, then calls {@link sendAction}.
@@ -152,8 +161,16 @@ export interface UseA2UIReturn {
    *
    * No-ops silently if the node has no `action` property.
    *
+   * A function that needs a user gesture (`openUrl`) runs only when the dispatch is user
+   * initiated and the browser reports an active gesture. The browser's flag is page-wide and stays
+   * on for ~5 seconds after any click or keypress, so a dispatch caused by something other than
+   * the user acting on this component (e.g. the agent opening a Modal through data) must pass
+   * `{ userInitiated: false }`; gesture-only functions are then refused and the rest still run.
+   *
    * @param node - The component model whose action to dispatch.
    * @param extraContext - Additional key-value pairs to merge into the event context.
+   * @param options - `userInitiated` (default `true`): whether the user's own input on this
+   *   component caused the dispatch.
    *                       Only used for event actions; ignored for function calls.
    *
    * @example
@@ -169,7 +186,7 @@ export interface UseA2UIReturn {
    * };
    * ```
    */
-  dispatchNodeAction: (node: ComponentModel, extraContext?: Record<string, any>) => void;
+  dispatchNodeAction: (node: ComponentModel, extraContext?: Record<string, any>, options?: DispatchNodeActionOptions) => void;
 
   /**
    * Writes a value into the surface's data model at the given path.
@@ -350,7 +367,7 @@ export function useA2UI(): UseA2UIReturn {
     }
   };
 
-  const dispatchNodeAction = (node: ComponentModel, extraContext?: Record<string, any>) => {
+  const dispatchNodeAction = (node: ComponentModel, extraContext?: Record<string, any>, options?: DispatchNodeActionOptions) => {
     // The raw action, not resolveValue's: resolving would evaluate a functionCall passively, which
     // refuses gesture-only functions. This is the user's action, so it runs here, actively, once.
     const action = node.properties.action as Action | undefined;
@@ -364,10 +381,12 @@ export function useA2UI(): UseA2UIReturn {
       sendAction(action.event.name, node.id, mergedContext);
     } else if ('functionCall' in action) {
       // web_core trusts `userActivation` outright (true skips its browser check, false refuses
-      // every gesture-only function), so ask the browser here, as its own check does. Not every
-      // dispatch is a click: a Modal opened by the agent through data dispatches too, and must
-      // not be able to open links on its own.
-      dataContext.value?.resolveAction(action, { userActivation: hasUserActivation() });
+      // every gesture-only function), so decide here: only a user-initiated dispatch may claim
+      // the gesture, and only while the browser reports one. The browser's flag is page-wide and
+      // lasts ~5s after any click, so a data-driven dispatch (an agent opening a Modal) must not
+      // borrow it from the user's last chat message.
+      const userActivation = options?.userInitiated !== false && hasUserActivation();
+      dataContext.value?.resolveAction(action, { userActivation });
     }
   };
 

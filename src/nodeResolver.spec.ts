@@ -377,19 +377,35 @@ describe('openUrl needs a user click', () => {
     expect(open).toHaveBeenCalledTimes(1);
   });
 
-  it('does not let an agent open a link by opening a Modal through data', async () => {
+  const modalWithLink = (open: unknown) => [
+    { id: 'root', component: 'Modal', trigger: 'mt', content: 'mc', open, action: { functionCall: { call: 'openUrl', args: { url: 'tel:+27110000000' } } } },
+    { id: 'mt', component: 'Text', text: 'trigger' },
+    { id: 'mc', component: 'Text', text: 'content' },
+  ];
+
+  // The browser's gesture flag is page-wide and stays on ~5s after any click (measured in Chrome),
+  // so "flag on" is the realistic case: the user just sent a chat message, then the agent acts.
+  it.each([false, true])('does not let an agent open a link by opening a Modal through data (gesture flag %s)', async (active) => {
     // jsdom has no visualViewport, which Vuetify's dialog positioning reads once it opens.
     vi.stubGlobal('visualViewport', { width: 1024, height: 768, offsetLeft: 0, offsetTop: 0, scale: 1, addEventListener: vi.fn(), removeEventListener: vi.fn() });
-    setUserActivation(false);
-    const { processor } = mountWith([
-      { id: 'root', component: 'Modal', trigger: 'mt', content: 'mc', open: { path: '/open' }, action: { functionCall: { call: 'openUrl', args: { url: 'tel:+27110000000' } } } },
-      { id: 'mt', component: 'Text', text: 't' },
-      { id: 'mc', component: 'Text', text: 'c' },
-    ]);
+    setUserActivation(active);
+    const { processor } = mountWith(modalWithLink({ path: '/open' }));
     processor.model.getSurface(URL_SURFACE)!.dataModel.set('/open', true);
     await nextTick();
     await nextTick();
     expect(assign).not.toHaveBeenCalled();
+  });
+
+  it('still runs the Modal action when the user opens it by clicking the trigger', async () => {
+    vi.stubGlobal('visualViewport', { width: 1024, height: 768, offsetLeft: 0, offsetTop: 0, scale: 1, addEventListener: vi.fn(), removeEventListener: vi.fn() });
+    setUserActivation(true);
+    const { wrapper } = mountWith(modalWithLink(undefined));
+    // The activator wrapper (the trigger itself renders through the globally registered node).
+    const trigger = wrapper.findAll('div').find((d) => d.attributes('style')?.includes('inline-block'));
+    await trigger!.trigger('click');
+    await nextTick();
+    await nextTick();
+    expect(assign).toHaveBeenCalledWith('tel:+27110000000');
   });
 
   it('refuses a binding that would open a link on the legacy render path', async () => {

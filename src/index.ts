@@ -25,7 +25,7 @@ export type { A2UiVueRendererOptions } from './A2UIRendererPlugin';
 // Export Composables
 export { default as A2UIProvider } from './composables/A2UIProvider.vue';
 export { A2UI_CONTEXT_KEY, useA2UI } from './composables/useA2UI';
-export type { A2UIActionPayload, A2UIContext, UseA2UIReturn } from './composables/useA2UI';
+export type { A2UIActionPayload, A2UIContext, DispatchNodeActionOptions, UseA2UIReturn } from './composables/useA2UI';
 export { useBinding } from './composables/useBinding';
 export { useChecks } from './composables/useChecks';
 export type { UseChecksReturn } from './composables/useChecks';
